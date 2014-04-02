@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    
+    <head></head>
+    
+    <body>
+        <div id="log"></div>
+        <script type="text/javascript" src="../source/base.js"></script>
+        <script type="text/javascript" src="../source/event.js"></script>
+        <script type="text/javascript">
+            var page = {
+                name: "page",
+                namespace: "",
+                $page: function () {
+                    this.testEventSingle();
+                },
+                
+                testEventSingle: function(){
+                    var ev = this.base.require('base.event');
+                    ev.bind('A', function(data){
+                        console.log('callback' + ' A ' + 'trigger');
+                        console.log('data:' + data.message);
+                        return 'A return data';
+                    });
+                    
+                    ev.bind('B', function(data){
+                        console.log('callback' + ' B ' + 'trigger');
+                        console.log('data:' + data.message);
+                        return 'B return data';
+                    });
+                    
+                    ev.bind('C', function(data){
+                        console.log('callback' + ' C ' + 'trigger');
+                        console.log('data:' + data.message);
+                        return 'C return data';
+                    });
+
+                    ev.group('MyGroup', ['A','B','C'], function(data){
+                        console.log('group' + ' MyGroup ' + 'trigger');
+                        for(var key in data){
+                            if(key && data.hasOwnProperty(key)){
+                                console.log("key:" + key + ",value:" + data[key])
+                            }
+                        }
+                    });
+                    ev.emit('A', {message:'A emit message'});    
+                    ev.emit('B', {message:'B emit message'});  
+                    ev.emit('C', {message:'C emit message'});  
+                }
+            }
+            ___define(page);
+        </script>
+    </body>
+
+</html>

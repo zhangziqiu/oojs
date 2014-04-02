@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    
+    <head></head>
+    
+    <body>
+        <div id="log"></div>
+        <script type="text/javascript" src="../source/base.js"></script>
+        <script type="text/javascript" src="../source/event.js"></script>
+        <script type="text/javascript">
+            var page = {
+                name: "page",
+                namespace: "",
+                $page: function () {
+                    this.testEventSingle();
+                },
+                
+                testEventSingle: function(){
+                    var ev = this.base.require('base.event');
+                    ev.bind('A', function(data){
+                        console.log('callback' + ' A ' + 'trigger');
+                        console.log('data:' + data.message);
+                    });
+                    
+                    ev.bind('B', function(data){
+                        console.log('callback' + ' B ' + 'trigger');
+                        console.log('data:' + data.message);
+                    });
+
+                    ev.emit('A', {message:'A emit message'});    
+                    ev.emit('B', {message:'B emit message'});  
+                }
+            }
+            ___define(page);
+        </script>
+    </body>
+
+</html>

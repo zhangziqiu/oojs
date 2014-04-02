@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+    
+    <head></head>
+    
+    <body>
+        <div id="log"></div>
+        <script type="text/javascript" src="../source/base.js"></script>
+        <script type="text/javascript" src="../source/event.js"></script>
+        <script type="text/javascript">
+            var page = {
+                name: "page",
+                namespace: "",
+                $page: function () {
+                    this.testEventSingle();
+                },
+                
+                testEventSingle: function(){
+                    var ev = this.base.require('base.event');
+                    ev.bind('A', function(data){
+                        console.log('callback' + ' A ' + 'trigger');
+                        console.log('data:' + data.message);
+                        return 'A return data';
+                    });
+                    
+                    ev.bind('B', function(data){
+                        console.log('callback' + ' B ' + 'trigger');
+                        console.log('data:' + data.message);
+                        return 'B return data';
+                    });
+                    
+                    ev.bind('C', function(data){
+                        console.log('callback' + ' C ' + 'trigger');
+                        console.log('data:' + data.message);
+                        //在C的callback中, 向group中添加事件D
+                        ev.group('MyGroup', ['D']);                        
+                        return 'C return data';
+                    });
+                    
+                    ev.bind('D', function(data){
+                        console.log('callback' + ' D ' + 'trigger');
+                        console.log('data:' + data.message);
+                        return 'D return data';
+                    });
+
+                    ev.group('MyGroup', ['A','B','C'], function(data){
+                        console.log('group' + ' MyGroup ' + 'trigger');
+                        for(var key in data){
+                            if(key && data.hasOwnProperty(key)){
+                                console.log("key:" + key + ",value:" + data[key])
+                            }
+                        }
+                    });
+                    ev.emit('A', {message:'A emit message'});    
+                    ev.emit('B', {message:'B emit message'});  
+                    ev.emit('C', {message:'C emit message'});  
+                    //在C的callback中, 为MyGroup添加了事件D. 此处延时执行事件D, 会发现MyGroup会等待事件D完毕后再执行.
+                    setTimeout(function(){
+                        ev.emit('D', {message:'D emit message'});  
+                    }, 2000);
+                    
+                }
+            }
+            ___define(page);
+        </script>
+    </body>
+
+</html>

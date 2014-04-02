@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    
+    <head></head>
+    
+    <body>
+        <div id="log"></div>
+        <script type="text/javascript" src="../src/base.js"></script>
+        <script type="text/javascript">
+            var page = {
+                name: "page",
+                namespace: "",
+                $page: function () {
+                    base.load('base.utility.browser', function () {
+                        base.load('base.business.param', function () {
+                            var browserClass = base.using("base.utility.browser");
+                            log.innerHTML = "isWebkit:" + browserClass.isWebkit;
+                            
+                            var paramClass = base.using("base.business.param");
+                            var param1 = base.create(paramClass, {
+                                url: "a.com"
+                            });
+                            var param2 = base.create(paramClass, {
+                                url: "b.com"
+                            });
+                            log.innerHTML += "<br/>" + param1.getUrl();
+                            log.innerHTML += "<br/>" + param2.getUrl();
+                        });
+                    });
+                }
+            }
+
+            define(page);
+        </script>
+    </body>
+
+</html>

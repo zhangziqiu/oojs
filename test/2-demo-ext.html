@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    
+    <head></head>
+    
+    <body>
+        <div id="log"></div>
+        <script type="text/javascript" src="../src/base.js"></script>
+        <script type="text/javascript" src="../src/base/utility/event.js"></script>
+        <script type="text/javascript" src="../src/base/base.ext.js"></script>
+        <script type="text/javascript">
+            var page = {
+                name: "page",
+                namespace: "",
+                deps: {
+                    param: 'base.business.param'
+                },
+                $page: function () {
+                    var param = base.create(this.param, {
+                        url: 'a.com'
+                    });
+                    document.getElementById('log').innerHTML = param.getUrl();
+                }
+            }
+            define(page);
+        </script>
+    </body>
+
+</html>
