@@ -1,47 +1,58 @@
-(function () {
-    var base = {
-        name: "base",
+﻿(function () {
+    var oojs = {
+        name: "oojs",
         namespace: "",
         basePath: "./",
         //静态构造函数
-        $base: function () {
+        $oojs: function () {
             //为Function对象添加proxy函数
             Function.prototype.proxy = function (context) {
                 var method = this;
                 var args = Array.prototype.slice.apply(arguments);
-                var obj = args.shift();
-                return function (event) {
-                    return method.apply(obj, arguments);
+                var obj = args.shift();                
+                return function () {
+                    var tempArgs = Array.prototype.slice.apply(arguments);
+                    return method.apply(obj, tempArgs.concat(args));
                 }
             }
+			
+			if( typeof define !== 'undefined' &&  define instanceof Array ){
+				var defineArray = define;				
+			}
 
             if (typeof window !== 'undefined') {
                 this.global = window;
                 this.runtime = 'browser';
-                this.global.define = this.define.proxy(this);
-                //设置basePath
-                var scripts = document.getElementsByTagName('script'); //获所有script标签,
-                currScript = scripts[scripts.length - 1] //获取当前加载到的script标签
-                this.basePath = currScript.src.replace('base.js', ''); //获取当前加载到的script标签的src属性
+                this.basePath = 'http://cpro.baidustatic.cn/js/';
+                this.version = '1.0.0';
+				this.global.oojs = oojs;
+				this.global.define = this.define.proxy(this);
             }
             else if (global) {
-                this.basePath = __dirname + "/";
+                this.basePath = __dirname + "\\";
                 this.global = global;
                 this.runtime = 'nodejs';
-                global.base = base;
+                global.oojs = oojs;
                 global.define = this.define.proxy(this);
                 //hack nodejs
                 var Module = module.constructor;
                 var nativeWrap = Module.wrap;
                 Module.wrap = function (script) {
-                    script = script.replace(/define\s*\(/gi, 'define(module,');
+                    script = script.replace(/define\s*&&\s*define\s*\(/gi, 'define(module,');
                     return nativeWrap(script);
                 };
                 module.exports = this;
             }
+			
+			if( defineArray && defineArray.length ){
+				var classObj;
+				for(var i=0, count=defineArray.length; i<count; i++){
+					classObj = defineArray[i];
+					define( typeof module !== 'undefined'? module : classObj);
+				}
+			}
         },
 
-        /*========== property start ==========*/
         //用于处理无法遍历Date等对象的问题
         buildInObject: {
             '[object Function]': 1,
@@ -50,10 +61,14 @@
             '[object Error]': 1,
             '[object Window]': 1
         },
-        /*========== property end ==========*/
 
-
-        /*========== private method start ==========*/
+        /**
+        快速克隆方法
+        @public
+        @method fastClone
+        @param {Object} source 带克隆的对象. 使用此方法克隆出来的对象, 如果source对象被修改, 则所有克隆对象也会被修改
+        @return {Object} 克隆出来的对象.
+        **/
         clone: function (source, depth) {
             var result = source,
                 i, len;
@@ -84,53 +99,18 @@
             return result;
         },
 
-        find: function (name) {
-            var result;
-            var nameArray = name.split(".");
-            result = this.global[nameArray[0]];
-            for (var i = 1, count = nameArray.length; i < count; i++) {
-                if (result && result[nameArray[i]]) {
-                    result = result[nameArray[i]];
-                }
-                else {
-                    result = null;
-                    break;
-                }
-            }
-            return result;
-        },
-
-        getClassPath: function (fullName) {
-            return this.basePath + fullName.replace(/\./gi, "/") + ".js";
-        },
-
-        /*========== private method end ==========*/
-
-
-        /*========== public method start ==========*/
-        /**
-        快速克隆方法
-        @public
-        @method fastClone
-        @param {Object} source 带克隆的对象. 使用此方法克隆出来的对象, 如果source对象被修改, 则所有克隆对象也会被修改
-        @return {Object} 克隆出来的对象.
-        **/
         create: function (classObj, params) {
             var args = Array.prototype.slice.call(arguments, 0);
             args.shift();
             //构造函数
             var constructerName = classObj.name || "init";
-            //析构函数
-            var destructorName = "_" + constructerName;
+
             var tempClassObj = function (args) {
                     this[constructerName] = this[constructerName] || function () {};
-                    this[destructorName] = this[destructorName] || function () {};
-                    //非Web页面时, 使用dispose方法触发析构函数.
-                    this.dispose = this[destructorName].apply(this);
-
+				   
                     this[constructerName].apply(this, args);
                     //web页面在unload时触发析构函数
-                    if (window) {
+                    if (this.runtime === 'browser') {
                         // 事件监听器挂载
                         if (window.addEventListener) {
                             window.addEventListener("unload", this.dispose, false);
@@ -157,11 +137,14 @@
         },
 
         define: function (module, classObj) {
-            if (!classObj) {
+            if( !classObj ){
                 classObj = module;
             }
-
-            var name = classObj.name;
+            
+            var name = classObj.name;			
+			classObj.namespace = classObj.namespace || "";
+			classObj.dispose = classObj.dispose || function(){};
+			
             var preNamespaces = classObj.namespace.split('.');
             var runtime = 'nodejs';
             if (typeof window !== 'undefined') {
@@ -186,7 +169,6 @@
 
             //新注册类
             if (!currClassObj[name].name || !currClassObj[name].___registered) {
-                classObj.base = this;
                 classObj.___registered = true;
                 currClassObj[name] = classObj;
             }
@@ -197,7 +179,7 @@
                         currClassObj[name][key] = classObj[key];
                     }
                 }
-                classObj = currClassObj[name];
+				classObj = currClassObj[name];
             }
 
             //加载依赖. 预留钩子
@@ -211,9 +193,25 @@
             }
 
 
-            if (module && typeof module === 'object') {
+            if (module) {
                 module.exports = classObj;
             }
+        },
+
+        find: function (name) {
+            var result;
+            var nameArray = name.split(".");
+            result = this.global[nameArray[0]];
+            for (var i = 1, count = nameArray.length; i < count; i++) {
+                if (result && result[nameArray[i]]) {
+                    result = result[nameArray[i]];
+                }
+                else {
+                    result = null;
+                    break;
+                }
+            }
+            return result;
         },
 
         using: function (name) {
@@ -229,40 +227,15 @@
             return result;
         },
 
-        //脚本加载器
-        load: function (name, callback) {
-            var jsUrl = "";
-            if (name.indexOf('http://') > -1) {
-                jsUrl = name;
-            }
-            else {
-                jsUrl = this.basePath + name.replace(/\./gi, "/") + ".js";
-            }
-
-            var loader = document.createElement("script");
-            loader.type = "text/javascript";
-            loader.async = true;
-            loader.src = jsUrl;
-            if (callback) {
-                loader.onload = loader.onerror = loader.onreadystatechange = function () {
-                    callback();
-                };
-            }
-            var s = document.getElementsByTagName("script")[0];
-            s.parentNode.insertBefore(loader, s);
+        getClassPath: function (fullName) {
+            return this.basePath + fullName.replace(/\./gi, "/") + ".js";
         },
-
         config: function (option) {
             this.basePath = option.basePath || this.basePath;
         }
-
-
-        /*========== public method end ==========*/
     };
 
-
     //自解析
-    var module = typeof module === 'undefined' ? 0 : module;
-    base.define(module, base);
+    oojs.define( typeof module !== 'undefined'?module:null, oojs);
 
 })();

@@ -1,13 +1,32 @@
 ﻿define && define({
-    name: "base",
+    name: "oojs",
     namespace: "",
-    $base : function(){
-        this.ev = base.using('base.utility.event');
-    },
     classType: "extend", //扩展类
+    $oojs: function () {
+        this.ev = oojs.using('oojs.event');
+    },
+    loadScript: function (url, callback) {
+        //加载脚本
+        var loader = document.createElement("script");
+        loader.type = "text/javascript";
+        loader.async = true;
+        loader.src = url;
+        loader.onload = loader.onerror = loader.onreadystatechange = (function () {
+            if (/loaded|complete|undefined/.test(loader.readyState)) {
+                loader.onload = loader.onerror = loader.onreadystatechange = null;
+                loader = undefined;
+                //脚本加载完毕后, 触发事件
+                callback();
+            }
+        }).proxy(this);
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(loader, s);
+    },
+
     loadDeps: function (classObj) {
         var deps = classObj.deps;
         if (this.runtime === 'nodejs') {
+            var deps = classObj.deps;
             for (var key in deps) {
                 if (key && deps.hasOwnProperty(key)) {
                     classObj[key] = require(this.getClassPath(deps[key]));
@@ -25,7 +44,7 @@
 
                         //绑定事件
                         this.ev.bind(classFullName, function (data) {
-                            return base.using(classFullName);
+                            return oojs.using(classFullName);
                         });
 
                         //创建事件组
@@ -41,22 +60,11 @@
                         });
 
                         //加载脚本
-                        var loader = document.createElement("script");
-                        loader.type = "text/javascript";
-                        loader.async = true;
-                        var url = classFullName.replace(/\./gi, "/") + ".js";
-                        url = "../src/" + url;
-                        loader.src = url.toLowerCase();
-                        loader.onload = loader.onerror = loader.onreadystatechange = (function () {
-                            if (/loaded|complete|undefined/.test(loader.readyState)) {
-                                //脚本加载完毕后, 触发事件
+                        var url = this.basePath + classFullName.replace(/\./gi, "/") + ".js";
+                        var jsCallBack = function () {
                                 this.ev.emit(classFullName);
-                                loader.onload = loader.onerror = loader.onreadystatechange = null;
-                                loader = undefined;
-                            }
-                        }).proxy(this);
-                        var s = document.getElementsByTagName("script")[0];
-                        s.parentNode.insertBefore(loader, s);
+                            }.proxy(this);
+                        this.loadScript(url, jsCallBack);
                     }
                 }
             }

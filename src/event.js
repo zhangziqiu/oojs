@@ -1,7 +1,7 @@
 define && define({
     /**
     event类用于处理事件. 自身使用oojs框架实现. 内部实现全部oo化.
-    var ev = base.create('base.event', );
+    var ev = oojs.create('oojs.event', );
     单事件绑定:
     ev.bind('eventA', function(data){
         console.log(data);
@@ -30,7 +30,7 @@ define && define({
     
      */
     name: "event",
-    namespace: "base.utility",
+    namespace: "oojs",
     /** 
     事件集合. 记录所有绑定的事件.
     格式为: 
@@ -82,22 +82,49 @@ define && define({
         return this;
     },
 
+	/**
+     * 为事件取消绑定事件处理函数
+     * @param {string} eventName 事件名     
+     * @param {Function} callback 事件处理函数
+     */
+    removeListener: function (eventName, callback) {
+        if (this.eventList[eventName]) {
+            var ev = this.eventList[eventName];
+            if (ev.callbacks && ev.callbacks.length) {
+                for (var i = 0, count = ev.callbacks.length; i < count; i++) {
+                    if (callback) {
+                        if (callback === ev.callbacks[i]) {
+                            ev.callbacks[i] = null;
+                            break;
+                        }
+
+                    }
+                    else {
+                        ev.callbacks[i] = null;
+                        continue;
+                    }
+
+                }
+            }
+        }
+    },
+
     /**
      * 为事件取消绑定事件处理函数
      * @param {string} eventName 事件名     
      * @param {Function} callback 事件处理函数
      */
     unbind: function (eventName, callback) {
-        if (this.eventList[eventName]) {
-            var ev = this.eventList[eventName];
-            if (ev.callbacks && ev.callbacks.length) {
-                for (var i = 0, count = ev.callbacks.length; i < count; i++) {
-                    if (callback === ev.callbacks[i]) {
-                        ev.callbacks[i] = null;
-                        break;
-                    }
+        if (!eventName && !callback) { //移除所有的事件处理函数
+            var key;
+            for (key in this.eventList) {
+                if (key && this.eventList[key] && this.eventList.hasOwnProperty(key)) {
+                    this.removeListener(key);
                 }
             }
+        }
+        else {
+            this.removeListener(eventName, callback);
         }
     },
 
