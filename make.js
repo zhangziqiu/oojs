@@ -64,7 +64,7 @@ var make = {
     },
 
     preinstall: function (callback) {
-		console.log('can not find "uglify-js", installing......');
+        console.log('can not find "uglify-js", installing......');
         var cp = require('child_process');
         cp.exec('cnpm install uglify-js', function (err, stdout, stderr) {
             console.log(stdout);
@@ -75,8 +75,8 @@ var make = {
 
 
     build: function () {
-		console.log('building......');
-		
+        console.log('building......');
+
         //获取合并后的文件字符串
         var sourceString = this.compile();
         var fs = require('fs');
@@ -92,8 +92,8 @@ var make = {
         ast.print(this.source.stream);
         this.source.result = this.source.stream.toString();
         fs.writeFileSync(this.source.path, this.source.result);
-		console.log('compile :' + this.source.path + '" successful!');
-		
+        console.log('compile :' + this.source.path + '" successful!');
+
         //format
         this.format.stream = uglify.OutputStream({
             beautify: true,
@@ -103,28 +103,31 @@ var make = {
         ast.print(this.format.stream);
         this.format.result = this.format.stream.toString();
         fs.writeFileSync(this.format.path, this.format.result);
-		console.log('compile :' + this.format.path + '" successful!');
+        console.log('compile :' + this.format.path + '" successful!');
 
         //compress
         this.compress.result = uglify.minify(this.source.result, {
             fromString: true
         }).code;
         fs.writeFileSync(this.compress.path, this.compress.result);
-		console.log('compile :' + this.compress.path + '" successful!');
+        console.log('compile :' + this.compress.path + '" successful!');
 
         //gzip
         //首先将compress的结果写入文件
-        fs.writeFileSync(this.gzip.path, this.compress.result);
+        fs.writeFileSync(this.gzip.path + "_temp", this.compress.result);
         var zlib = require('zlib');
         var gz = zlib.createGzip({
             level: 9
         })
-        var inp = fs.createReadStream(this.gzip.path);
+        var inp = fs.createReadStream(this.gzip.path + "_temp");
         var out = fs.createWriteStream(this.gzip.path);
         inp.pipe(gz).pipe(out);
-		console.log('compile :' + this.gzip.path + '" successful!');
+        console.log('compile :' + this.gzip.path + '" successful!');
+        fs.unlinkSync(this.gzip.path + "_temp");
 		
-		console.log('build finished');
+
+
+        console.log('build finished');
     }
 }
 

@@ -1,7 +1,7 @@
 define && define({
     /**
     event类用于处理事件. 自身使用oojs框架实现. 内部实现全部oo化.
-    var ev = oojs.create('oojs.event', );
+    var ev = oojs.create(oojs.event, );
     单事件绑定:
     ev.bind('eventA', function(data){
         console.log(data);
@@ -43,7 +43,7 @@ define && define({
         }
     }
     */
-    eventList: {},
+    eventList: null,
 
     /** 
     事件组集合. 记录所有事件组的绑定关系
@@ -56,18 +56,27 @@ define && define({
             } 
         }
     */
-    groupList: {},
+    groupList: null,
 
     /**
     事件组查询索引器. 
     */
-    eventGroupIndexer: {},
+    eventGroupIndexer: null,
 
     /**
      * 静态构造函数
      */
     $event: function () {
 
+    },
+	
+	/**
+     * 动态构造函数
+     */
+    event: function () {
+		this.eventList = {};
+		this.groupList = {};
+		this.eventGroupIndexer = {};
     },
 
     /**
@@ -216,6 +225,7 @@ define && define({
         //执行group的回调函数
         if (groupFinished) {
             //处理callback回调函数数组
+			group.callbacks = group.callbacks || [];
             var callbacks = group.callbacks;
             var count = callbacks.length || 0;
             var callback;

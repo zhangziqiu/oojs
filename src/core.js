@@ -1,35 +1,39 @@
 ﻿(function () {
+    /**
+     *   oojs核心, 提供面向对象编程方式.
+     **/
     var oojs = {
         name: "oojs",
         namespace: "",
-        basePath: "./",
-        //静态构造函数
+        /**
+         * 静态构造函数
+         */
         $oojs: function () {
             //为Function对象添加proxy函数
             Function.prototype.proxy = function (context) {
                 var method = this;
                 var args = Array.prototype.slice.apply(arguments);
-                var obj = args.shift();                
+                var obj = args.shift();
                 return function () {
                     var tempArgs = Array.prototype.slice.apply(arguments);
                     return method.apply(obj, tempArgs.concat(args));
                 }
             }
-			
-			if( typeof define !== 'undefined' &&  define instanceof Array ){
-				var defineArray = define;				
-			}
+
+            if (typeof define !== 'undefined' && define instanceof Array) {
+                var defineArray = define;
+            }
 
             if (typeof window !== 'undefined') {
                 this.global = window;
                 this.runtime = 'browser';
                 this.basePath = 'http://cpro.baidustatic.cn/js/';
                 this.version = '1.0.0';
-				this.global.oojs = oojs;
-				this.global.define = this.define.proxy(this);
+                this.global.oojs = oojs;
+                this.global.define = this.define.proxy(this);
             }
             else if (global) {
-                this.basePath = __dirname + "\\";
+                this.basePath = __dirname + "/";
                 this.global = global;
                 this.runtime = 'nodejs';
                 global.oojs = oojs;
@@ -43,14 +47,14 @@
                 };
                 module.exports = this;
             }
-			
-			if( defineArray && defineArray.length ){
-				var classObj;
-				for(var i=0, count=defineArray.length; i<count; i++){
-					classObj = defineArray[i];
-					define( typeof module !== 'undefined'? module : classObj);
-				}
-			}
+
+            if (defineArray && defineArray.length) {
+                var classObj;
+                for (var i = 0, count = defineArray.length; i < count; i++) {
+                    classObj = defineArray[i];
+                    define(typeof module !== 'undefined' ? module : classObj);
+                }
+            }
         },
 
         //用于处理无法遍历Date等对象的问题
@@ -63,42 +67,26 @@
         },
 
         /**
-        快速克隆方法
-        @public
-        @method fastClone
-        @param {Object} source 带克隆的对象. 使用此方法克隆出来的对象, 如果source对象被修改, 则所有克隆对象也会被修改
-        @return {Object} 克隆出来的对象.
-        **/
-        clone: function (source, depth) {
-            var result = source,
-                i, len;
-
-            depth = typeof depth === "undefined" ? 0 : depth--;
-
-            if (!source || source instanceof Number || source instanceof String || source instanceof Boolean || depth === 0) {
-                return result;
-            }
-            else if (source instanceof Array) {
-                result = [];
-                var resultLen = 0;
-                for (i = 0, len = source.length; i < len; i++) {
-                    result[resultLen++] = this.clone(source[i]);
-                }
-            }
-            else if ('object' === typeof source) {
-                if (this.buildInObject[Object.prototype.toString.call(source)]) {
-                    return result;
-                }
-                result = {};
-                for (i in source) {
-                    if (source.hasOwnProperty(i)) {
-                        result[i] = this.clone(source[i]);
-                    }
-                }
-            }
-            return result;
+         * 快速克隆方法
+         * @public
+         * @method fastClone
+         * @param {Object} source 带克隆的对象. 使用此方法克隆出来的对象, 如果source对象被修改, 则所有克隆对象也会被修改
+         * @return {Object} 克隆出来的对象.
+         */
+        fastClone: function (source) {
+            var temp = function () {};
+            temp.prototype = source;
+            var result = new temp();
         },
 
+        /**
+         * 创建一个类实例.  var a = oojs.create(classA, 'a');
+         * @public
+         * @method create
+         * @param {Object} classObj 类对象
+         * @param {params} 动态构造函数的参数
+         * @return {Object} 类实例
+         */
         create: function (classObj, params) {
             var args = Array.prototype.slice.call(arguments, 0);
             args.shift();
@@ -107,44 +95,54 @@
 
             var tempClassObj = function (args) {
                     this[constructerName] = this[constructerName] || function () {};
-				   
                     this[constructerName].apply(this, args);
-                    //web页面在unload时触发析构函数
-                    if (this.runtime === 'browser') {
-                        // 事件监听器挂载
-                        if (window.addEventListener) {
-                            window.addEventListener("unload", this.dispose, false);
-                        }
-                        else if (window.attachEvent) {
-                            window.attachEvent('onunload', this.dispose);
-                        }
-                    }
                 };
 
             tempClassObj.prototype = classObj;
             var result = new tempClassObj(args);
-            //如果类的某一个属性是对象, 则需要克隆
-            for (var classPropertyName in classObj) {
-                if (result[classPropertyName] && classObj[classPropertyName] && classObj.hasOwnProperty(classPropertyName) && typeof result[classPropertyName] === "object") {
-                    result[classPropertyName] = this.clone(result[classPropertyName], 1);
+			//web页面在unload时触发析构函数
+            result.dispose = result.dispose || function () {};
+            if (this.runtime === 'browser') {
+                // 事件监听器挂载
+                if (window.addEventListener) {
+                    window.addEventListener("unload", result.dispose.proxy(result), false);
+                }
+                else if (window.attachEvent) {
+                    window.attachEvent('onunload', result.dispose.proxy(result));
                 }
             }
+
+
+            //如果类的某一个属性是对象,并且是纯数据对象(继承自Object), 则需要克隆
+            for (var classPropertyName in classObj) {
+                if (result[classPropertyName] && classObj[classPropertyName] && classObj.hasOwnProperty(classPropertyName) && typeof result[classPropertyName] === "object") {
+                    result[classPropertyName] = this.fastClone(result[classPropertyName]);
+                }
+            }
+
             result.instances = null;
-            //类上记录所有类实例的引用
-            classObj.instances = classObj.instances || [];
-            classObj.instances.push(result);
+            //todo 类上记录所有类实例的引用, 以便进行垃圾回收
+            //classObj.instances = classObj.instances || [];
+            //classObj.instances.push(result);
             return result;
         },
 
+        /**
+         * 定义一个类. 第一个参数module在node中由系统自动传递. 即开发人员只需要传递一个参数classObj
+         * @public
+         * @param {Object} module node模式中的module对象
+         * @param {Object} classObj 类对象
+         * @return {Object} oojs引用
+         */
         define: function (module, classObj) {
-            if( !classObj ){
+            if (!classObj) {
                 classObj = module;
             }
-            
-            var name = classObj.name;			
-			classObj.namespace = classObj.namespace || "";
-			classObj.dispose = classObj.dispose || function(){};
-			
+
+            var name = classObj.name;
+            classObj.namespace = classObj.namespace || "";
+            classObj.dispose = classObj.dispose || function () {};
+
             var preNamespaces = classObj.namespace.split('.');
             var runtime = 'nodejs';
             if (typeof window !== 'undefined') {
@@ -179,7 +177,7 @@
                         currClassObj[name][key] = classObj[key];
                     }
                 }
-				classObj = currClassObj[name];
+                classObj = currClassObj[name];
             }
 
             //加载依赖. 预留钩子
@@ -196,8 +194,16 @@
             if (module) {
                 module.exports = classObj;
             }
+
+            return this;
         },
 
+		/**
+         * 从全局对象上, 根据命名空间查找类对象
+		 * @public
+         * @param {string} name 类的全限定性名(命名空间+类名, 比如 a.b.c)
+         * @return {Object} 类引用
+         */
         find: function (name) {
             var result;
             var nameArray = name.split(".");
@@ -214,6 +220,12 @@
             return result;
         },
 
+		/**
+         * 获取类引用. 在node模式下回加载类. 在browser模式下只是执行find查找.
+		 * @public
+         * @param {string} name 类的全限定性名(命名空间+类名, 比如 a.b.c)
+         * @return {Object} 类引用
+         */
         using: function (name) {
             var result = this.find(name);
             if (!result) {
@@ -227,15 +239,30 @@
             return result;
         },
 
-        getClassPath: function (fullName) {
-            return this.basePath + fullName.replace(/\./gi, "/") + ".js";
+		/**
+         * 获取类的资源文件相对路径
+		 * @public
+         * @param {string} name 类的全限定性名(命名空间+类名, 比如 a.b.c)
+         * @return {string} 资源文件的相对路径(比如 /a/b/c.js)
+         */
+        getClassPath: function (name) {
+            return this.basePath + name.replace(/\./gi, "/") + ".js";
         },
+		
+		/**
+         * oojs配置函数.
+		 * @public
+         * @param {object} option 配置文件对象
+		 * @param {string} option.basePath 根目录地址.
+         * @return {object} oojs对象引用
+         */
         config: function (option) {
             this.basePath = option.basePath || this.basePath;
+			return this;
         }
     };
 
     //自解析
-    oojs.define( typeof module !== 'undefined'?module:null, oojs);
+    oojs.define(typeof module !== 'undefined' ? module : null, oojs);
 
 })();

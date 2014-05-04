@@ -2,7 +2,6 @@
     var oojs = {
         name: "oojs",
         namespace: "",
-        basePath: "./",
         $oojs: function() {
             Function.prototype.proxy = function(context) {
                 var method = this;
@@ -24,7 +23,7 @@
                 this.global.oojs = oojs;
                 this.global.define = this.define.proxy(this);
             } else if (global) {
-                this.basePath = __dirname + "\\";
+                this.basePath = __dirname + "/";
                 this.global = global;
                 this.runtime = "nodejs";
                 global.oojs = oojs;
@@ -52,29 +51,10 @@
             "[object Error]": 1,
             "[object Window]": 1
         },
-        clone: function(source, depth) {
-            var result = source, i, len;
-            depth = typeof depth === "undefined" ? 0 : depth--;
-            if (!source || source instanceof Number || source instanceof String || source instanceof Boolean || depth === 0) {
-                return result;
-            } else if (source instanceof Array) {
-                result = [];
-                var resultLen = 0;
-                for (i = 0, len = source.length; i < len; i++) {
-                    result[resultLen++] = this.clone(source[i]);
-                }
-            } else if ("object" === typeof source) {
-                if (this.buildInObject[Object.prototype.toString.call(source)]) {
-                    return result;
-                }
-                result = {};
-                for (i in source) {
-                    if (source.hasOwnProperty(i)) {
-                        result[i] = this.clone(source[i]);
-                    }
-                }
-            }
-            return result;
+        fastClone: function(source) {
+            var temp = function() {};
+            temp.prototype = source;
+            var result = new temp();
         },
         create: function(classObj, params) {
             var args = Array.prototype.slice.call(arguments, 0);
@@ -83,24 +63,23 @@
             var tempClassObj = function(args) {
                 this[constructerName] = this[constructerName] || function() {};
                 this[constructerName].apply(this, args);
-                if (this.runtime === "browser") {
-                    if (window.addEventListener) {
-                        window.addEventListener("unload", this.dispose, false);
-                    } else if (window.attachEvent) {
-                        window.attachEvent("onunload", this.dispose);
-                    }
-                }
             };
             tempClassObj.prototype = classObj;
             var result = new tempClassObj(args);
+            result.dispose = result.dispose || function() {};
+            if (this.runtime === "browser") {
+                if (window.addEventListener) {
+                    window.addEventListener("unload", result.dispose.proxy(result), false);
+                } else if (window.attachEvent) {
+                    window.attachEvent("onunload", result.dispose.proxy(result));
+                }
+            }
             for (var classPropertyName in classObj) {
                 if (result[classPropertyName] && classObj[classPropertyName] && classObj.hasOwnProperty(classPropertyName) && typeof result[classPropertyName] === "object") {
-                    result[classPropertyName] = this.clone(result[classPropertyName], 1);
+                    result[classPropertyName] = this.fastClone(result[classPropertyName]);
                 }
             }
             result.instances = null;
-            classObj.instances = classObj.instances || [];
-            classObj.instances.push(result);
             return result;
         },
         define: function(module, classObj) {
@@ -147,6 +126,7 @@
             if (module) {
                 module.exports = classObj;
             }
+            return this;
         },
         find: function(name) {
             var result;
@@ -172,11 +152,12 @@
             }
             return result;
         },
-        getClassPath: function(fullName) {
-            return this.basePath + fullName.replace(/\./gi, "/") + ".js";
+        getClassPath: function(name) {
+            return this.basePath + name.replace(/\./gi, "/") + ".js";
         },
         config: function(option) {
             this.basePath = option.basePath || this.basePath;
+            return this;
         }
     };
     oojs.define(typeof module !== "undefined" ? module : null, oojs);
@@ -185,10 +166,15 @@
 define && define({
     name: "event",
     namespace: "oojs",
-    eventList: {},
-    groupList: {},
-    eventGroupIndexer: {},
+    eventList: null,
+    groupList: null,
+    eventGroupIndexer: null,
     $event: function() {},
+    event: function() {
+        this.eventList = {};
+        this.groupList = {};
+        this.eventGroupIndexer = {};
+    },
     bind: function(eventName, callback) {
         var ev = this.eventList[eventName] = this.eventList[eventName] || {};
         (ev.callbacks = ev.callbacks || []).push(callback);
@@ -282,6 +268,7 @@ define && define({
         }
         eventName = null;
         if (groupFinished) {
+            group.callbacks = group.callbacks || [];
             var callbacks = group.callbacks;
             var count = callbacks.length || 0;
             var callback;
@@ -320,22 +307,48 @@ define && define({
     namespace: "",
     classType: "extend",
     $oojs: function() {
-        this.ev = oojs.using("oojs.event");
+        this.ev = oojs.create(oojs.event);
     },
-    loadScript: function(url, callback) {
+    loadScript: function(url, version, callback) {
+        if (typeof version === "function") {
+            callback = version;
+            version = "1.0.0";
+        }
+        version = version || "1.0.0";
+        if (url.indexOf("http") < 0) {
+            url = this.basePath + url.replace(/\./g, "/") + ".js";
+        }
+        if (version) {
+            url += "?v=" + version;
+        }
+        callback = callback || function() {};
+        this.ev.bind(url, function(data, callback) {
+            callback && callback();
+        }.proxy(this, callback));
+        this.loading = this.loading || {};
+        if (this.loading[url]) {
+            return;
+        }
+        this.loading[url] = 1;
         var loader = document.createElement("script");
         loader.type = "text/javascript";
         loader.async = true;
         loader.src = url;
-        loader.onload = loader.onerror = loader.onreadystatechange = function() {
+        loader.onload = loader.onerror = loader.onreadystatechange = function(e, url, loader) {
+            if (typeof e === "string") {
+                url = e;
+                loader = url;
+            }
             if (/loaded|complete|undefined/.test(loader.readyState)) {
                 loader.onload = loader.onerror = loader.onreadystatechange = null;
                 loader = undefined;
-                callback();
+                console.log(url);
+                this.ev.emit(url, 1);
             }
-        }.proxy(this);
+        }.proxy(this, url, loader);
         var s = document.getElementsByTagName("script")[0];
         s.parentNode.insertBefore(loader, s);
+        return this;
     },
     loadDeps: function(classObj) {
         var deps = classObj.deps;
@@ -353,20 +366,26 @@ define && define({
                 for (var key in deps) {
                     if (key && deps.hasOwnProperty(key)) {
                         var classFullName = deps[key];
-                        this.ev.bind(classFullName, function(data) {
+                        var loadedClass = this.using(classFullName);
+                        if (loadedClass) {
+                            classObj[key] = loadedClass;
+                            continue;
+                        }
+                        this.ev.bind(classFullName, function(data, classFullName) {
                             return oojs.using(classFullName);
-                        });
-                        this.ev.group("loadDeps", [ classFullName ], function(data) {
+                        }.proxy(this, classFullName));
+                        this.ev.group("loadDeps", [ classFullName ], function(data, key, classFullName, classObj) {
                             classObj[key] = data[classFullName][0];
-                        });
-                        this.ev.afterGroup("loadDeps", function() {
+                        }.proxy(this, key, classFullName, classObj));
+                        this.ev.afterGroup("loadDeps", function(data, lassObj) {
                             var staticConstructorName = "$" + classObj.name;
                             classObj[staticConstructorName] && classObj[staticConstructorName]();
-                        });
+                        }.proxy(this, classObj));
                         var url = this.basePath + classFullName.replace(/\./gi, "/") + ".js";
-                        var jsCallBack = function() {
+                        var jsCallBack = function(classFullName) {
+                            console.log(classFullName);
                             this.ev.emit(classFullName);
-                        }.proxy(this);
+                        }.proxy(this, classFullName);
                         this.loadScript(url, jsCallBack);
                     }
                 }
@@ -374,5 +393,6 @@ define && define({
                 classObj[staticConstructorName] && classObj[staticConstructorName]();
             }
         }
+        return this;
     }
 });

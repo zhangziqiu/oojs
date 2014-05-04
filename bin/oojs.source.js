@@ -1,9 +1,13 @@
 (function() {
+    /**
+     *   oojs核心, 提供面向对象编程方式.
+     **/
     var oojs = {
         name: "oojs",
         namespace: "",
-        basePath: "./",
-        //静态构造函数
+        /**
+         * 静态构造函数
+         */
         $oojs: function() {
             //为Function对象添加proxy函数
             Function.prototype.proxy = function(context) {
@@ -26,7 +30,7 @@
                 this.global.oojs = oojs;
                 this.global.define = this.define.proxy(this);
             } else if (global) {
-                this.basePath = __dirname + "\\";
+                this.basePath = __dirname + "/";
                 this.global = global;
                 this.runtime = "nodejs";
                 global.oojs = oojs;
@@ -57,36 +61,25 @@
             "[object Window]": 1
         },
         /**
-        快速克隆方法
-        @public
-        @method fastClone
-        @param {Object} source 带克隆的对象. 使用此方法克隆出来的对象, 如果source对象被修改, 则所有克隆对象也会被修改
-        @return {Object} 克隆出来的对象.
-        **/
-        clone: function(source, depth) {
-            var result = source, i, len;
-            depth = typeof depth === "undefined" ? 0 : depth--;
-            if (!source || source instanceof Number || source instanceof String || source instanceof Boolean || depth === 0) {
-                return result;
-            } else if (source instanceof Array) {
-                result = [];
-                var resultLen = 0;
-                for (i = 0, len = source.length; i < len; i++) {
-                    result[resultLen++] = this.clone(source[i]);
-                }
-            } else if ("object" === typeof source) {
-                if (this.buildInObject[Object.prototype.toString.call(source)]) {
-                    return result;
-                }
-                result = {};
-                for (i in source) {
-                    if (source.hasOwnProperty(i)) {
-                        result[i] = this.clone(source[i]);
-                    }
-                }
-            }
-            return result;
+         * 快速克隆方法
+         * @public
+         * @method fastClone
+         * @param {Object} source 带克隆的对象. 使用此方法克隆出来的对象, 如果source对象被修改, 则所有克隆对象也会被修改
+         * @return {Object} 克隆出来的对象.
+         */
+        fastClone: function(source) {
+            var temp = function() {};
+            temp.prototype = source;
+            var result = new temp();
         },
+        /**
+         * 创建一个类实例.  var a = oojs.create(classA, 'a');
+         * @public
+         * @method create
+         * @param {Object} classObj 类对象
+         * @param {params} 动态构造函数的参数
+         * @return {Object} 类实例
+         */
         create: function(classObj, params) {
             var args = Array.prototype.slice.call(arguments, 0);
             args.shift();
@@ -95,30 +88,38 @@
             var tempClassObj = function(args) {
                 this[constructerName] = this[constructerName] || function() {};
                 this[constructerName].apply(this, args);
-                //web页面在unload时触发析构函数
-                if (this.runtime === "browser") {
-                    // 事件监听器挂载
-                    if (window.addEventListener) {
-                        window.addEventListener("unload", this.dispose, false);
-                    } else if (window.attachEvent) {
-                        window.attachEvent("onunload", this.dispose);
-                    }
-                }
             };
             tempClassObj.prototype = classObj;
             var result = new tempClassObj(args);
-            //如果类的某一个属性是对象, 则需要克隆
+            //web页面在unload时触发析构函数
+            result.dispose = result.dispose || function() {};
+            if (this.runtime === "browser") {
+                // 事件监听器挂载
+                if (window.addEventListener) {
+                    window.addEventListener("unload", result.dispose.proxy(result), false);
+                } else if (window.attachEvent) {
+                    window.attachEvent("onunload", result.dispose.proxy(result));
+                }
+            }
+            //如果类的某一个属性是对象,并且是纯数据对象(继承自Object), 则需要克隆
             for (var classPropertyName in classObj) {
                 if (result[classPropertyName] && classObj[classPropertyName] && classObj.hasOwnProperty(classPropertyName) && typeof result[classPropertyName] === "object") {
-                    result[classPropertyName] = this.clone(result[classPropertyName], 1);
+                    result[classPropertyName] = this.fastClone(result[classPropertyName]);
                 }
             }
             result.instances = null;
-            //类上记录所有类实例的引用
-            classObj.instances = classObj.instances || [];
-            classObj.instances.push(result);
+            //todo 类上记录所有类实例的引用, 以便进行垃圾回收
+            //classObj.instances = classObj.instances || [];
+            //classObj.instances.push(result);
             return result;
         },
+        /**
+         * 定义一个类. 第一个参数module在node中由系统自动传递. 即开发人员只需要传递一个参数classObj
+         * @public
+         * @param {Object} module node模式中的module对象
+         * @param {Object} classObj 类对象
+         * @return {Object} oojs引用
+         */
         define: function(module, classObj) {
             if (!classObj) {
                 classObj = module;
@@ -168,7 +169,14 @@
             if (module) {
                 module.exports = classObj;
             }
+            return this;
         },
+        /**
+         * 从全局对象上, 根据命名空间查找类对象
+		 * @public
+         * @param {string} name 类的全限定性名(命名空间+类名, 比如 a.b.c)
+         * @return {Object} 类引用
+         */
         find: function(name) {
             var result;
             var nameArray = name.split(".");
@@ -183,6 +191,12 @@
             }
             return result;
         },
+        /**
+         * 获取类引用. 在node模式下回加载类. 在browser模式下只是执行find查找.
+		 * @public
+         * @param {string} name 类的全限定性名(命名空间+类名, 比如 a.b.c)
+         * @return {Object} 类引用
+         */
         using: function(name) {
             var result = this.find(name);
             if (!result) {
@@ -195,11 +209,25 @@
             }
             return result;
         },
-        getClassPath: function(fullName) {
-            return this.basePath + fullName.replace(/\./gi, "/") + ".js";
+        /**
+         * 获取类的资源文件相对路径
+		 * @public
+         * @param {string} name 类的全限定性名(命名空间+类名, 比如 a.b.c)
+         * @return {string} 资源文件的相对路径(比如 /a/b/c.js)
+         */
+        getClassPath: function(name) {
+            return this.basePath + name.replace(/\./gi, "/") + ".js";
         },
+        /**
+         * oojs配置函数.
+		 * @public
+         * @param {object} option 配置文件对象
+		 * @param {string} option.basePath 根目录地址.
+         * @return {object} oojs对象引用
+         */
         config: function(option) {
             this.basePath = option.basePath || this.basePath;
+            return this;
         }
     };
     //自解析
@@ -209,7 +237,7 @@
 define && define({
     /**
     event类用于处理事件. 自身使用oojs框架实现. 内部实现全部oo化.
-    var ev = oojs.create('oojs.event', );
+    var ev = oojs.create(oojs.event, );
     单事件绑定:
     ev.bind('eventA', function(data){
         console.log(data);
@@ -251,7 +279,7 @@ define && define({
         }
     }
     */
-    eventList: {},
+    eventList: null,
     /** 
     事件组集合. 记录所有事件组的绑定关系
     格式为: 
@@ -263,15 +291,23 @@ define && define({
             } 
         }
     */
-    groupList: {},
+    groupList: null,
     /**
     事件组查询索引器. 
     */
-    eventGroupIndexer: {},
+    eventGroupIndexer: null,
     /**
      * 静态构造函数
      */
     $event: function() {},
+    /**
+     * 动态构造函数
+     */
+    event: function() {
+        this.eventList = {};
+        this.groupList = {};
+        this.eventGroupIndexer = {};
+    },
     /**
      * 为事件添加事件处理函数
      * @param {string} eventName 事件名     
@@ -405,6 +441,7 @@ define && define({
         //执行group的回调函数
         if (groupFinished) {
             //处理callback回调函数数组
+            group.callbacks = group.callbacks || [];
             var callbacks = group.callbacks;
             var count = callbacks.length || 0;
             var callback;
@@ -445,30 +482,74 @@ define && define({
 });
 
 define && define({
+    /**
+     * 类加载器. 使用oojs.event实现. 
+     * 当类A以类B, 类B依赖类C时, 会递归加载所有的依赖类, 当所有的依赖类都加载完毕后, 执行类A的静态构造函数.
+     */
     name: "oojs",
     namespace: "",
     classType: "extend",
     //扩展类
     $oojs: function() {
-        this.ev = oojs.using("oojs.event");
+        this.ev = oojs.create(oojs.event);
     },
-    loadScript: function(url, callback) {
+    /**
+     * 异步加载js文件
+     * @public
+     * @param {string} url js文件的url路径
+     * @param {string} version 文件的版本号.不传递则默认为1.0.0
+     * @param {Function} callback js加载完毕后的回调函数
+	 * @return {object} oojs对象引用
+     */
+    loadScript: function(url, version, callback) {
+        if (typeof version === "function") {
+            callback = version;
+            version = "1.0.0";
+        }
+        version = version || "1.0.0";
+        if (url.indexOf("http") < 0) {
+            url = this.basePath + url.replace(/\./g, "/") + ".js";
+        }
+        if (version) {
+            url += "?v=" + version;
+        }
+        callback = callback || function() {};
+        this.ev.bind(url, function(data, callback) {
+            callback && callback();
+        }.proxy(this, callback));
+        this.loading = this.loading || {};
+        if (this.loading[url]) {
+            return;
+        }
+        this.loading[url] = 1;
         //加载脚本
         var loader = document.createElement("script");
         loader.type = "text/javascript";
         loader.async = true;
         loader.src = url;
-        loader.onload = loader.onerror = loader.onreadystatechange = function() {
+        loader.onload = loader.onerror = loader.onreadystatechange = function(e, url, loader) {
+            if (typeof e === "string") {
+                url = e;
+                loader = url;
+            }
             if (/loaded|complete|undefined/.test(loader.readyState)) {
                 loader.onload = loader.onerror = loader.onreadystatechange = null;
                 loader = undefined;
                 //脚本加载完毕后, 触发事件
-                callback();
+                console.log(url);
+                this.ev.emit(url, 1);
             }
-        }.proxy(this);
+        }.proxy(this, url, loader);
         var s = document.getElementsByTagName("script")[0];
         s.parentNode.insertBefore(loader, s);
+        return this;
     },
+    /**
+     * 加载类依赖
+     * @public
+     * @param {object} classObj 类对象
+	 * @return {object} oojs对象引用
+     */
     loadDeps: function(classObj) {
         var deps = classObj.deps;
         if (this.runtime === "nodejs") {
@@ -485,25 +566,32 @@ define && define({
                 for (var key in deps) {
                     if (key && deps.hasOwnProperty(key)) {
                         var classFullName = deps[key];
+                        //已经加载完毕的模块
+                        var loadedClass = this.using(classFullName);
+                        if (loadedClass) {
+                            classObj[key] = loadedClass;
+                            continue;
+                        }
                         //绑定事件
-                        this.ev.bind(classFullName, function(data) {
+                        this.ev.bind(classFullName, function(data, classFullName) {
                             return oojs.using(classFullName);
-                        });
+                        }.proxy(this, classFullName));
                         //创建事件组
-                        this.ev.group("loadDeps", [ classFullName ], function(data) {
+                        this.ev.group("loadDeps", [ classFullName ], function(data, key, classFullName, classObj) {
                             classObj[key] = data[classFullName][0];
-                        });
+                        }.proxy(this, key, classFullName, classObj));
                         //事件组执行完毕后的事件钩子
-                        this.ev.afterGroup("loadDeps", function() {
+                        this.ev.afterGroup("loadDeps", function(data, lassObj) {
                             //运行静态构造函数
                             var staticConstructorName = "$" + classObj.name;
                             classObj[staticConstructorName] && classObj[staticConstructorName]();
-                        });
+                        }.proxy(this, classObj));
                         //加载脚本
                         var url = this.basePath + classFullName.replace(/\./gi, "/") + ".js";
-                        var jsCallBack = function() {
+                        var jsCallBack = function(classFullName) {
+                            console.log(classFullName);
                             this.ev.emit(classFullName);
-                        }.proxy(this);
+                        }.proxy(this, classFullName);
                         this.loadScript(url, jsCallBack);
                     }
                 }
@@ -512,5 +600,6 @@ define && define({
                 classObj[staticConstructorName] && classObj[staticConstructorName]();
             }
         }
+        return this;
     }
 });
