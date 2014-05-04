@@ -55,18 +55,18 @@ var make = {
         }
 
         try {
-            var uglify = require('uglify-js');
-            this.build();
+            var uglify = require('uglify-js');            
         }
         catch (ex) {
             this.preinstall(this.build.proxy(this));
         }
+		this.build();
     },
 
     preinstall: function (callback) {
         console.log('can not find "uglify-js", installing......');
         var cp = require('child_process');
-        cp.exec('cnpm install uglify-js', function (err, stdout, stderr) {
+        cp.exec('npm install uglify-js', function (err, stdout, stderr) {
             console.log(stdout);
             console.log('uglify-js install finished');
             callback();
