@@ -1,4 +1,4 @@
-﻿define && define({
+define && define({
     /**
      * 类加载器. 使用oojs.event实现. 
      * 当类A以类B, 类B依赖类C时, 会递归加载所有的依赖类, 当所有的依赖类都加载完毕后, 执行类A的静态构造函数.

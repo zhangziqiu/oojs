@@ -12,9 +12,6 @@
                     return method.apply(obj, tempArgs.concat(args));
                 };
             };
-            if (typeof define !== "undefined" && define instanceof Array) {
-                var defineArray = define;
-            }
             if (typeof window !== "undefined") {
                 this.global = window;
                 this.runtime = "browser";
@@ -36,20 +33,6 @@
                 };
                 module.exports = this;
             }
-            if (defineArray && defineArray.length) {
-                var classObj;
-                for (var i = 0, count = defineArray.length; i < count; i++) {
-                    classObj = defineArray[i];
-                    define(typeof module !== "undefined" ? module : classObj);
-                }
-            }
-        },
-        buildInObject: {
-            "[object Function]": 1,
-            "[object RegExp]": 1,
-            "[object Date]": 1,
-            "[object Error]": 1,
-            "[object Window]": 1
         },
         fastClone: function(source) {
             var temp = function() {};

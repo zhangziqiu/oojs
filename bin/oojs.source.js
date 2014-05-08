@@ -19,9 +19,6 @@
                     return method.apply(obj, tempArgs.concat(args));
                 };
             };
-            if (typeof define !== "undefined" && define instanceof Array) {
-                var defineArray = define;
-            }
             if (typeof window !== "undefined") {
                 this.global = window;
                 this.runtime = "browser";
@@ -44,21 +41,6 @@
                 };
                 module.exports = this;
             }
-            if (defineArray && defineArray.length) {
-                var classObj;
-                for (var i = 0, count = defineArray.length; i < count; i++) {
-                    classObj = defineArray[i];
-                    define(typeof module !== "undefined" ? module : classObj);
-                }
-            }
-        },
-        //用于处理无法遍历Date等对象的问题
-        buildInObject: {
-            "[object Function]": 1,
-            "[object RegExp]": 1,
-            "[object Date]": 1,
-            "[object Error]": 1,
-            "[object Window]": 1
         },
         /**
          * 快速克隆方法
@@ -173,7 +155,7 @@
         },
         /**
          * 从全局对象上, 根据命名空间查找类对象
-		 * @public
+         * @public
          * @param {string} name 类的全限定性名(命名空间+类名, 比如 a.b.c)
          * @return {Object} 类引用
          */
@@ -193,7 +175,7 @@
         },
         /**
          * 获取类引用. 在node模式下回加载类. 在browser模式下只是执行find查找.
-		 * @public
+         * @public
          * @param {string} name 类的全限定性名(命名空间+类名, 比如 a.b.c)
          * @return {Object} 类引用
          */
@@ -211,7 +193,7 @@
         },
         /**
          * 获取类的资源文件相对路径
-		 * @public
+         * @public
          * @param {string} name 类的全限定性名(命名空间+类名, 比如 a.b.c)
          * @return {string} 资源文件的相对路径(比如 /a/b/c.js)
          */
@@ -220,9 +202,9 @@
         },
         /**
          * oojs配置函数.
-		 * @public
+         * @public
          * @param {object} option 配置文件对象
-		 * @param {string} option.basePath 根目录地址.
+         * @param {string} option.basePath 根目录地址.
          * @return {object} oojs对象引用
          */
         config: function(option) {

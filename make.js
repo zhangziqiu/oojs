@@ -30,12 +30,12 @@ var make = {
         var result = "";
         var fs = require('fs');
         var path, key;
+
         for (key in this.sourceFiles) {
             if (key && this.sourceFiles[key] && this.sourceFiles.hasOwnProperty(key)) {
                 path = this.sourceFiles[key];
-                result += fs.readFileSync(path, {
-                    encoding: 'utf-8'
-                });
+				console.log(path);
+                result += fs.readFileSync(path, 'utf8');
                 result += '\n';
             }
         }
