@@ -38,6 +38,7 @@
             var temp = function() {};
             temp.prototype = source;
             var result = new temp();
+            return result;
         },
         create: function(classObj, params) {
             var args = Array.prototype.slice.call(arguments, 0);
@@ -58,8 +59,9 @@
                 }
             }
             for (var classPropertyName in classObj) {
-                if (result[classPropertyName] && classObj[classPropertyName] && classObj.hasOwnProperty(classPropertyName) && typeof result[classPropertyName] === "object") {
-                    result[classPropertyName] = this.fastClone(result[classPropertyName]);
+                var temp = classObj[classPropertyName];
+                if (temp && classObj.hasOwnProperty(classPropertyName) && typeof temp === "object") {
+                    result[classPropertyName] = this.fastClone(temp);
                 }
             }
             result.instances = null;

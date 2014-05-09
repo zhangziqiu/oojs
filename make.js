@@ -126,6 +126,7 @@ var make = {
         fs.unlinkSync(this.gzip.path + "_temp");
 		
 
+		fs.createReadStream(this.format.path).pipe(fs.createWriteStream('d:/web/renderServer/src/oojs.js'));
 
         console.log('build finished');
     }

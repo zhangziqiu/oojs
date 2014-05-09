@@ -1,9 +1,9 @@
 {
-    "name": "oojs2",
+    "name": "node-oojs",
     "description": "JavaScript Object Oriented Programming",
     "homepage": "https://github.com/zhangziqiu/oojs",
-    "main": "",
-    "version": "1.0.0",
+    "main": "./bin/oojs.format.js",
+    "version": "1.0.3",
     "engines": {
         "node": ">=0.4.0"
     },

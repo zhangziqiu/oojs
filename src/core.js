@@ -58,6 +58,7 @@
             var temp = function () {};
             temp.prototype = source;
             var result = new temp();
+			return result;
         },
 
         /**
@@ -94,11 +95,12 @@
             }
 
 
-            //如果类的某一个属性是对象,并且是纯数据对象(继承自Object), 则需要克隆
+            //如果类的某一个属性是对象,则需要克隆
             for (var classPropertyName in classObj) {
-                if (result[classPropertyName] && classObj[classPropertyName] && classObj.hasOwnProperty(classPropertyName) && typeof result[classPropertyName] === "object") {
-                    result[classPropertyName] = this.fastClone(result[classPropertyName]);
-                }
+				var temp = classObj[classPropertyName];
+				if(temp && classObj.hasOwnProperty(classPropertyName) && typeof temp ==='object'){
+					result[classPropertyName] = this.fastClone(temp);
+				}
             }
 
             result.instances = null;
