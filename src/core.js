@@ -30,7 +30,7 @@
                 this.global.define = this.define.proxy(this);
             }
             else if (global) {
-                this.basePath = __dirname + "/";
+                this.basePath = process.cwd() + "/src/";
                 this.global = global;
                 this.runtime = 'nodejs';
                 global.oojs = oojs;
