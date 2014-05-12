@@ -20,7 +20,8 @@
                 this.global.oojs = oojs;
                 this.global.define = this.define.proxy(this);
             } else if (global) {
-                this.basePath = process.cwd() + "/src/";
+                var path = require("path");
+                this.basePath = path.resolve(__dirname, "../../../src") + "/";
                 this.global = global;
                 this.runtime = "nodejs";
                 global.oojs = oojs;
