@@ -328,7 +328,6 @@ define && define({
             if (/loaded|complete|undefined/.test(loader.readyState)) {
                 loader.onload = loader.onerror = loader.onreadystatechange = null;
                 loader = undefined;
-                console.log(url);
                 this.ev.emit(url, 1);
             }
         }.proxy(this, url, loader);
@@ -369,7 +368,6 @@ define && define({
                         }.proxy(this, classObj));
                         var url = this.basePath + classFullName.replace(/\./gi, "/") + ".js";
                         var jsCallBack = function(classFullName) {
-                            console.log(classFullName);
                             this.ev.emit(classFullName);
                         }.proxy(this, classFullName);
                         this.loadScript(url, jsCallBack);

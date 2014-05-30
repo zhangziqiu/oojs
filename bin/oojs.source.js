@@ -522,7 +522,6 @@ define && define({
                 loader.onload = loader.onerror = loader.onreadystatechange = null;
                 loader = undefined;
                 //脚本加载完毕后, 触发事件
-                console.log(url);
                 this.ev.emit(url, 1);
             }
         }.proxy(this, url, loader);
@@ -575,7 +574,6 @@ define && define({
                         //加载脚本
                         var url = this.basePath + classFullName.replace(/\./gi, "/") + ".js";
                         var jsCallBack = function(classFullName) {
-                            console.log(classFullName);
                             this.ev.emit(classFullName);
                         }.proxy(this, classFullName);
                         this.loadScript(url, jsCallBack);

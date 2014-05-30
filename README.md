@@ -1,5 +1,7 @@
 #oojs-make codes easy
 
+oojs的目的只有一个: 让js代码变得优美可维护. 
+
 因为js的灵活性, 在开发中经常会出现孤零的变量, 比如:
 ```js
 var a = function(){return b};
@@ -7,7 +9,7 @@ var b = 'hello';
 var c = a();
 ```
 	
-这是导致js开发变得更像"面向过程开发". 比如找几个AMD(或者CMD)模块, 看看他们的factory函数, 基本上都是典型的面向过程开发---代码可读性差, 过程复杂不易维护. 
+这是导致js开发倾向于"面向过程开发". 比如找几个AMD(或者CMD)模块, 看看他们的factory函数, 基本上都是典型的面向过程开发---代码可读性差, 过程复杂不易维护. 
 
 AMD等规范让模块接口变得干净漂亮, 但是模块的内部实现却没有控制内部实现.这是导致很多模块拥有"漂亮的外表, 丑陋的内心".
 
@@ -39,7 +41,7 @@ http://www.develop.cc
 * 使用命名空间组织代码
 
 ###名词解释
-* 全限定性名:命名空间+类名.比如类C, 所在的命名空间是A.B, 则C的全限定性名是A.B.C
+* 全限定性名:  命名空间+类名.比如类C, 所在的命名空间是A.B, 则C的全限定性名是A.B.C
 
 ---
 
@@ -47,12 +49,19 @@ http://www.develop.cc
 
 * Step 1.引入oojs文件
 
-nodejs:    
+nodejs环境:
+使用npm或者cnpm安装最新版本的oojs. 注意oojs的npm模块名称叫做"node-oojs":
 ```js
-require('./src/oojs.js');
+npm install node-oojs
 ```
+在程序的入口处引用:
+```js
+require('node-oojs');
+```
+整个程序进程只需要引用一次即可. 如果是多进程框架, 可以在工作进程的顶部添加此require语句.
 
-browser:
+
+browser环境:
 ```html
 <script type="text/javascript" src="./src/oojs.js"></script>
 ```
