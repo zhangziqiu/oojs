@@ -295,6 +295,14 @@ define && define({
     $oojs: function() {
         this.ev = oojs.create(oojs.event);
     },
+    isNullObj: function(obj) {
+        for (var i in obj) {
+            if (obj.hasOwnProperty(i)) {
+                return false;
+            }
+        }
+        return true;
+    },
     loadScript: function(url, version, callback) {
         if (typeof version === "function") {
             callback = version;
@@ -337,6 +345,7 @@ define && define({
     },
     loadDeps: function(classObj) {
         var deps = classObj.deps;
+        var staticConstructorName = "$" + classObj.name;
         if (this.runtime === "nodejs") {
             var deps = classObj.deps;
             for (var key in deps) {
@@ -344,10 +353,9 @@ define && define({
                     classObj[key] = require(this.getClassPath(deps[key]));
                 }
             }
-            var staticConstructorName = "$" + classObj.name;
             classObj[staticConstructorName] && classObj[staticConstructorName]();
         } else {
-            if (deps) {
+            if (!this.isNullObj(deps)) {
                 for (var key in deps) {
                     if (key && deps.hasOwnProperty(key)) {
                         var classFullName = deps[key];

@@ -480,6 +480,19 @@ define && define({
         this.ev = oojs.create(oojs.event);
     },
     /**
+     * 判断是否空对象
+     * @param {object} obj 待验证对象     
+     * @param {boolean} 是否为空对象
+     */
+    isNullObj: function(obj) {
+        for (var i in obj) {
+            if (obj.hasOwnProperty(i)) {
+                return false;
+            }
+        }
+        return true;
+    },
+    /**
      * 异步加载js文件
      * @public
      * @param {string} url js文件的url路径
@@ -537,6 +550,7 @@ define && define({
      */
     loadDeps: function(classObj) {
         var deps = classObj.deps;
+        var staticConstructorName = "$" + classObj.name;
         if (this.runtime === "nodejs") {
             var deps = classObj.deps;
             for (var key in deps) {
@@ -544,10 +558,9 @@ define && define({
                     classObj[key] = require(this.getClassPath(deps[key]));
                 }
             }
-            var staticConstructorName = "$" + classObj.name;
             classObj[staticConstructorName] && classObj[staticConstructorName]();
         } else {
-            if (deps) {
+            if (!this.isNullObj(deps)) {
                 for (var key in deps) {
                     if (key && deps.hasOwnProperty(key)) {
                         var classFullName = deps[key];
