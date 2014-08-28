@@ -1,34 +1,72 @@
-#oojs-make codes easy
+OOJS - make codes easy!
+===================================  
+oojs 是一种编程框架, 一种面向对象的js编程模式.
+使用oojs可以让js代码变得简单优美. 成倍的提升代码可读性和维护性.
 
-oojs的目的只有一个: 让js代码变得优美可维护. 
+oojs是编程框架(编程思想)而非类库, 所以适用于所有的js项目, 可以和各种规范比如ADM,CDM等一起使用. 
+
+oojs中的oo(Object Oriented)即面向对象, 我们认为: **对象是组织代码的最小单位.**
+
+### oojs核心理念:
+> 万物皆对象
+> 对象皆JSON
+
+### oojs对象示例:
+```js
+//node环境下引用oojs
+require('node-oojs');
+
+//定义cookie类
+define && define({
+    name: 'cookie',
+    namespace: 'oojs.utility',
+    getCookie:function(key){...},
+    setCookie:function(key, value, option){...}
+});
+
+//使用cookie类
+var cookie = oojs.using('oojs.utility.cookie');
+var cookie = cookie.getCookie('id');
+```
+在oojs中, 使用JSON结构声明一个类. 使用命名空间来组织类.
+
+---
+
+##传统的JS编程模式
 
 因为js的灵活性, 在开发中经常会出现孤零的变量, 比如:
 ```js
 var a = function(){return b};
 var b = 'hello';
 var c = a();
-```
-	
-这是导致js开发倾向于"面向过程开发". 比如找几个AMD(或者CMD)模块, 看看他们的factory函数, 基本上都是典型的面向过程开发---代码可读性差, 过程复杂不易维护. 
-
-AMD等规范让模块接口变得干净漂亮, 但是模块的内部实现却没有控制内部实现.这是导致很多模块拥有"漂亮的外表, 丑陋的内心".
-
-oojs框架可以解决这些问题, 用一种最简单的, 最人性化的方式, 让js代码变的更易阅读和维护. 
-
-首先看看我们最习惯的使用json来组织对象的方式:
-```js
-var myObj = {
-	a: function(){
-		return this
-	},
-	b: 'hello'
+function d(){
+    //...
 }
+```
+随便找几个有名的js项目, 比如jQuery, backbone, requireJS
+看看他们的内部实现, 皆是如此.
 
-var c = myObj.a();
-```	
-使用json来组织代码结构是最自然的方式. oojs提供了一种用json组织项目全部代码和变量的方式. 
+本质原因很多开发者**将变量作为了组织代码的最小单位**
 
-(PS:oojs中的oo(Object Oriented)即面向对象, 我们认为: 对象是组织代码的最小单位.)
+oojs的思想是将对象作为组织代码的最小单位. 实际上, 已经有很多的开发者意识到了这一问题.比如在最新版本的jQuery中源码, 已经通过使用JSON大幅提高了代码可读性:
+```js
+jQuery.extend({
+	// Unique for each copy of jQuery on the page
+	expando: "jQuery" + ( version + Math.random() ).replace( /\D/g, "" ),
+
+	// Assume jQuery is ready without the ready module
+	isReady: true,
+
+	error: function( msg ) {
+		throw new Error( msg );
+	},
+    ...
+	noop: function() {}
+});
+```
+由此可见, **使用JSON字面量创建对象, 是最自然的面向对象编程方式.**
+
+基于此, oojs诞生了.
 
 ---
 
@@ -36,9 +74,9 @@ var c = myObj.a();
 http://www.develop.cc
 
 ## oojs主要功能
-* 使用json结构描述类.
+* 使用JSON结构描述类.
+* 使用命名空间组织类.
 * 兼容nodejs和browser两种环境.
-* 使用命名空间组织代码
 
 ###名词解释
 * 全限定性名:  命名空间+类名.比如类C, 所在的命名空间是A.B, 则C的全限定性名是A.B.C
@@ -494,12 +532,4 @@ oojs使用oo的思想, 减少闭包的使用, 让每一个函数对象都挂靠�
    oojs还在发展中, 我们尽量不在核心的oojs.js中加入过多的功能, 保持核心精简. 同时通过oojs团队成员的努力, 让oojs适用于更多的场景. 
    
    欢迎有志之士加入到oojs的开发中来! 
-   
-   oojs项目现有团队成员列表:  
-   
-   * `zhangziqiu`:zhangziqiu@qq.com
-   * `fanwenjuan`:914399187@qq.com
-   * `wangbin`:feeyarcat@gmail.com    
-   
-   
-   
+ 
