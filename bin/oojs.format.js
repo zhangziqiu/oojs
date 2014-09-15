@@ -2,30 +2,22 @@
     var oojs = {
         name: "oojs",
         namespace: "",
+        config: {
+            global: false,
+            proxyName: "proxy",
+            basePath: ""
+        },
         $oojs: function() {
-            Function.prototype.proxy = function(context) {
-                var method = this;
-                var args = Array.prototype.slice.apply(arguments);
-                var obj = args.shift();
-                return function() {
-                    var tempArgs = Array.prototype.slice.apply(arguments);
-                    return method.apply(obj, tempArgs.concat(args));
-                };
-            };
+            this.config = typeof $oojs_config !== "undefined" ? $oojs_config : this.config;
+            var path = require("path");
             if (typeof window !== "undefined") {
-                this.global = window;
+                this.global = this.config.global || window;
                 this.runtime = "browser";
-                this.basePath = "http://cpro.baidustatic.cn/js/";
-                this.version = "1.0.0";
-                this.global.oojs = oojs;
-                this.global.define = this.define.proxy(this);
+                this.basePath = this.config.basePath;
             } else if (global) {
-                var path = require("path");
-                this.basePath = path.resolve(__dirname, "../../../src") + "/";
-                this.global = global;
-                this.runtime = "nodejs";
-                global.oojs = oojs;
-                global.define = this.define.proxy(this);
+                this.global = this.config.global || global;
+                this.runtime = "node";
+                this.basePath = this.config.basePath ? path.resolve(this.config.basePath) : path.resolve(__dirname, "../../../src") + "/";
                 var Module = module.constructor;
                 var nativeWrap = Module.wrap;
                 Module.wrap = function(script) {
@@ -34,12 +26,26 @@
                 };
                 module.exports = this;
             }
+            if (this.config.proxyName) {
+                Function.prototype[this.config.proxyName] = this.proxy;
+            }
+            this.global.define = this.proxy(this, this.define);
+            this.global.oojs = oojs;
         },
         fastClone: function(source) {
             var temp = function() {};
             temp.prototype = source;
             var result = new temp();
             return result;
+        },
+        proxy: function(context, method) {
+            var thisArgs = Array.prototype.slice.apply(arguments);
+            var thisObj = thisArgs.shift();
+            var thisMethod = typeof this === "function" ? this : thisArgs.shift();
+            return function() {
+                var tempArgs = Array.prototype.slice.apply(arguments);
+                return thisMethod.apply(thisObj, tempArgs.concat(thisArgs));
+            };
         },
         create: function(classObj, params) {
             var args = Array.prototype.slice.call(arguments, 0);
@@ -51,14 +57,6 @@
             };
             tempClassObj.prototype = classObj;
             var result = new tempClassObj(args);
-            result.dispose = result.dispose || function() {};
-            if (this.runtime === "browser") {
-                if (window.addEventListener) {
-                    window.addEventListener("unload", result.dispose.proxy(result), false);
-                } else if (window.attachEvent) {
-                    window.attachEvent("onunload", result.dispose.proxy(result));
-                }
-            }
             for (var classPropertyName in classObj) {
                 var temp = classObj[classPropertyName];
                 if (temp && classObj.hasOwnProperty(classPropertyName) && typeof temp === "object") {
@@ -68,6 +66,34 @@
             result.instances = null;
             return result;
         },
+        inherit: function(childClass, parentClass) {
+            childClass = typeof childClass === "string" ? this.using(childClass) : childClass;
+            parentClass = typeof parentClass === "string" ? this.using(parentClass) : parentClass;
+            for (var key in parentClass) {
+                if (key && parentClass.hasOwnProperty(key) && !childClass.hasOwnProperty(key)) {
+                    childClass[key] = parentClass[key];
+                }
+            }
+        },
+        loadDeps: function(classObj) {
+            var deps = classObj.deps;
+            var depsAllLoaded = true;
+            for (var key in deps) {
+                if (key && deps.hasOwnProperty(key) && deps[key]) {
+                    var classFullName = deps[key];
+                    classObj[key] = this.find(classFullName);
+                    if (!classObj[key]) {
+                        if (this.runtime === "node") {
+                            classObj[key] = require(this.getClassPath(classFullName));
+                        }
+                        if (!classObj[key]) {
+                            depsAllLoaded = false;
+                        }
+                    }
+                }
+            }
+            return depsAllLoaded;
+        },
         define: function(module, classObj) {
             if (!classObj) {
                 classObj = module;
@@ -76,13 +102,8 @@
             classObj.namespace = classObj.namespace || "";
             classObj.dispose = classObj.dispose || function() {};
             var preNamespaces = classObj.namespace.split(".");
-            var runtime = "nodejs";
-            if (typeof window !== "undefined") {
-                global = window;
-                runtime = "browser";
-            }
             var count = preNamespaces.length;
-            var currClassObj = global;
+            var currClassObj = this.global;
             var firstName, tempName;
             for (var i = 0; i < count; i++) {
                 tempName = preNamespaces[i];
@@ -103,13 +124,14 @@
                 }
                 classObj = currClassObj[name];
             }
-            if (this.loadDeps && classObj && classObj.deps) {
-                this.loadDeps(classObj);
+            var depsAllLoaded = this.loadDeps(classObj);
+            if (!depsAllLoaded && this.runtime === "browser" && this.loadDepsBrowser) {
+                this.loadDepsBrowser(classObj);
             } else {
                 var staticConstructorName = "$" + name;
                 classObj[staticConstructorName] && classObj[staticConstructorName]();
             }
-            if (module) {
+            if (module && this.runtime === "node") {
                 module.exports = classObj;
             }
             return this;
@@ -131,7 +153,7 @@
         using: function(name) {
             var result = this.find(name);
             if (!result) {
-                if (this.runtime === "nodejs") {
+                if (this.runtime === "node") {
                     require(this.getClassPath(name));
                     result = this.find(name);
                 }
@@ -140,13 +162,11 @@
         },
         getClassPath: function(name) {
             return this.basePath + name.replace(/\./gi, "/") + ".js";
-        },
-        config: function(option) {
-            this.basePath = option.basePath || this.basePath;
-            return this;
         }
     };
+    oojs.$oojs();
     oojs.define(typeof module !== "undefined" ? module : null, oojs);
+    return oojs;
 })();
 
 define && define({
@@ -343,47 +363,37 @@ define && define({
         s.parentNode.insertBefore(loader, s);
         return this;
     },
-    loadDeps: function(classObj) {
+    loadDepsBrowser: function(classObj) {
         var deps = classObj.deps;
         var staticConstructorName = "$" + classObj.name;
-        if (this.runtime === "nodejs") {
-            var deps = classObj.deps;
+        if (!this.isNullObj(deps)) {
             for (var key in deps) {
                 if (key && deps.hasOwnProperty(key)) {
-                    classObj[key] = require(this.getClassPath(deps[key]));
-                }
-            }
-            classObj[staticConstructorName] && classObj[staticConstructorName]();
-        } else {
-            if (!this.isNullObj(deps)) {
-                for (var key in deps) {
-                    if (key && deps.hasOwnProperty(key)) {
-                        var classFullName = deps[key];
-                        var loadedClass = this.using(classFullName);
-                        if (loadedClass) {
-                            classObj[key] = loadedClass;
-                            continue;
-                        }
-                        this.ev.bind(classFullName, function(data, classFullName) {
-                            return oojs.using(classFullName);
-                        }.proxy(this, classFullName));
-                        this.ev.group("loadDeps", [ classFullName ], function(data, key, classFullName, classObj) {
-                            classObj[key] = data[classFullName][0];
-                        }.proxy(this, key, classFullName, classObj));
-                        this.ev.afterGroup("loadDeps", function(data, lassObj) {
-                            var staticConstructorName = "$" + classObj.name;
-                            classObj[staticConstructorName] && classObj[staticConstructorName]();
-                        }.proxy(this, classObj));
-                        var url = this.basePath + classFullName.replace(/\./gi, "/") + ".js";
-                        var jsCallBack = function(classFullName) {
-                            this.ev.emit(classFullName);
-                        }.proxy(this, classFullName);
-                        this.loadScript(url, jsCallBack);
+                    var classFullName = deps[key];
+                    var loadedClass = this.using(classFullName);
+                    if (loadedClass) {
+                        classObj[key] = loadedClass;
+                        continue;
                     }
+                    this.ev.bind(classFullName, function(data, classFullName) {
+                        return oojs.using(classFullName);
+                    }.proxy(this, classFullName));
+                    this.ev.group("loadDeps", [ classFullName ], function(data, key, classFullName, classObj) {
+                        classObj[key] = data[classFullName][0];
+                    }.proxy(this, key, classFullName, classObj));
+                    this.ev.afterGroup("loadDeps", function(data, lassObj) {
+                        var staticConstructorName = "$" + classObj.name;
+                        classObj[staticConstructorName] && classObj[staticConstructorName]();
+                    }.proxy(this, classObj));
+                    var url = this.basePath + classFullName.replace(/\./gi, "/") + ".js";
+                    var jsCallBack = function(classFullName) {
+                        this.ev.emit(classFullName);
+                    }.proxy(this, classFullName);
+                    this.loadScript(url, jsCallBack);
                 }
-            } else {
-                classObj[staticConstructorName] && classObj[staticConstructorName]();
             }
+        } else {
+            classObj[staticConstructorName] && classObj[staticConstructorName]();
         }
         return this;
     }
