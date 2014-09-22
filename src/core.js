@@ -1,4 +1,4 @@
-(function () {
+(function() {
     /**
      *   oojs核心, 提供面向对象编程方式.
      **/
@@ -16,17 +16,17 @@
         /**
          * 静态构造函数
          */
-        $oojs: function () {
+        $oojs: function() {
             //设置可访问的 $oojs_config 变量(比如全局变量), 可以修改oojs的初始化设置. 设置项参见oojs.config属性.
             this.config = typeof $oojs_config !== 'undefined' ? $oojs_config : this.config;
 
-            var path = require('path');
+
             if (typeof window !== 'undefined') {
                 this.global = this.config.global || window;
                 this.runtime = 'browser';
                 this.basePath = this.config.basePath;
-            }
-            else if (global) {
+            } else if (global) {
+                var path = require('path');
                 this.global = this.config.global || global;
                 this.runtime = 'node';
                 //nodejs模式下, 默认为程序根目录的src文件夹
@@ -34,7 +34,7 @@
                 //hack nodejs, 让oojs的类也可以通过node原生的require引用. 
                 var Module = module.constructor;
                 var nativeWrap = Module.wrap;
-                Module.wrap = function (script) {
+                Module.wrap = function(script) {
                     script = script.replace(/define\s*&&\s*define\s*\(/gi, 'define(module,');
                     return nativeWrap(script);
                 };
@@ -59,8 +59,8 @@
          * @param {Object} source 带克隆的对象. 使用此方法克隆出来的对象, 如果source对象被修改, 则所有克隆对象也会被修改
          * @return {Object} 克隆出来的对象.
          */
-        fastClone: function (source) {
-            var temp = function () {};
+        fastClone: function(source) {
+            var temp = function() {};
             temp.prototype = source;
             var result = new temp();
             return result;
@@ -74,12 +74,12 @@
          * @param {Function} method 需要替换this指针的函数.如果是通过函数原型的方式调用的, 则不需要此参数.
          * @return {Function} this指针被修改的函数
          */
-        proxy: function (context, method) {
+        proxy: function(context, method) {
             var thisArgs = Array.prototype.slice.apply(arguments);
             var thisObj = thisArgs.shift();
             var thisMethod = typeof this === 'function' ? this : thisArgs.shift();
 
-            return function () {
+            return function() {
                 var tempArgs = Array.prototype.slice.apply(arguments);
                 return thisMethod.apply(thisObj, tempArgs.concat(thisArgs));
             }
@@ -93,16 +93,16 @@
          * @param {params} 动态构造函数的参数
          * @return {Object} 类实例
          */
-        create: function (classObj, params) {
+        create: function(classObj, params) {
             var args = Array.prototype.slice.call(arguments, 0);
             args.shift();
             //构造函数
             var constructerName = classObj.name || "init";
 
-            var tempClassObj = function (args) {
-                    this[constructerName] = this[constructerName] || function () {};
-                    this[constructerName].apply(this, args);
-                };
+            var tempClassObj = function(args) {
+                this[constructerName] = this[constructerName] || function() {};
+                this[constructerName].apply(this, args);
+            };
 
             tempClassObj.prototype = classObj;
             var result = new tempClassObj(args);
@@ -132,7 +132,7 @@
          * @param {params} 动态构造函数的参数
          * @return {Object} 类实例
          */
-        inherit: function (childClass, parentClass) {
+        inherit: function(childClass, parentClass) {
             childClass = typeof childClass === 'string' ? this.using(childClass) : childClass;
             parentClass = typeof parentClass === 'string' ? this.using(parentClass) : parentClass;
 
@@ -142,22 +142,32 @@
                 }
             }
         },
-        
-        loadDeps:function(classObj){       
+
+        loadDeps: function(classObj, recording) {
+            recording = recording || {};
             var deps = classObj.deps;
             var depsAllLoaded = true;
             for (var key in deps) {
                 if (key && deps.hasOwnProperty(key) && deps[key]) {
                     var classFullName = deps[key];
+                    if (recording && recording[classFullName]) {
+                        continue;
+                    }
+                    recording[classFullName] = true;
+
                     classObj[key] = this.find(classFullName);
-                    if(!classObj[key]){
+                    if (!classObj[key]) {
                         //node模式下, 发现未加载的依赖类, 尝试使用require加载
-                        if(this.runtime === 'node'){
+                        if (this.runtime === 'node') {
                             classObj[key] = require(this.getClassPath(classFullName));
                         }
-                        
-                        if(!classObj[key]){
+
+                        if (!classObj[key]) {
                             depsAllLoaded = false;
+                        }
+                    } else {
+                        if (classObj[key].deps) {
+                            depsAllLoaded = depsAllLoaded && this.loadDeps(classObj[key], recording);
                         }
                     }
                 }
@@ -172,14 +182,14 @@
          * @param {Object} classObj 类对象
          * @return {Object} oojs引用
          */
-        define: function (module, classObj) {
+        define: function(module, classObj) {
             if (!classObj) {
                 classObj = module;
             }
 
             var name = classObj.name;
             classObj.namespace = classObj.namespace || "";
-            classObj.dispose = classObj.dispose || function () {};
+            classObj.dispose = classObj.dispose || function() {};
 
             var preNamespaces = classObj.namespace.split('.');
             //初始化前置命名空间
@@ -213,13 +223,12 @@
             }
 
             //加载依赖
-            var depsAllLoaded = this.loadDeps(classObj);           
-            
+            var depsAllLoaded = this.loadDeps(classObj);
+
             //浏览器模式下, 如果发现存在未加载的依赖项, 并且安装了 oojs.loader, 则不立刻调用静态函数, 需要先加载依赖类.
-            if( !depsAllLoaded && this.runtime==='browser' && this.loadDepsBrowser){
+            if (!depsAllLoaded && this.runtime === 'browser' && this.loadDepsBrowser) {
                 this.loadDepsBrowser(classObj);
-            }
-            else{
+            } else {
                 //运行静态构造函数
                 var staticConstructorName = "$" + name;
                 classObj[staticConstructorName] && classObj[staticConstructorName]();
@@ -239,15 +248,14 @@
          * @param {string} name 类的全限定性名(命名空间+类名, 比如 a.b.c)
          * @return {Object} 类引用
          */
-        find: function (name) {
+        find: function(name) {
             var result;
             var nameArray = name.split(".");
             result = this.global[nameArray[0]];
             for (var i = 1, count = nameArray.length; i < count; i++) {
                 if (result && result[nameArray[i]]) {
                     result = result[nameArray[i]];
-                }
-                else {
+                } else {
                     result = null;
                     break;
                 }
@@ -261,7 +269,7 @@
          * @param {string} name 类的全限定性名(命名空间+类名, 比如 a.b.c)
          * @return {Object} 类引用
          */
-        using: function (name) {
+        using: function(name) {
             var result = this.find(name);
             if (!result) {
                 //加载模块文件, 仅限node模式. node模式属于本地存储, 相当于所有文件已经加载完毕.
@@ -280,7 +288,7 @@
          * @param {string} name 类的全限定性名(命名空间+类名, 比如 a.b.c)
          * @return {string} 资源文件的相对路径(比如 /a/b/c.js)
          */
-        getClassPath: function (name) {
+        getClassPath: function(name) {
             return this.basePath + name.replace(/\./gi, "/") + ".js";
         }
     };

@@ -19,12 +19,12 @@
         $oojs: function() {
             //设置可访问的 $oojs_config 变量(比如全局变量), 可以修改oojs的初始化设置. 设置项参见oojs.config属性.
             this.config = typeof $oojs_config !== "undefined" ? $oojs_config : this.config;
-            var path = require("path");
             if (typeof window !== "undefined") {
                 this.global = this.config.global || window;
                 this.runtime = "browser";
                 this.basePath = this.config.basePath;
             } else if (global) {
+                var path = require("path");
                 this.global = this.config.global || global;
                 this.runtime = "node";
                 //nodejs模式下, 默认为程序根目录的src文件夹
@@ -128,12 +128,17 @@
                 }
             }
         },
-        loadDeps: function(classObj) {
+        loadDeps: function(classObj, recording) {
+            recording = recording || {};
             var deps = classObj.deps;
             var depsAllLoaded = true;
             for (var key in deps) {
                 if (key && deps.hasOwnProperty(key) && deps[key]) {
                     var classFullName = deps[key];
+                    if (recording && recording[classFullName]) {
+                        continue;
+                    }
+                    recording[classFullName] = true;
                     classObj[key] = this.find(classFullName);
                     if (!classObj[key]) {
                         //node模式下, 发现未加载的依赖类, 尝试使用require加载
@@ -142,6 +147,10 @@
                         }
                         if (!classObj[key]) {
                             depsAllLoaded = false;
+                        }
+                    } else {
+                        if (classObj[key].deps) {
+                            depsAllLoaded = depsAllLoaded && this.loadDeps(classObj[key], recording);
                         }
                     }
                 }

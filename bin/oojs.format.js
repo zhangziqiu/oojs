@@ -9,12 +9,12 @@
         },
         $oojs: function() {
             this.config = typeof $oojs_config !== "undefined" ? $oojs_config : this.config;
-            var path = require("path");
             if (typeof window !== "undefined") {
                 this.global = this.config.global || window;
                 this.runtime = "browser";
                 this.basePath = this.config.basePath;
             } else if (global) {
+                var path = require("path");
                 this.global = this.config.global || global;
                 this.runtime = "node";
                 this.basePath = this.config.basePath ? path.resolve(this.config.basePath) : path.resolve(__dirname, "../../../src") + "/";
@@ -75,12 +75,17 @@
                 }
             }
         },
-        loadDeps: function(classObj) {
+        loadDeps: function(classObj, recording) {
+            recording = recording || {};
             var deps = classObj.deps;
             var depsAllLoaded = true;
             for (var key in deps) {
                 if (key && deps.hasOwnProperty(key) && deps[key]) {
                     var classFullName = deps[key];
+                    if (recording && recording[classFullName]) {
+                        continue;
+                    }
+                    recording[classFullName] = true;
                     classObj[key] = this.find(classFullName);
                     if (!classObj[key]) {
                         if (this.runtime === "node") {
@@ -88,6 +93,10 @@
                         }
                         if (!classObj[key]) {
                             depsAllLoaded = false;
+                        }
+                    } else {
+                        if (classObj[key].deps) {
+                            depsAllLoaded = depsAllLoaded && this.loadDeps(classObj[key], recording);
                         }
                     }
                 }
