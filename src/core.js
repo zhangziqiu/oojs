@@ -150,16 +150,18 @@
             for (var key in deps) {
                 if (key && deps.hasOwnProperty(key) && deps[key]) {
                     var classFullName = deps[key];
+                    classObj[key] = this.find(classFullName);
                     if (recording && recording[classFullName]) {
                         continue;
                     }
                     recording[classFullName] = true;
-
-                    classObj[key] = this.find(classFullName);
+                    
                     if (!classObj[key]) {
                         //node模式下, 发现未加载的依赖类, 尝试使用require加载
                         if (this.runtime === 'node') {
-                            classObj[key] = require(this.getClassPath(classFullName));
+                            try {
+                                classObj[key] = require(this.getClassPath(classFullName));
+                            } catch (ex) {}
                         }
 
                         if (!classObj[key]) {
