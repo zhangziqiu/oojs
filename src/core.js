@@ -155,7 +155,7 @@
                         continue;
                     }
                     recording[classFullName] = true;
-                    
+
                     if (!classObj[key]) {
                         //node模式下, 发现未加载的依赖类, 尝试使用require加载
                         if (this.runtime === 'node') {
@@ -223,6 +223,7 @@
                 }
                 classObj = currClassObj[name];
             }
+            classObj = currClassObj[name];
 
             //加载依赖
             var depsAllLoaded = this.loadDeps(classObj);

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+</head>
+
+<body>
+    <script src="../../../../src/core.js"></script>
+    <script type="text/javascript">
+        define({
+            name:"a",
+            testString: "a"
+        });
+        console.log(oojs.using('a').testString);
+    </script>
+    
+    <script src="../../../../src/core.js?a=1"></script>
+    <script type="text/javascript">
+        define({
+            name:"a",
+            testString: "b"
+        });
+        console.log(oojs.using('a').testString);
+    </script>
+
+</body>
+
+</html>
