@@ -135,6 +135,7 @@
                 }
                 classObj = currClassObj[name];
             }
+            classObj = currClassObj[name];
             var depsAllLoaded = this.loadDeps(classObj);
             if (!depsAllLoaded && this.runtime === "browser" && this.loadDepsBrowser) {
                 this.loadDepsBrowser(classObj);

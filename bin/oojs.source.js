@@ -199,6 +199,7 @@
                 }
                 classObj = currClassObj[name];
             }
+            classObj = currClassObj[name];
             //加载依赖
             var depsAllLoaded = this.loadDeps(classObj);
             //浏览器模式下, 如果发现存在未加载的依赖项, 并且安装了 oojs.loader, 则不立刻调用静态函数, 需要先加载依赖类.
