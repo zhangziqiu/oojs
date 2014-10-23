@@ -30,7 +30,7 @@
                 this.global = this.config.global || global;
                 this.runtime = 'node';
                 //nodejs模式下, 默认为程序根目录的src文件夹
-                this.basePath = this.config.basePath ? path.resolve(this.config.basePath) : path.resolve(__dirname, '../../../src') + '/';
+                this.basePath = this.config.basePath ? path.resolve(this.config.basePath) : process.cwd() + '/src/';
                 //hack nodejs, 让oojs的类也可以通过node原生的require引用. 
                 var Module = module.constructor;
                 var nativeWrap = Module.wrap;

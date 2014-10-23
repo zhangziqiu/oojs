@@ -17,7 +17,7 @@
                 var path = require("path");
                 this.global = this.config.global || global;
                 this.runtime = "node";
-                this.basePath = this.config.basePath ? path.resolve(this.config.basePath) : path.resolve(__dirname, "../../../src") + "/";
+                this.basePath = this.config.basePath ? path.resolve(this.config.basePath) : process.cwd() + "/src/";
                 var Module = module.constructor;
                 var nativeWrap = Module.wrap;
                 Module.wrap = function(script) {
