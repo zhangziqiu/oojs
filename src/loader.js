@@ -5,11 +5,9 @@ define && define({
      */
     name: "oojs",
     namespace: "",
-    classType: "extend", //扩展类
     $oojs: function () {
         this.ev = oojs.create(oojs.event);
     },
-
     /**
      * 判断是否空对象
      * @param {object} obj 待验证对象     
@@ -23,7 +21,6 @@ define && define({
         }
         return true;
     },
-
     /**
      * 异步加载js文件
      * @public
@@ -81,7 +78,6 @@ define && define({
         s.parentNode.insertBefore(loader, s);
         return this;
     },
-
     /**
      * 浏览器加载类依赖
      * @public

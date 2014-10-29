@@ -1,34 +1,33 @@
 (function() {
     /**
-     *   oojs核心, 提供面向对象编程方式.
+     * oojs核心, 提供面向对象编程方式.
      **/
     var oojs = {
-        name: "oojs",
-        namespace: "",
-        config: {
-            //设置全局作用域, 默认浏览器模式为window, node模式为系统global变量.
-            global: false,
-            //为Function原型添加的proxy函数的函数名. false表示不添加. 默认为'proxy'. 可以使用oojs.proxy替代
-            proxyName: "proxy",
-            //设置代码库根目录. node模式使用文件路径(可以使相对路径), 浏览器模式下需要提供完整的url地址.
-            basePath: ""
-        },
         /**
-         * 静态构造函数
+        类名
+         */
+        name: "oojs",
+        /**
+        类的命名空间
+         */
+        namespace: "",
+        /**
+        静态构造函数
          */
         $oojs: function() {
             //设置可访问的 $oojs_config 变量(比如全局变量), 可以修改oojs的初始化设置. 设置项参见oojs.config属性.
-            this.config = typeof $oojs_config !== "undefined" ? $oojs_config : this.config;
+            this.conf = typeof $oojs_config !== "undefined" ? $oojs_config : this.conf;
             if (typeof window !== "undefined") {
-                this.global = this.config.global || window;
+                this.global = this.conf.global || window;
                 this.runtime = "browser";
-                this.basePath = this.config.basePath;
+                this.setPath(this.conf.path);
             } else if (global) {
                 var path = require("path");
-                this.global = this.config.global || global;
+                this.global = this.conf.global || global;
                 this.runtime = "node";
                 //nodejs模式下, 默认为程序根目录的src文件夹
-                this.basePath = this.config.basePath ? path.resolve(this.config.basePath) : process.cwd() + "/src/";
+                this.conf.path = this.conf.path || process.cwd() + "/src/";
+                this.setPath(this.conf.path);
                 //hack nodejs, 让oojs的类也可以通过node原生的require引用. 
                 var Module = module.constructor;
                 var nativeWrap = Module.wrap;
@@ -39,13 +38,131 @@
                 module.exports = this;
             }
             //设置Function的原型proxy函数		
-            if (this.config.proxyName) {
-                Function.prototype[this.config.proxyName] = this.proxy;
+            if (this.conf.proxyName) {
+                Function.prototype[this.conf.proxyName] = this.proxy;
             }
             //设置全局define函数
             this.global.define = this.proxy(this, this.define);
             //设置全局oojs对象
             this.global.oojs = oojs;
+        },
+        /**
+        oojs配置项, 可以通过config函数设置
+         */
+        conf: {
+            //设置全局作用域, 默认浏览器模式为window, node模式为系统global变量.
+            global: false,
+            //为Function原型添加的proxy函数的函数名. false表示不添加. 默认为'proxy'. 可以使用oojs.proxy替代
+            proxyName: "proxy",
+            //设置代码库根目录. node模式使用文件路径(可以使相对路径), 浏览器模式下需要提供完整的url地址.
+            path: ""
+        },
+        /**
+        存储命名空间的目录树
+        */
+        path: {},
+        /**
+         * 从目录树中, 返回指定命名空间的目录
+         * @param {string} namespace 命名空间, 比如"A.B.C"
+         * @return {string} 路径
+         */
+        getPath: function(namespace) {
+            //namespace: a.b.c
+            //path: http://www.123.com/a/b or /home/user/a/b
+            var namespaceArray = namespace.split(".");
+            var node = this.path;
+            for (var i = 0, count = namespaceArray.length; i < count; i++) {
+                var currentName = namespaceArray[i].toLowerCase();
+                if (node[currentName]) {
+                    node = node[currentName];
+                } else {
+                    break;
+                }
+            }
+            return node._path;
+        },
+        /**
+         * 设置命名空间的目录:
+         *      只设置一个根路径:       oojs.setPath('/root/');
+         *      为特定命名空间设置路径: oojs.setPath('a.b.c','/root/myproject/');  
+         *      为多个命名空间设置路径: oojs.setPath({'a':'/root/projectA', 'b':'/root/projectB'});  
+         * @public
+         * @param {string} namespace 命名空间, 比如"A.B.C"
+         * @param {string} path 路径
+         */
+        setPath: function(namespace, path) {
+            var node = this.path;
+            if (typeof namespace === "object") {
+                //多个命名空间设置路径: oojs.setPath({'a':'/root/projectA', 'b':'/root/projectB'});  
+                for (var key in namespace) {
+                    if (key && namespace.hasOwnProperty(key)) {
+                        this.setPath(key, namespace[key]);
+                    }
+                }
+                return;
+            } else if (!path) {
+                //只设置一个根路径: oojs.setPath('/root/');
+                path = namespace;
+            } else {
+                //为特定命名空间设置路径: oojs.setPath('a.b.c','/root/myproject/');  
+                var namespaceArray = namespace.split(".");
+                for (var i = 0, count = namespaceArray.length; i < count; i++) {
+                    var currentName = namespaceArray[i].toLowerCase();
+                    node[currentName] = node[currentName] || {};
+                    node = node[currentName];
+                }
+            }
+            //为路径添加末尾的斜杠
+            if (path && path.lastIndexOf("\\") !== path.length - 1 && path.lastIndexOf("/") !== path.length - 1) {
+                path = path + "/";
+            }
+            node._path = path;
+        },
+        /**
+         * 获取类的资源文件相对路径
+         * @public
+         * @param {string} name 类的全限定性名(命名空间+类名, 比如 a.b.c)
+         * @return {string} 资源文件的相对路径(比如 /a/b/c.js)
+         */
+        getClassPath: function(name) {
+            return this.getPath(name) + name.replace(/\./gi, "/") + ".js";
+        },
+        /**
+         * 加载依赖
+         * @public
+         * @param {Object} classObj 类对象
+         * @return {Object} recording 递归加载时, 用于记录一个类的加载状态
+         */
+        loadDeps: function(classObj, recording) {
+            recording = recording || {};
+            var deps = classObj.deps;
+            var depsAllLoaded = true;
+            for (var key in deps) {
+                if (key && deps.hasOwnProperty(key) && deps[key]) {
+                    var classFullName = deps[key];
+                    classObj[key] = this.find(classFullName);
+                    if (recording && recording[classFullName]) {
+                        continue;
+                    }
+                    recording[classFullName] = true;
+                    if (!classObj[key]) {
+                        //node模式下, 发现未加载的依赖类, 尝试使用require加载
+                        if (this.runtime === "node") {
+                            try {
+                                classObj[key] = require(this.getClassPath(classFullName));
+                            } catch (ex) {}
+                        }
+                        if (!classObj[key]) {
+                            depsAllLoaded = false;
+                        }
+                    } else {
+                        if (classObj[key].deps) {
+                            depsAllLoaded = depsAllLoaded && this.loadDeps(classObj[key], recording);
+                        }
+                    }
+                }
+            }
+            return depsAllLoaded;
         },
         /**
          * 快速克隆方法
@@ -76,6 +193,22 @@
                 var tempArgs = Array.prototype.slice.apply(arguments);
                 return thisMethod.apply(thisObj, tempArgs.concat(thisArgs));
             };
+        },
+        /**
+         * oojs设置函数
+         * @public
+         * @param {Object} obj 配置文件的mapping对象
+         */
+        config: function(obj) {
+            for (var key in obj) {
+                if (key && obj.hasOwnProperty(key)) {
+                    if (key === "path") {
+                        this.setPath(obj[key]);
+                    } else {
+                        this.conf[key] = obj[key];
+                    }
+                }
+            }
         },
         /**
          * 创建一个类实例.  var a = oojs.create(classA, 'a');
@@ -110,56 +243,6 @@
             return result;
         },
         /**
-         * 设置类的继承关系.  
-            oojs.inherit('myNamespace.myClassA', 'myNamespace.myClassB');
-            oojs.inherit(objA, objB);  
-         * @public
-         * @method create
-         * @param {Object} classObj 类对象
-         * @param {params} 动态构造函数的参数
-         * @return {Object} 类实例
-         */
-        inherit: function(childClass, parentClass) {
-            childClass = typeof childClass === "string" ? this.using(childClass) : childClass;
-            parentClass = typeof parentClass === "string" ? this.using(parentClass) : parentClass;
-            for (var key in parentClass) {
-                if (key && parentClass.hasOwnProperty(key) && !childClass.hasOwnProperty(key)) {
-                    childClass[key] = parentClass[key];
-                }
-            }
-        },
-        loadDeps: function(classObj, recording) {
-            recording = recording || {};
-            var deps = classObj.deps;
-            var depsAllLoaded = true;
-            for (var key in deps) {
-                if (key && deps.hasOwnProperty(key) && deps[key]) {
-                    var classFullName = deps[key];
-                    classObj[key] = this.find(classFullName);
-                    if (recording && recording[classFullName]) {
-                        continue;
-                    }
-                    recording[classFullName] = true;
-                    if (!classObj[key]) {
-                        //node模式下, 发现未加载的依赖类, 尝试使用require加载
-                        if (this.runtime === "node") {
-                            try {
-                                classObj[key] = require(this.getClassPath(classFullName));
-                            } catch (ex) {}
-                        }
-                        if (!classObj[key]) {
-                            depsAllLoaded = false;
-                        }
-                    } else {
-                        if (classObj[key].deps) {
-                            depsAllLoaded = depsAllLoaded && this.loadDeps(classObj[key], recording);
-                        }
-                    }
-                }
-            }
-            return depsAllLoaded;
-        },
-        /**
          * 定义一个类. 第一个参数module在node中由系统自动传递. 即开发人员只需要传递一个参数classObj
          * @public
          * @param {Object} module node模式中的module对象
@@ -188,12 +271,12 @@
             //注册当前类
             currClassObj[name] = currClassObj[name] || {};
             //新注册类
-            if (!currClassObj[name].name || !currClassObj[name].___registered) {
-                classObj.___registered = true;
+            if (!currClassObj[name].name || !currClassObj[name]._registed) {
+                classObj._registed = true;
                 currClassObj[name] = classObj;
-            } else if (currClassObj[name].___registered && classObj.classType && classObj.classType === "extend") {
+            } else if (currClassObj[name]._registed) {
                 for (var key in classObj) {
-                    if (key && classObj.hasOwnProperty(key)) {
+                    if (key && classObj.hasOwnProperty(key) && typeof currClassObj[name][key] === "undefined") {
                         currClassObj[name][key] = classObj[key];
                     }
                 }
@@ -253,15 +336,6 @@
                 }
             }
             return result;
-        },
-        /**
-         * 获取类的资源文件相对路径
-         * @public
-         * @param {string} name 类的全限定性名(命名空间+类名, 比如 a.b.c)
-         * @return {string} 资源文件的相对路径(比如 /a/b/c.js)
-         */
-        getClassPath: function(name) {
-            return this.basePath + name.replace(/\./gi, "/") + ".js";
         }
     };
     //自解析
@@ -524,8 +598,6 @@ define && define({
      */
     name: "oojs",
     namespace: "",
-    classType: "extend",
-    //扩展类
     $oojs: function() {
         this.ev = oojs.create(oojs.event);
     },

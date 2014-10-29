@@ -2,22 +2,18 @@
     var oojs = {
         name: "oojs",
         namespace: "",
-        config: {
-            global: false,
-            proxyName: "proxy",
-            basePath: ""
-        },
         $oojs: function() {
-            this.config = typeof $oojs_config !== "undefined" ? $oojs_config : this.config;
+            this.conf = typeof $oojs_config !== "undefined" ? $oojs_config : this.conf;
             if (typeof window !== "undefined") {
-                this.global = this.config.global || window;
+                this.global = this.conf.global || window;
                 this.runtime = "browser";
-                this.basePath = this.config.basePath;
+                this.setPath(this.conf.path);
             } else if (global) {
                 var path = require("path");
-                this.global = this.config.global || global;
+                this.global = this.conf.global || global;
                 this.runtime = "node";
-                this.basePath = this.config.basePath ? path.resolve(this.config.basePath) : process.cwd() + "/src/";
+                this.conf.path = this.conf.path || process.cwd() + "/src/";
+                this.setPath(this.conf.path);
                 var Module = module.constructor;
                 var nativeWrap = Module.wrap;
                 Module.wrap = function(script) {
@@ -26,54 +22,57 @@
                 };
                 module.exports = this;
             }
-            if (this.config.proxyName) {
-                Function.prototype[this.config.proxyName] = this.proxy;
+            if (this.conf.proxyName) {
+                Function.prototype[this.conf.proxyName] = this.proxy;
             }
             this.global.define = this.proxy(this, this.define);
             this.global.oojs = oojs;
         },
-        fastClone: function(source) {
-            var temp = function() {};
-            temp.prototype = source;
-            var result = new temp();
-            return result;
+        conf: {
+            global: false,
+            proxyName: "proxy",
+            path: ""
         },
-        proxy: function(context, method) {
-            var thisArgs = Array.prototype.slice.apply(arguments);
-            var thisObj = thisArgs.shift();
-            var thisMethod = typeof this === "function" ? this : thisArgs.shift();
-            return function() {
-                var tempArgs = Array.prototype.slice.apply(arguments);
-                return thisMethod.apply(thisObj, tempArgs.concat(thisArgs));
-            };
-        },
-        create: function(classObj, params) {
-            var args = Array.prototype.slice.call(arguments, 0);
-            args.shift();
-            var constructerName = classObj.name || "init";
-            var tempClassObj = function(args) {
-                this[constructerName] = this[constructerName] || function() {};
-                this[constructerName].apply(this, args);
-            };
-            tempClassObj.prototype = classObj;
-            var result = new tempClassObj(args);
-            for (var classPropertyName in classObj) {
-                var temp = classObj[classPropertyName];
-                if (temp && classObj.hasOwnProperty(classPropertyName) && typeof temp === "object") {
-                    result[classPropertyName] = this.fastClone(temp);
+        path: {},
+        getPath: function(namespace) {
+            var namespaceArray = namespace.split(".");
+            var node = this.path;
+            for (var i = 0, count = namespaceArray.length; i < count; i++) {
+                var currentName = namespaceArray[i].toLowerCase();
+                if (node[currentName]) {
+                    node = node[currentName];
+                } else {
+                    break;
                 }
             }
-            result.instances = null;
-            return result;
+            return node._path;
         },
-        inherit: function(childClass, parentClass) {
-            childClass = typeof childClass === "string" ? this.using(childClass) : childClass;
-            parentClass = typeof parentClass === "string" ? this.using(parentClass) : parentClass;
-            for (var key in parentClass) {
-                if (key && parentClass.hasOwnProperty(key) && !childClass.hasOwnProperty(key)) {
-                    childClass[key] = parentClass[key];
+        setPath: function(namespace, path) {
+            var node = this.path;
+            if (typeof namespace === "object") {
+                for (var key in namespace) {
+                    if (key && namespace.hasOwnProperty(key)) {
+                        this.setPath(key, namespace[key]);
+                    }
+                }
+                return;
+            } else if (!path) {
+                path = namespace;
+            } else {
+                var namespaceArray = namespace.split(".");
+                for (var i = 0, count = namespaceArray.length; i < count; i++) {
+                    var currentName = namespaceArray[i].toLowerCase();
+                    node[currentName] = node[currentName] || {};
+                    node = node[currentName];
                 }
             }
+            if (path && path.lastIndexOf("\\") !== path.length - 1 && path.lastIndexOf("/") !== path.length - 1) {
+                path = path + "/";
+            }
+            node._path = path;
+        },
+        getClassPath: function(name) {
+            return this.getPath(name) + name.replace(/\./gi, "/") + ".js";
         },
         loadDeps: function(classObj, recording) {
             recording = recording || {};
@@ -105,6 +104,51 @@
             }
             return depsAllLoaded;
         },
+        fastClone: function(source) {
+            var temp = function() {};
+            temp.prototype = source;
+            var result = new temp();
+            return result;
+        },
+        proxy: function(context, method) {
+            var thisArgs = Array.prototype.slice.apply(arguments);
+            var thisObj = thisArgs.shift();
+            var thisMethod = typeof this === "function" ? this : thisArgs.shift();
+            return function() {
+                var tempArgs = Array.prototype.slice.apply(arguments);
+                return thisMethod.apply(thisObj, tempArgs.concat(thisArgs));
+            };
+        },
+        config: function(obj) {
+            for (var key in obj) {
+                if (key && obj.hasOwnProperty(key)) {
+                    if (key === "path") {
+                        this.setPath(obj[key]);
+                    } else {
+                        this.conf[key] = obj[key];
+                    }
+                }
+            }
+        },
+        create: function(classObj, params) {
+            var args = Array.prototype.slice.call(arguments, 0);
+            args.shift();
+            var constructerName = classObj.name || "init";
+            var tempClassObj = function(args) {
+                this[constructerName] = this[constructerName] || function() {};
+                this[constructerName].apply(this, args);
+            };
+            tempClassObj.prototype = classObj;
+            var result = new tempClassObj(args);
+            for (var classPropertyName in classObj) {
+                var temp = classObj[classPropertyName];
+                if (temp && classObj.hasOwnProperty(classPropertyName) && typeof temp === "object") {
+                    result[classPropertyName] = this.fastClone(temp);
+                }
+            }
+            result.instances = null;
+            return result;
+        },
         define: function(module, classObj) {
             if (!classObj) {
                 classObj = module;
@@ -124,12 +168,12 @@
                 }
             }
             currClassObj[name] = currClassObj[name] || {};
-            if (!currClassObj[name].name || !currClassObj[name].___registered) {
-                classObj.___registered = true;
+            if (!currClassObj[name].name || !currClassObj[name]._registed) {
+                classObj._registed = true;
                 currClassObj[name] = classObj;
-            } else if (currClassObj[name].___registered && classObj.classType && classObj.classType === "extend") {
+            } else if (currClassObj[name]._registed) {
                 for (var key in classObj) {
-                    if (key && classObj.hasOwnProperty(key)) {
+                    if (key && classObj.hasOwnProperty(key) && typeof currClassObj[name][key] === "undefined") {
                         currClassObj[name][key] = classObj[key];
                     }
                 }
@@ -171,9 +215,6 @@
                 }
             }
             return result;
-        },
-        getClassPath: function(name) {
-            return this.basePath + name.replace(/\./gi, "/") + ".js";
         }
     };
     oojs.$oojs();
@@ -323,7 +364,6 @@ define && define({
 define && define({
     name: "oojs",
     namespace: "",
-    classType: "extend",
     $oojs: function() {
         this.ev = oojs.create(oojs.event);
     },

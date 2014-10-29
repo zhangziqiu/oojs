@@ -34,7 +34,7 @@ var make = {
         for (key in this.sourceFiles) {
             if (key && this.sourceFiles[key] && this.sourceFiles.hasOwnProperty(key)) {
                 path = this.sourceFiles[key];
-				console.log(path);
+                console.log(path);
                 result += fs.readFileSync(path, 'utf8');
                 result += '\n';
             }
@@ -55,12 +55,12 @@ var make = {
         }
 
         try {
-            var uglify = require('uglify-js');            
+            var uglify = require('uglify-js');
         }
         catch (ex) {
             this.preinstall(this.build.proxy(this));
         }
-		this.build();
+        this.build();
     },
 
     preinstall: function (callback) {
@@ -78,10 +78,21 @@ var make = {
         console.log('building......');
 
         //获取合并后的文件字符串
+        console.log('compile start......');
         var sourceString = this.compile();
+        console.log('compile end......');
+        console.log('uglify parse start......');
         var fs = require('fs');
         var uglify = require("uglify-js");
-        var ast = uglify.parse(sourceString);
+        var ast;
+        try {
+            ast = uglify.parse(sourceString);
+        }
+        catch (ex) {
+            console.log(ex);
+        }
+
+        console.log('uglify parse end......');
 
         //source
         this.source.stream = uglify.OutputStream({
@@ -124,7 +135,7 @@ var make = {
         inp.pipe(gz).pipe(out);
         console.log('compile :' + this.gzip.path + '" successful!');
         fs.unlinkSync(this.gzip.path + "_temp");
-		
+
 
         console.log('build finished');
     }

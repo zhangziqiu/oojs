@@ -44,7 +44,6 @@ define && define({
     }
     */
     eventList: null,
-
     /** 
     事件组集合. 记录所有事件组的绑定关系
     格式为: 
@@ -57,28 +56,24 @@ define && define({
         }
     */
     groupList: null,
-
     /**
     事件组查询索引器. 
     */
     eventGroupIndexer: null,
-
     /**
      * 静态构造函数
      */
     $event: function () {
 
     },
-	
-	/**
+    /**
      * 动态构造函数
      */
     event: function () {
-		this.eventList = {};
-		this.groupList = {};
-		this.eventGroupIndexer = {};
+        this.eventList = {};
+        this.groupList = {};
+        this.eventGroupIndexer = {};
     },
-
     /**
      * 为事件添加事件处理函数
      * @param {string} eventName 事件名     
@@ -90,8 +85,7 @@ define && define({
         ev.status = false;
         return this;
     },
-
-	/**
+    /**
      * 为事件取消绑定事件处理函数
      * @param {string} eventName 事件名     
      * @param {Function} callback 事件处理函数
@@ -117,7 +111,6 @@ define && define({
             }
         }
     },
-
     /**
      * 为事件取消绑定事件处理函数
      * @param {string} eventName 事件名     
@@ -136,7 +129,6 @@ define && define({
             this.removeListener(eventName, callback);
         }
     },
-
     /**
      * 事件触发.
      * @param {string} eventName 事件名     
@@ -167,7 +159,6 @@ define && define({
             }
         }
     },
-
     /**
      * 创建事件组
      * @param {string} groupName 事件组名,需要在当前event对象中唯一
@@ -192,7 +183,6 @@ define && define({
             (this.eventGroupIndexer[eventName] = this.eventGroupIndexer[eventName] || []).push(groupName);
         }
     },
-
     /**
      * 事件组触发函数
      * @param {string} groupName 事件组名
@@ -225,7 +215,7 @@ define && define({
         //执行group的回调函数
         if (groupFinished) {
             //处理callback回调函数数组
-			group.callbacks = group.callbacks || [];
+            group.callbacks = group.callbacks || [];
             var callbacks = group.callbacks;
             var count = callbacks.length || 0;
             var callback;
@@ -255,7 +245,6 @@ define && define({
         }
 
     },
-
     /**
      * 添加事件组执行完毕后的回调函数. 
      * @param {string} groupName 事件组名
