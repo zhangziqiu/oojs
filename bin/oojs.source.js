@@ -270,6 +270,8 @@
             }
             //注册当前类
             currClassObj[name] = currClassObj[name] || {};
+            //是否是分部类, 默认不是分部类
+            var isPartClass = false;
             //新注册类
             if (!currClassObj[name].name || !currClassObj[name]._registed) {
                 classObj._registed = true;
@@ -277,10 +279,15 @@
             } else if (currClassObj[name]._registed) {
                 for (var key in classObj) {
                     if (key && classObj.hasOwnProperty(key) && typeof currClassObj[name][key] === "undefined") {
+                        isPartClass = true;
                         currClassObj[name][key] = classObj[key];
                     }
                 }
                 classObj = currClassObj[name];
+                //如果类已经加载过, 并且不是分布类, 则直接取消;
+                if (!isPartClass) {
+                    return this;
+                }
             }
             classObj = currClassObj[name];
             //加载依赖

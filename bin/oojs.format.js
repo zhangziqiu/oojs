@@ -168,16 +168,21 @@
                 }
             }
             currClassObj[name] = currClassObj[name] || {};
+            var isPartClass = false;
             if (!currClassObj[name].name || !currClassObj[name]._registed) {
                 classObj._registed = true;
                 currClassObj[name] = classObj;
             } else if (currClassObj[name]._registed) {
                 for (var key in classObj) {
                     if (key && classObj.hasOwnProperty(key) && typeof currClassObj[name][key] === "undefined") {
+                        isPartClass = true;
                         currClassObj[name][key] = classObj[key];
                     }
                 }
                 classObj = currClassObj[name];
+                if (!isPartClass) {
+                    return this;
+                }
             }
             classObj = currClassObj[name];
             var depsAllLoaded = this.loadDeps(classObj);
