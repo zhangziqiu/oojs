@@ -34,15 +34,18 @@
             path: ""
         },
         path: {},
+        pathCache: {},
         getPath: function(namespace) {
-            var namespaceArray = namespace.split(".");
+            var namespaceArray = namespace ? namespace.split(".") : false;
             var node = this.path;
-            for (var i = 0, count = namespaceArray.length; i < count; i++) {
-                var currentName = namespaceArray[i].toLowerCase();
-                if (node[currentName]) {
-                    node = node[currentName];
-                } else {
-                    break;
+            if (namespaceArray) {
+                for (var i = 0, count = namespaceArray.length; i < count; i++) {
+                    var currentName = namespaceArray[i].toLowerCase();
+                    if (node[currentName]) {
+                        node = node[currentName];
+                    } else {
+                        break;
+                    }
                 }
             }
             return node._path;
@@ -72,7 +75,10 @@
             node._path = path;
         },
         getClassPath: function(name) {
-            return this.getPath(name) + name.replace(/\./gi, "/") + ".js";
+            if (!this.pathCache[name]) {
+                this.pathCache[name] = this.getPath(name) + name.replace(/\./gi, "/") + ".js";
+            }
+            return this.pathCache[name];
         },
         loadDeps: function(classObj, recording) {
             recording = recording || {};

@@ -62,21 +62,27 @@
         */
         path: {},
         /**
+        缓存命名空间的路径
+        */
+        pathCache: {},
+        /**
          * 从目录树中, 返回指定命名空间的目录
          * @param {string} namespace 命名空间, 比如"A.B.C"
          * @return {string} 路径
          */
         getPath: function(namespace) {
             //namespace: a.b.c
-            //path: http://www.123.com/a/b or /home/user/a/b
-            var namespaceArray = namespace.split(".");
+            //path: http://www.123.com/a/b or /home/user/a/b            
+            var namespaceArray = namespace ? namespace.split(".") : false;
             var node = this.path;
-            for (var i = 0, count = namespaceArray.length; i < count; i++) {
-                var currentName = namespaceArray[i].toLowerCase();
-                if (node[currentName]) {
-                    node = node[currentName];
-                } else {
-                    break;
+            if (namespaceArray) {
+                for (var i = 0, count = namespaceArray.length; i < count; i++) {
+                    var currentName = namespaceArray[i].toLowerCase();
+                    if (node[currentName]) {
+                        node = node[currentName];
+                    } else {
+                        break;
+                    }
                 }
             }
             return node._path;
@@ -125,7 +131,10 @@
          * @return {string} 资源文件的相对路径(比如 /a/b/c.js)
          */
         getClassPath: function(name) {
-            return this.getPath(name) + name.replace(/\./gi, "/") + ".js";
+            if (!this.pathCache[name]) {
+                this.pathCache[name] = this.getPath(name) + name.replace(/\./gi, "/") + ".js";
+            }
+            return this.pathCache[name];
         },
         /**
          * 加载依赖
