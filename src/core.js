@@ -386,6 +386,20 @@
                 }
             }
             return result;
+        },
+        /**
+         * 重新加载类. 当一个类发生变化的时候, 可以调用此函数强制更新node和oojs框架缓存的类定义.
+         * @public
+         * @param {string} name 类的全限定性名(命名空间+类名, 比如 a.b.c)
+         * @return {Object} 类引用
+         */
+        reload: function(name){
+            this.using(name)._registed=false;
+            if(this.runtime === 'node'){
+                var classPath = this.getClassPath(name);
+                delete require.cache[require.resolve(classPath)];
+                return require(classPath);
+            }
         }
     };
 

@@ -226,6 +226,14 @@
                 }
             }
             return result;
+        },
+        reload: function(name) {
+            this.using(name)._registed = false;
+            if (this.runtime === "node") {
+                var classPath = this.getClassPath(name);
+                delete require.cache[require.resolve(classPath)];
+                return require(classPath);
+            }
         }
     };
     oojs.$oojs();
