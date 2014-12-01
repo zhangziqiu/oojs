@@ -394,12 +394,19 @@
          * @return {Object} 类引用
          */
         reload: function(name){
-            this.using(name)._registed=false;
-            if(this.runtime === 'node'){
-                var classPath = this.getClassPath(name);
-                delete require.cache[require.resolve(classPath)];
-                return require(classPath);
+            var result = this.find(name);
+            if(result){
+                result._registed=false;
+                if(this.runtime === 'node'){
+                    var classPath = this.getClassPath(name);
+                    delete require.cache[require.resolve(classPath)];
+                    result = require(classPath);
+                }
             }
+            else{
+                result = this.using(name);
+            }
+            return result;
         }
     };
 

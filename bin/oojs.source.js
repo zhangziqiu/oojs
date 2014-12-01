@@ -360,12 +360,14 @@
          * @return {Object} 类引用
          */
         reload: function(name) {
-            this.using(name)._registed = false;
+            var result = this.using(name);
+            result._registed = false;
             if (this.runtime === "node") {
                 var classPath = this.getClassPath(name);
                 delete require.cache[require.resolve(classPath)];
-                return require(classPath);
+                result = require(classPath);
             }
+            return result;
         }
     };
     //自解析
