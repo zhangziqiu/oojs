@@ -2,6 +2,11 @@
     var oojs = {
         name: "oojs",
         namespace: "",
+        conf: {
+            global: false,
+            proxyName: "proxy",
+            path: ""
+        },
         $oojs: function() {
             this.conf = typeof $oojs_config !== "undefined" ? $oojs_config : this.conf;
             if (typeof window !== "undefined") {
@@ -9,7 +14,6 @@
                 this.runtime = "browser";
                 this.setPath(this.conf.path);
             } else if (global) {
-                var path = require("path");
                 this.global = this.conf.global || global;
                 this.runtime = "node";
                 this.conf.path = this.conf.path || process.cwd() + "/src/";
@@ -17,7 +21,7 @@
                 var Module = module.constructor;
                 var nativeWrap = Module.wrap;
                 Module.wrap = function(script) {
-                    script = script.replace(/define\s*&&\s*define\s*\(/gi, "define(module,");
+                    script = script.replace(/^\s*(define\s*&&\s*)?define\s*\(/gi, "oojs.define(module,");
                     return nativeWrap(script);
                 };
                 module.exports = this;
@@ -27,11 +31,6 @@
             }
             this.global.define = this.proxy(this, this.define);
             this.global.oojs = oojs;
-        },
-        conf: {
-            global: false,
-            proxyName: "proxy",
-            path: ""
         },
         path: {},
         pathCache: {},
@@ -65,7 +64,9 @@
                 var namespaceArray = namespace.split(".");
                 for (var i = 0, count = namespaceArray.length; i < count; i++) {
                     var currentName = namespaceArray[i].toLowerCase();
-                    node[currentName] = node[currentName] || {};
+                    node[currentName] = node[currentName] || {
+                        _path: node._path
+                    };
                     node = node[currentName];
                 }
             }
@@ -86,17 +87,24 @@
             var depsAllLoaded = true;
             for (var key in deps) {
                 if (key && deps.hasOwnProperty(key) && deps[key]) {
-                    var classFullName = deps[key];
-                    classObj[key] = this.find(classFullName);
-                    if (recording && recording[classFullName]) {
+                    var classFullName;
+                    if (typeof deps[key] !== "string") {
+                        classObj[key] = deps[key];
+                        if (classObj[key] && classObj[key].name) {
+                            classObj[key].namespace = classObj[key].namespace || "";
+                            classFullName = classObj[key].namespace + classObj[key].name;
+                        }
+                    } else {
+                        classFullName = deps[key];
+                        classObj[key] = this.find(classFullName);
+                    }
+                    if (!classFullName || recording[classFullName]) {
                         continue;
                     }
                     recording[classFullName] = true;
                     if (!classObj[key]) {
                         if (this.runtime === "node") {
-                            try {
-                                classObj[key] = require(this.getClassPath(classFullName));
-                            } catch (ex) {}
+                            classObj[key] = require(this.getClassPath(classFullName));
                         }
                         if (!classObj[key]) {
                             depsAllLoaded = false;
@@ -139,6 +147,12 @@
         create: function(classObj, params) {
             var args = Array.prototype.slice.call(arguments, 0);
             args.shift();
+            if (typeof classObj === "string") {
+                classObj = this.using(classObj);
+            }
+            if (!classObj || !classObj.name) {
+                throw new Error("oojs.create need a class object with a name property");
+            }
             var constructerName = classObj.name || "init";
             var tempClassObj = function(args) {
                 this[constructerName] = this[constructerName] || function() {};
@@ -160,6 +174,7 @@
                 classObj = module;
             }
             var name = classObj.name;
+            var staticConstructorName = "$" + name;
             classObj.namespace = classObj.namespace || "";
             classObj.dispose = classObj.dispose || function() {};
             var preNamespaces = classObj.namespace.split(".");
@@ -195,7 +210,6 @@
             if (!depsAllLoaded && this.runtime === "browser" && this.loadDepsBrowser) {
                 this.loadDepsBrowser(classObj);
             } else {
-                var staticConstructorName = "$" + name;
                 classObj[staticConstructorName] && classObj[staticConstructorName]();
             }
             if (module && this.runtime === "node") {
@@ -228,12 +242,16 @@
             return result;
         },
         reload: function(name) {
-            var result = this.using(name);
-            result._registed = false;
-            if (this.runtime === "node") {
-                var classPath = this.getClassPath(name);
-                delete require.cache[require.resolve(classPath)];
-                result = require(classPath);
+            var result = this.find(name);
+            if (result) {
+                result._registed = false;
+                if (this.runtime === "node") {
+                    var classPath = this.getClassPath(name);
+                    delete require.cache[require.resolve(classPath)];
+                    result = require(classPath);
+                }
+            } else {
+                result = this.using(name);
             }
             return result;
         }
@@ -385,9 +403,7 @@ define && define({
 define && define({
     name: "oojs",
     namespace: "",
-    $oojs: function() {
-        this.ev = oojs.create(oojs.event);
-    },
+    ev: oojs.create(oojs.event),
     isNullObj: function(obj) {
         for (var i in obj) {
             if (obj.hasOwnProperty(i)) {

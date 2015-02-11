@@ -12,10 +12,21 @@
          */
         namespace: "",
         /**
+        oojs配置项, 可以通过config函数设置
+         */
+        conf: {
+            //设置全局作用域, 默认浏览器模式为window, node模式为系统global变量. 会在全局作用域中添加oojs属性.
+            global: false,
+            //为Function原型添加的proxy函数的函数名. false表示不添加. 默认为'proxy'. 可以使用oojs.proxy替代
+            proxyName: 'proxy',
+            //设置代码库根目录. node模式使用文件路径(可以是相对路径), 浏览器模式下需要提供完整的url地址.
+            path: ''
+        },
+        /**
         静态构造函数
          */
         $oojs: function () {
-            //设置可访问的 $oojs_config 变量(比如全局变量), 可以修改oojs的初始化设置. 设置项参见oojs.config属性.
+            //设置可访问的 $oojs_config 变量(比如全局变量), 可以修改oojs的初始化设置. 设置项参见conf属性.
             this.conf = typeof $oojs_config !== 'undefined' ? $oojs_config : this.conf;
 
             if (typeof window !== 'undefined') {
@@ -23,8 +34,7 @@
                 this.runtime = 'browser';
                 this.setPath(this.conf.path);
             }
-            else if (global) {
-                var path = require('path');
+            else if (global) {                
                 this.global = this.conf.global || global;
                 this.runtime = 'node';
                 //nodejs模式下, 默认为程序根目录的src文件夹
@@ -34,14 +44,13 @@
                 var Module = module.constructor;
                 var nativeWrap = Module.wrap;
                 Module.wrap = function (script) {
-                    script = script.replace(/define\s*&&\s*define\s*\(/gi, 'define(module,');
+                    script = script.replace(/^\s*(define\s*&&\s*)?define\s*\(/gi, 'oojs.define(module,');
                     return nativeWrap(script);
                 };
                 module.exports = this;
-
             }
 
-            //设置Function的原型proxy函数		
+            //设置Function的原型proxy函数
             if (this.conf.proxyName) {
                 Function.prototype[this.conf.proxyName] = this.proxy;
             }
@@ -50,17 +59,7 @@
             //设置全局oojs对象
             this.global.oojs = oojs;
         },
-        /**
-        oojs配置项, 可以通过config函数设置
-         */
-        conf: {
-            //设置全局作用域, 默认浏览器模式为window, node模式为系统global变量.
-            global: false,
-            //为Function原型添加的proxy函数的函数名. false表示不添加. 默认为'proxy'. 可以使用oojs.proxy替代
-            proxyName: 'proxy',
-            //设置代码库根目录. node模式使用文件路径(可以使相对路径), 浏览器模式下需要提供完整的url地址.
-            path: ''
-        },
+       
         /**
         存储命名空间的目录树
         */
@@ -79,7 +78,7 @@
             //path: http://www.123.com/a/b or /home/user/a/b            
             var namespaceArray = namespace ? namespace.split('.') : false;
             var node = this.path;
-            if(namespaceArray){
+            if (namespaceArray) {
                 for (var i = 0, count = namespaceArray.length; i < count; i++) {
                     var currentName = namespaceArray[i].toLowerCase();
                     if (node[currentName]) {
@@ -122,7 +121,7 @@
                 var namespaceArray = namespace.split('.');
                 for (var i = 0, count = namespaceArray.length; i < count; i++) {
                     var currentName = namespaceArray[i].toLowerCase();
-                    node[currentName] = node[currentName] || {};
+                    node[currentName] = node[currentName] || { _path : node._path };
                     node = node[currentName];
                 }
             }
@@ -140,7 +139,7 @@
          * @return {string} 资源文件的相对路径(比如 /a/b/c.js)
          */
         getClassPath: function (name) {
-            if(!this.pathCache[name]){
+            if (!this.pathCache[name]) {
                 this.pathCache[name] = this.getPath(name) + name.replace(/\./gi, "/") + ".js";
             }
             return this.pathCache[name];
@@ -157,9 +156,25 @@
             var depsAllLoaded = true;
             for (var key in deps) {
                 if (key && deps.hasOwnProperty(key) && deps[key]) {
-                    var classFullName = deps[key];
-                    classObj[key] = this.find(classFullName);
-                    if (recording && recording[classFullName]) {
+                    var classFullName;
+                    //如果key对应的是一个非string, 比如一个object, 则表示已经加载完依赖
+                    if (typeof deps[key] !== 'string') {
+                        classObj[key] = deps[key];
+                        if (classObj[key] && classObj[key].name) {
+                            classObj[key].namespace = classObj[key].namespace || '';
+                            classFullName = classObj[key].namespace + classObj[key].name;
+                        }
+                    }
+                    else {
+                        //如果key是string, 表示传递的是oojs的命名空间
+                        classFullName = deps[key];
+                        classObj[key] = this.find(classFullName);
+                    }
+
+                    //两种情况下跳过依赖加载. 
+                    //1.已经被加载过, 即已经在recording中存在
+                    //2.没有找到classFullName. 即模块是node模块而非oojs模块
+                    if ( !classFullName || recording[classFullName] ) {
                         continue;
                     }
                     recording[classFullName] = true;
@@ -167,10 +182,7 @@
                     if (!classObj[key]) {
                         //node模式下, 发现未加载的依赖类, 尝试使用require加载
                         if (this.runtime === 'node') {
-                            try {
-                                classObj[key] = require(this.getClassPath(classFullName));
-                            }
-                            catch (ex) {}
+                            classObj[key] = require(this.getClassPath(classFullName));
                         }
 
                         if (!classObj[key]) {
@@ -245,6 +257,16 @@
         create: function (classObj, params) {
             var args = Array.prototype.slice.call(arguments, 0);
             args.shift();
+            
+            //classObj如果是字符串, 则尝试使用using加载类.
+            if( typeof classObj === 'string' ){
+                classObj = this.using(classObj);
+            }
+            
+            if(!classObj || !classObj.name){
+                throw new Error('oojs.create need a class object with a name property');
+            }
+            
             //构造函数
             var constructerName = classObj.name || "init";
 
@@ -283,6 +305,7 @@
             }
 
             var name = classObj.name;
+            var staticConstructorName = "$" + name;
             classObj.namespace = classObj.namespace || "";
             classObj.dispose = classObj.dispose || function () {};
 
@@ -303,7 +326,7 @@
             currClassObj[name] = currClassObj[name] || {};
             //是否是分部类, 默认不是分部类
             var isPartClass = false;
-            
+
             //新注册类
             if (!currClassObj[name].name || !currClassObj[name]._registed) {
                 classObj._registed = true;
@@ -318,15 +341,15 @@
                     }
                 }
                 classObj = currClassObj[name];
-                
-                 //如果类已经加载过, 并且不是分布类, 则直接取消;
-                if( !isPartClass ){
+
+                //如果类已经加载过, 并且不是分布类, 则直接取消;
+                if (!isPartClass) {
                     return this;
                 }
+                
             }
             classObj = currClassObj[name];
-            
-           
+
 
             //加载依赖
             var depsAllLoaded = this.loadDeps(classObj);
@@ -337,7 +360,6 @@
             }
             else {
                 //运行静态构造函数
-                var staticConstructorName = "$" + name;
                 classObj[staticConstructorName] && classObj[staticConstructorName]();
             }
 
@@ -393,17 +415,17 @@
          * @param {string} name 类的全限定性名(命名空间+类名, 比如 a.b.c)
          * @return {Object} 类引用
          */
-        reload: function(name){
+        reload: function (name) {
             var result = this.find(name);
-            if(result){
-                result._registed=false;
-                if(this.runtime === 'node'){
+            if (result) {
+                result._registed = false;
+                if (this.runtime === 'node') {
                     var classPath = this.getClassPath(name);
                     delete require.cache[require.resolve(classPath)];
                     result = require(classPath);
                 }
             }
-            else{
+            else {
                 result = this.using(name);
             }
             return result;

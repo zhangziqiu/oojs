@@ -5,9 +5,7 @@ define && define({
      */
     name: "oojs",
     namespace: "",
-    $oojs: function () {
-        this.ev = oojs.create(oojs.event);
-    },
+    ev: oojs.create(oojs.event),
     /**
      * 判断是否空对象
      * @param {object} obj 待验证对象     
