@@ -1,4 +1,4 @@
-define && define({
+oojs.define({
     name: 'a',
     namespace: 'oojs.core.test',
     deps: {

@@ -5,18 +5,18 @@
 </head>
 
 <body>
-    <script src="../../../../src/core.js"></script>
+    <script src="../../../../src/oojs.js"></script>
     <script type="text/javascript">
-        define({
+        oojs.define({
             name:"a",
             testString: "a"
         });
         console.log(oojs.using('a').testString);
     </script>
     
-    <script src="../../../../src/core.js?a=1"></script>
+    <script src="../../../../src/oojs.js?a=1"></script>
     <script type="text/javascript">
-        define({
+        oojs.define({
             name:"a",
             testString: "b"
         });

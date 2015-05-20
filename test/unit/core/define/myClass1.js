@@ -1,6 +1,6 @@
-define && define ({
+oojs.define({
     name:'myClass1',
     $myClass1:function(){
-        this.myTest = 'test';
+        this.myTest = 'test myClass1';
     }
 });

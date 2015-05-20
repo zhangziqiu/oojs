@@ -1,6 +1,6 @@
 require('node-oojs');
 
-define && define({
+oojs.define({
     name: 'testLoadDeps',
     testCase: [{
         description: 'class-b then class-a',

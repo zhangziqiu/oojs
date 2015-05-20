@@ -1,28 +1,48 @@
 var make = {
     name: 'make',
     sourceFiles: {
-        coreFilePath: "./src/core.js",
-        eventFilePath: "./src/event.js",
-        loaderFilePath: "./src/loader.js"
+        coreFilePath: "./src/oojs.js",
+        eventFilePath: "./src/oojs/event.js",
+        loaderFilePath: "./src/oojs/loader.js"
     },
     source: {
         result: "",
-        path: './bin/oojs.source.js',
+        path: './bin/source/oojs.js',
         stream: null
     },
     format: {
         result: "",
-        path: './bin/oojs.format.js',
+        path: './bin/format/oojs.js',
         stream: null
     },
     compress: {
         result: "",
-        path: './bin/oojs.compress.js',
+        path: './bin/oojs.js',
         stream: null
     },
     gzip: {
         result: "",
-        path: './bin/oojs.compress.js.gz',
+        path: './bin/gzip/oojs.js.gz',
+        stream: null
+    },
+    sourceCore: {
+        result: "",
+        path: './bin/source/oojs.core.js',
+        stream: null
+    },
+    formatCore: {
+        result: "",
+        path: './bin/format/oojs.core.js',
+        stream: null
+    },
+    compressCore: {
+        result: "",
+        path: './bin/oojs.core.js',
+        stream: null
+    },
+    gzipCore: {
+        result: "",
+        path: './bin/gzip/oojs.core.js.gz',
         stream: null
     },
 
@@ -39,6 +59,14 @@ var make = {
                 result += '\n';
             }
         }
+        return result;
+    },
+    
+    compileCore: function(){
+        var result = "";
+        var fs = require('fs');
+        var path, key;
+        result += fs.readFileSync(this.sourceFiles.coreFilePath, 'utf8');
         return result;
     },
 
@@ -61,6 +89,7 @@ var make = {
             this.preinstall(this.build.proxy(this));
         }
         this.build();
+        this.buildCore();
     },
 
     preinstall: function (callback) {
@@ -136,8 +165,72 @@ var make = {
         console.log('compile :' + this.gzip.path + '" successful!');
         fs.unlinkSync(this.gzip.path + "_temp");
 
-
         console.log('build finished');
+    },
+    
+    buildCore: function () {
+        console.log('===core=== building......');
+
+        //获取合并后的文件字符串
+        console.log('===core=== compile start......');
+        var sourceString = this.compileCore();
+        console.log('===core=== compile end......');
+        console.log('===core=== uglify parse start......');
+        var fs = require('fs');
+        var uglify = require("uglify-js");
+        var ast;
+        try {
+            ast = uglify.parse(sourceString);
+        }
+        catch (ex) {
+            console.log(ex);
+        }
+
+        console.log('===core=== uglify parse end......');
+
+        //source
+        this.sourceCore.stream = uglify.OutputStream({
+            beautify: true,
+            comments: true,
+            width: 120
+        });
+        ast.print(this.sourceCore.stream);
+        this.sourceCore.result = this.sourceCore.stream.toString();
+        fs.writeFileSync(this.sourceCore.path, this.sourceCore.result);
+        console.log('===core=== compile :' + this.sourceCore.path + '" successful!');
+
+        //format
+        this.formatCore.stream = uglify.OutputStream({
+            beautify: true,
+            comments: false,
+            width: 120
+        });
+        ast.print(this.formatCore.stream);
+        this.formatCore.result = this.formatCore.stream.toString();
+        fs.writeFileSync(this.formatCore.path, this.formatCore.result);
+        console.log('===core=== compile :' + this.formatCore.path + '" successful!');
+
+        //compress
+        this.compressCore.result = uglify.minify(this.sourceCore.result, {
+            fromString: true
+        }).code;
+        fs.writeFileSync(this.compressCore.path, this.compressCore.result);
+        console.log('===core=== compile :' + this.compressCore.path + '" successful!');
+
+        //gzip
+        //首先将compress的结果写入文件
+        fs.writeFileSync(this.gzipCore.path + "_temp", this.compressCore.result);
+        var zlib = require('zlib');
+        var gz = zlib.createGzip({
+            level: 9
+        })
+        var inp = fs.createReadStream(this.gzipCore.path + "_temp");
+        var out = fs.createWriteStream(this.gzipCore.path);
+        inp.pipe(gz).pipe(out);
+        console.log('===core=== compile :' + this.gzipCore.path + '" successful!');
+        fs.unlinkSync(this.gzipCore.path + "_temp");
+
+        console.log('===core=== build finished');
     }
 }
 
