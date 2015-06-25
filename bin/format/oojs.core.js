@@ -2,7 +2,7 @@
     var oojs = {
         name: "oojs",
         namespace: "",
-        "class": {},
+        classes: {},
         $oojs: function(config) {
             config = config || {};
             if (typeof window !== "undefined" && typeof document !== "undefined") {
@@ -13,7 +13,7 @@
                 config.global = global;
             }
             config.proxyName = "proxy";
-            config.path = this.runtime === "node" ? process.cwd() + "/src/" : "";
+            config.path = this.runtime === "node" ? process.cwd() + "/src/" : "/src/";
             if (typeof $oojs_config !== "undefined") {
                 for (var key in $oojs_config) {
                     if (key && $oojs_config.hasOwnProperty(key)) {
@@ -175,7 +175,7 @@
             var isPartClass = false;
             var preNamespaces = classObj.namespace.split(".");
             var count = preNamespaces.length;
-            var currClassObj = this.class;
+            var currClassObj = this.classes;
             var firstName, tempName;
             for (var i = 0; i < count; i++) {
                 tempName = preNamespaces[i];
@@ -219,7 +219,7 @@
         find: function(name) {
             var result;
             var nameArray = name.split(".");
-            result = this.class[nameArray[0]];
+            result = this.classes[nameArray[0]];
             for (var i = 1, count = nameArray.length; i < count; i++) {
                 if (result && result[nameArray[i]]) {
                     result = result[nameArray[i]];

@@ -12,9 +12,9 @@
          */
         namespace: "",
         /**
-        类对象都注册到oojs.class属性上
+        类对象都注册到oojs.classes属性上
          */
-        "class": {},
+        classes: {},
         /**
         静态构造函数
          */
@@ -33,7 +33,7 @@
             //为Function原型添加的proxy函数的函数名. false表示不添加. 默认为'proxy'. 可以使用oojs.proxy替代
             config.proxyName = "proxy";
             //设置代码库根目录. node模式使用文件路径(可以是相对路径), 浏览器模式下需要提供完整的url地址.
-            config.path = this.runtime === "node" ? process.cwd() + "/src/" : "";
+            config.path = this.runtime === "node" ? process.cwd() + "/src/" : "/src/";
             //从可访问的 $oojs_config 变量中获取用户定义的配置项
             if (typeof $oojs_config !== "undefined") {
                 for (var key in $oojs_config) {
@@ -288,7 +288,7 @@
             //初始化前置命名空间
             var preNamespaces = classObj.namespace.split(".");
             var count = preNamespaces.length;
-            var currClassObj = this.class;
+            var currClassObj = this.classes;
             var firstName, tempName;
             for (var i = 0; i < count; i++) {
                 tempName = preNamespaces[i];
@@ -350,7 +350,7 @@
         find: function(name) {
             var result;
             var nameArray = name.split(".");
-            result = this.class[nameArray[0]];
+            result = this.classes[nameArray[0]];
             for (var i = 1, count = nameArray.length; i < count; i++) {
                 if (result && result[nameArray[i]]) {
                     result = result[nameArray[i]];
@@ -438,30 +438,46 @@ oojs.define({
     name: "event",
     namespace: "oojs",
     /** 
-    事件集合. 记录所有绑定的事件.
+    event集合. 记录所有绑定的事件.
     格式为: 
     {
         eventName:{ 
-            callbacks: [], 
-            data:[], 
-            afters:[], 
-            status:false 
+			name: eventName,	//event名
+            callbacks: [{
+					callback:function(){},	//回调函数
+					needTimes:1,			//希望执行的次数, 默认为 1
+					emitTimes:0				//已经执行了的次数, 默认为 0
+				}], 
+            callbackData:[],	//回调函数返回的数据
+			emitData:{},		//执行emit时传递的数据
+            status:false,		//true表示已经触发过 emit
+			groups:{}			//event所属group
         }
     }
     */
     eventList: null,
     /** 
-    事件组集合. 记录所有事件组的绑定关系
+    group集合. 
     格式为: 
-        { 
-            groupName:{
-                events: {'eventName':times}, 
-                callbacks: [], 
-                afters: []
-            } 
+    {
+       groupName:{ 
+			name: groupName,	//group名
+            callbacks: [{
+					callback:function(){},	//回调函数
+					needTimes:1,			//希望执行的次数, 默认为 1
+					emitTimes:0				//已经执行了的次数, 默认为 0
+				}], 
+            callbackData:[],	//回调函数返回的数据
+			emitData:{},		//执行emit时传递的数据
+            status:false,		//true表示已经触发过 emit
+			event:{},			//保存group内的event对象指针
+			previousGroup:{},	//group前节点指针. 可能有多个.
+			afterGroup:{}		//group后节点指针. 可能有多个.
         }
+    }
     */
     groupList: null,
+    eventGroupIndexer: null,
     /**
     事件组查询索引器. 
     */
@@ -479,26 +495,51 @@ oojs.define({
         this.eventGroupIndexer = {};
     },
     /**
+	* 创建一个event对象.
+	*/
+    createEvent: function(eventName) {
+        var result = {
+            name: eventName,
+            callbacks: [],
+            callbackData: [],
+            emitData: [],
+            status: false,
+            groups: {}
+        };
+        return result;
+    },
+    /**
      * 为事件添加事件处理函数
-     * @param {string} eventName 事件名     
+     * @param {string} eventName 事件名  
+	 * @param {number} times 可以不传递, 事件处理函数执行几次, 默认为1次, 循环执行传递-1		 
      * @param {Function} callback 事件处理函数
      */
-    bind: function(eventName, callback) {
-        var ev = this.eventList[eventName] = this.eventList[eventName] || {};
+    bind: function(eventName, times, callback) {
+        if (arguments.length === 2) {
+            //可以不传递 times
+            callback = times;
+            times = 1;
+        }
+        times = typeof times === "undefined" ? 1 : times;
+        var ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
         if (ev.status) {
             //事件已经触发, 则直接调用
             callback(ev.emitData);
         } else {
             //事件未触发, 添加到事件回调函数数组
-            (ev.callbacks = ev.callbacks || []).push(callback);
+            (ev.callbacks = ev.callbacks || []).push({
+                callback: callback,
+                needTimes: times,
+                emitTimes: 0
+            });
             ev.status = false;
         }
         return this;
     },
     /**
      * 为事件取消绑定事件处理函数
-     * @param {string} eventName 事件名     
-     * @param {Function} callback 事件处理函数
+     * @param {string} eventName 事件名. 如果只传递事件名则表示删除此事件的所有callback     
+     * @param {Function} callback 事件处理函数. 可以不传递.
      */
     removeListener: function(eventName, callback) {
         if (this.eventList[eventName]) {
@@ -506,7 +547,7 @@ oojs.define({
             if (ev.callbacks && ev.callbacks.length) {
                 for (var i = 0, count = ev.callbacks.length; i < count; i++) {
                     if (callback) {
-                        if (callback === ev.callbacks[i]) {
+                        if (callback === ev.callbacks[i].callback) {
                             ev.callbacks[i] = null;
                             break;
                         }
@@ -519,8 +560,11 @@ oojs.define({
         }
     },
     /**
-     * 为事件取消绑定事件处理函数
-     * @param {string} eventName 事件名     
+     * 为事件取消绑定事件处理函数.
+	 * 一个参数: 只传递一个参数 eventName 则删除此eventName的所有callback
+	 * 两个参数: 同时传递eventName和callback 则删除此eventName的指定callback
+	 * 无参数:   表示移除所有事件的所有callback  
+     * @param {string} eventName 事件名   
      * @param {Function} callback 事件处理函数
      */
     unbind: function(eventName, callback) {
@@ -542,32 +586,37 @@ oojs.define({
      * @param {Object} data 事件数据, 会传递给事件处理函数
      */
     emit: function(eventName, data) {
-        //处理event
-        var ev = this.eventList[eventName];
-        if (ev) {
-            //绑定了callback
-            if (ev.callbacks && ev.callbacks.length) {
-                var callbackCount = ev.callbacks.length;
-                ev.data = [];
-                for (var i = 0; i < callbackCount; i++) {
-                    var callback = ev.callbacks[i];
-                    if (callback) {
-                        ev.data.push(callback(data));
-                    }
+        //获取event, 如果没有没有找到则创建一个默认的event
+        var ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
+        //绑定了callback
+        if (ev.callbacks && ev.callbacks.length) {
+            var callbackCount = ev.callbacks.length;
+            ev.callbackData = [];
+            //清空
+            for (var i = 0; i < callbackCount; i++) {
+                var callbackItem = ev.callbacks[i];
+                var callbackFunction = callbackItem.callback;
+                var needRun = false;
+                if (callbackItem.needTimes === -1) {
+                    //设置-1表示循环执行
+                    needRun = true;
+                } else if (callbackItem.needTimes > 0 && callbackItem.emitTimes < callbackItem.needTimes) {
+                    //未达到设置的最大执行次数		
+                    needRun = true;
                 }
-                ev.callbacks = null;
+                callbackItem.emitTimes++;
+                if (needRun && callbackFunction) {
+                    callbackItem.data = callbackFunction(data);
+                }
             }
-        } else {
-            //eventName不存在, 生成新的ev对象
-            ev = this.eventList[eventName] = {};
         }
         //保存event事件的数据
         ev.status = true;
         ev.emitData = data || {};
-        //处理group, 找到绑定了event的所有group, 并触发groupEmit
-        var groups = this.eventGroupIndexer[eventName] || [];
-        for (var i = 0, count = groups.length, groupName; i < count; i++) {
-            groupName = groups[i];
+        //处理group
+        var groups = ev.groups || [];
+        for (var i = 0, count = groups.length; i < count; i++) {
+            var groupName = groups[i];
             if (groupName) {
                 this.groupEmit(groupName);
             }
@@ -591,9 +640,16 @@ oojs.define({
         var eventName, eventNames = eventNames || [];
         for (var i = 0, count = eventNames.length; i < count; i++) {
             eventName = eventNames[i];
-            events[eventName] = 1;
-            (this.eventGroupIndexer[eventName] = this.eventGroupIndexer[eventName] || []).push(groupName);
+            //获取event, 如果没有则创建默认的event对象
+            var ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
+            //设置event对象的group指针
+            ev.groups[groupName] = group;
+            //group对象只需要记录eventName即可, 可以用eventName直接从eventList中获取event对象
+            group.events[eventName] = 1;
         }
+        //触发一次 groupEmit, 如果新绑定的event已经是执行完毕的, 则group会立刻触发
+        this.groupEmit(groupName);
+        return this;
     },
     /**
      * 事件组触发函数
@@ -601,8 +657,6 @@ oojs.define({
      */
     groupEmit: function(groupName) {
         var group = this.groupList[groupName];
-        //安全性监测
-        if (!group) return;
         //检索group中的所有event是否执行完毕
         var events = group.events = group.events || {};
         var groupFinished = true;
@@ -617,7 +671,7 @@ oojs.define({
                     callbackData = null;
                     break;
                 } else {
-                    callbackData[eventName] = ev.data;
+                    callbackData[eventName] = ev.callbackData;
                 }
             }
         }
@@ -712,6 +766,7 @@ oojs.define({
         this.ev.bind(url, oojs.proxy(this, function(data, callback) {
             callback && callback();
         }, callback));
+        //loading对象记录已经加载过的日志, 保证一个地址不会被加载多次
         this.loading = this.loading || {};
         if (this.loading[url]) {
             return;
@@ -776,10 +831,10 @@ oojs.define({
                         classObj[staticConstructorName] && classObj[staticConstructorName]();
                     }, classObj));
                     //加载脚本
-                    var url = oojs.getPath(classObj.namespace || "" + classObj.name);
+                    var url = oojs.getClassPath(classFullName);
                     var jsCallBack = oojs.proxy(this, function(classFullName, url) {
                         this.ev.emit(classFullName, {
-                            "class": classFullName,
+                            classFullName: classFullName,
                             url: url
                         });
                     }, classFullName, url);

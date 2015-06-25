@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<meta charset="UTF-8">
+	</head>
+    <body>
+        <!-- 引入oojs, 假设将oojs.js下载到了src目录中 -->
+        <script type="text/javascript" src="/bin/source/oojs.js"></script>
+        <!-- 设置类文件根目录 -->
+        <script>
+            oojs.setPath('/test/demo/');
+        </script>
+        <script>
+            //下面是main.js的内容, 可以将main直接写在页面里
+            oojs.define({
+                name: 'main',
+                deps: {
+                    template: 'utility.template',
+					template2: 'utility.template'
+                },
+                $main: function () {
+                    var result = this.template.render('My name is {name}', {
+                        name: 'ZZQ'
+                    });
+                    console.log(result);
+                }
+            });
+        </script>
+    </body>
+
+</html>

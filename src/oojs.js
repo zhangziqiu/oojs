@@ -12,9 +12,9 @@
          */
         namespace: "",
          /**
-        类对象都注册到oojs.class属性上
+        类对象都注册到oojs.classes属性上
          */
-        class: {},
+        classes: {},
         /**
         静态构造函数
          */
@@ -34,7 +34,7 @@
             //为Function原型添加的proxy函数的函数名. false表示不添加. 默认为'proxy'. 可以使用oojs.proxy替代
             config.proxyName = 'proxy';
             //设置代码库根目录. node模式使用文件路径(可以是相对路径), 浏览器模式下需要提供完整的url地址.
-            config.path = this.runtime === 'node' ? process.cwd() + '/src/' : '';
+            config.path = this.runtime === 'node' ? process.cwd() + '/src/' : '/src/';
             
             //从可访问的 $oojs_config 变量中获取用户定义的配置项
             if( typeof $oojs_config !== 'undefined' ){
@@ -302,7 +302,9 @@
             classObj.namespace = classObj.namespace || "";
             classObj.dispose = classObj.dispose || function () {};
             //将动态构造函数改名为"__类名"的形式, 防止程序编程时导致的变量名冲突
-            classObj[ "__" + name ] = classObj[name] || function(){};   
+            classObj[ "__" + name ] = classObj[name] || function(){};
+            //将静态构造函数同样可以通过"__static_constructor"函数调用
+            classObj.__static_constructor = classObj[staticConstructorName] || function(){};
             var isRegisted = false;     //是否已经被注册过            
             var isPartClass = false;    //是否是分部类, 默认不是分部类
             
@@ -310,7 +312,7 @@
             //初始化前置命名空间
             var preNamespaces = classObj.namespace.split('.');
             var count = preNamespaces.length;
-            var currClassObj = this.class;
+            var currClassObj = this.classes;
             var firstName, tempName;
             for (var i = 0; i < count; i++) {
                 tempName = preNamespaces[i];
@@ -351,7 +353,7 @@
 					this.loader = this.loader || this.using('oojs.loader');
 					if( this.runtime === 'browser' &&  this.loader){
 						//浏览器模式下, 如果发现存在未加载的依赖项, 并且安装了 oojs.loader, 则不立刻调用静态函数, 需要先加载依赖类.
-						this.loader.loadDepsBrowser(classObj);
+						this.loader.loadDepsBrowser(classObj, unloadClassArray);
 					}
 					else{
 						//发现未加载的依赖类, 抛出异常
@@ -381,7 +383,7 @@
         find: function (name) {
             var result;
             var nameArray = name.split(".");
-            result = this.class[nameArray[0]];
+            result = this.classes[nameArray[0]];
             for (var i = 1, count = nameArray.length; i < count; i++) {
                 if (result && result[nameArray[i]]) {
                     result = result[nameArray[i]];
@@ -418,6 +420,7 @@
          * @return {Object} 类引用
          */
         reload: function (name) {
+            console.log('reload:' + name);
             var result = this.find(name);
             if (result) {
                 result._registed = false;
@@ -425,6 +428,9 @@
                     var classPath = this.getClassPath(name);
                     delete require.cache[require.resolve(classPath)];
                     result = require(classPath);
+                }
+                else{
+                    this.define(result);
                 }
             }
             else {

@@ -12,9 +12,9 @@
          */
         namespace: "",
         /**
-        类对象都注册到oojs.class属性上
+        类对象都注册到oojs.classes属性上
          */
-        "class": {},
+        classes: {},
         /**
         静态构造函数
          */
@@ -33,7 +33,7 @@
             //为Function原型添加的proxy函数的函数名. false表示不添加. 默认为'proxy'. 可以使用oojs.proxy替代
             config.proxyName = "proxy";
             //设置代码库根目录. node模式使用文件路径(可以是相对路径), 浏览器模式下需要提供完整的url地址.
-            config.path = this.runtime === "node" ? process.cwd() + "/src/" : "";
+            config.path = this.runtime === "node" ? process.cwd() + "/src/" : "/src/";
             //从可访问的 $oojs_config 变量中获取用户定义的配置项
             if (typeof $oojs_config !== "undefined") {
                 for (var key in $oojs_config) {
@@ -288,7 +288,7 @@
             //初始化前置命名空间
             var preNamespaces = classObj.namespace.split(".");
             var count = preNamespaces.length;
-            var currClassObj = this.class;
+            var currClassObj = this.classes;
             var firstName, tempName;
             for (var i = 0; i < count; i++) {
                 tempName = preNamespaces[i];
@@ -350,7 +350,7 @@
         find: function(name) {
             var result;
             var nameArray = name.split(".");
-            result = this.class[nameArray[0]];
+            result = this.classes[nameArray[0]];
             for (var i = 1, count = nameArray.length; i < count; i++) {
                 if (result && result[nameArray[i]]) {
                     result = result[nameArray[i]];

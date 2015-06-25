@@ -2,7 +2,7 @@
     var oojs = {
         name: "oojs",
         namespace: "",
-        "class": {},
+        classes: {},
         $oojs: function(config) {
             config = config || {};
             if (typeof window !== "undefined" && typeof document !== "undefined") {
@@ -13,7 +13,7 @@
                 config.global = global;
             }
             config.proxyName = "proxy";
-            config.path = this.runtime === "node" ? process.cwd() + "/src/" : "";
+            config.path = this.runtime === "node" ? process.cwd() + "/src/" : "/src/";
             if (typeof $oojs_config !== "undefined") {
                 for (var key in $oojs_config) {
                     if (key && $oojs_config.hasOwnProperty(key)) {
@@ -175,7 +175,7 @@
             var isPartClass = false;
             var preNamespaces = classObj.namespace.split(".");
             var count = preNamespaces.length;
-            var currClassObj = this.class;
+            var currClassObj = this.classes;
             var firstName, tempName;
             for (var i = 0; i < count; i++) {
                 tempName = preNamespaces[i];
@@ -219,7 +219,7 @@
         find: function(name) {
             var result;
             var nameArray = name.split(".");
-            result = this.class[nameArray[0]];
+            result = this.classes[nameArray[0]];
             for (var i = 1, count = nameArray.length; i < count; i++) {
                 if (result && result[nameArray[i]]) {
                     result = result[nameArray[i]];
@@ -264,18 +264,39 @@ oojs.define({
     eventList: null,
     groupList: null,
     eventGroupIndexer: null,
+    eventGroupIndexer: null,
     $event: function() {},
     event: function() {
         this.eventList = {};
         this.groupList = {};
         this.eventGroupIndexer = {};
     },
-    bind: function(eventName, callback) {
-        var ev = this.eventList[eventName] = this.eventList[eventName] || {};
+    createEvent: function(eventName) {
+        var result = {
+            name: eventName,
+            callbacks: [],
+            callbackData: [],
+            emitData: [],
+            status: false,
+            groups: {}
+        };
+        return result;
+    },
+    bind: function(eventName, times, callback) {
+        if (arguments.length === 2) {
+            callback = times;
+            times = 1;
+        }
+        times = typeof times === "undefined" ? 1 : times;
+        var ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
         if (ev.status) {
             callback(ev.emitData);
         } else {
-            (ev.callbacks = ev.callbacks || []).push(callback);
+            (ev.callbacks = ev.callbacks || []).push({
+                callback: callback,
+                needTimes: times,
+                emitTimes: 0
+            });
             ev.status = false;
         }
         return this;
@@ -286,7 +307,7 @@ oojs.define({
             if (ev.callbacks && ev.callbacks.length) {
                 for (var i = 0, count = ev.callbacks.length; i < count; i++) {
                     if (callback) {
-                        if (callback === ev.callbacks[i]) {
+                        if (callback === ev.callbacks[i].callback) {
                             ev.callbacks[i] = null;
                             break;
                         }
@@ -311,27 +332,30 @@ oojs.define({
         }
     },
     emit: function(eventName, data) {
-        var ev = this.eventList[eventName];
-        if (ev) {
-            if (ev.callbacks && ev.callbacks.length) {
-                var callbackCount = ev.callbacks.length;
-                ev.data = [];
-                for (var i = 0; i < callbackCount; i++) {
-                    var callback = ev.callbacks[i];
-                    if (callback) {
-                        ev.data.push(callback(data));
-                    }
+        var ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
+        if (ev.callbacks && ev.callbacks.length) {
+            var callbackCount = ev.callbacks.length;
+            ev.callbackData = [];
+            for (var i = 0; i < callbackCount; i++) {
+                var callbackItem = ev.callbacks[i];
+                var callbackFunction = callbackItem.callback;
+                var needRun = false;
+                if (callbackItem.needTimes === -1) {
+                    needRun = true;
+                } else if (callbackItem.needTimes > 0 && callbackItem.emitTimes < callbackItem.needTimes) {
+                    needRun = true;
                 }
-                ev.callbacks = null;
+                callbackItem.emitTimes++;
+                if (needRun && callbackFunction) {
+                    callbackItem.data = callbackFunction(data);
+                }
             }
-        } else {
-            ev = this.eventList[eventName] = {};
         }
         ev.status = true;
         ev.emitData = data || {};
-        var groups = this.eventGroupIndexer[eventName] || [];
-        for (var i = 0, count = groups.length, groupName; i < count; i++) {
-            groupName = groups[i];
+        var groups = ev.groups || [];
+        for (var i = 0, count = groups.length; i < count; i++) {
+            var groupName = groups[i];
             if (groupName) {
                 this.groupEmit(groupName);
             }
@@ -347,13 +371,15 @@ oojs.define({
         var eventName, eventNames = eventNames || [];
         for (var i = 0, count = eventNames.length; i < count; i++) {
             eventName = eventNames[i];
-            events[eventName] = 1;
-            (this.eventGroupIndexer[eventName] = this.eventGroupIndexer[eventName] || []).push(groupName);
+            var ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
+            ev.groups[groupName] = group;
+            group.events[eventName] = 1;
         }
+        this.groupEmit(groupName);
+        return this;
     },
     groupEmit: function(groupName) {
         var group = this.groupList[groupName];
-        if (!group) return;
         var events = group.events = group.events || {};
         var groupFinished = true;
         var callbackData = {};
@@ -366,7 +392,7 @@ oojs.define({
                     callbackData = null;
                     break;
                 } else {
-                    callbackData[eventName] = ev.data;
+                    callbackData[eventName] = ev.callbackData;
                 }
             }
         }
@@ -486,10 +512,10 @@ oojs.define({
                         var staticConstructorName = "$" + classObj.name;
                         classObj[staticConstructorName] && classObj[staticConstructorName]();
                     }, classObj));
-                    var url = oojs.getPath(classObj.namespace || "" + classObj.name);
+                    var url = oojs.getClassPath(classFullName);
                     var jsCallBack = oojs.proxy(this, function(classFullName, url) {
                         this.ev.emit(classFullName, {
-                            "class": classFullName,
+                            classFullName: classFullName,
                             url: url
                         });
                     }, classFullName, url);

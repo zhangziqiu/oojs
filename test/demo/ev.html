@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<meta charset="UTF-8">
+	</head>
+    <body>
+        <!-- 引入oojs, 假设将oojs.js下载到了src目录中 -->
+        <script type="text/javascript" src="/src/oojs.js"></script>
+		<script type="text/javascript" src="/src/oojs/event.js"></script>
+        <script>
+            //下面是main.js的内容, 可以将main直接写在页面里
+            oojs.define({
+                name: 'main',
+                $main: function () {
+                    var ev = oojs.create(oojs.event);
+					ev.bind('test', function(data){
+						console.log('ev-test-1:' + data);
+					});
+					ev.bind('test', -1, function(data){
+						console.log('ev-test-loop:' + data);
+					});
+					ev.bind('test', 2, function(data){
+						console.log('ev-test-2:' + data);
+					});
+					
+					ev.emit('test', 'emit-data-1');
+					ev.emit('test', 'emit-data-2');
+					ev.emit('test', 'emit-data-3');
+					ev.emit('test', 'emit-data-4');
+                }
+            });
+        </script>
+    </body>
+
+</html>

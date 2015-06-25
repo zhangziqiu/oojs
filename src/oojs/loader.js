@@ -12,19 +12,6 @@ oojs.define({
         this.ev = oojs.create( this.event );
     },
     /**
-     * 判断是否空对象
-     * @param {object} obj 待验证对象     
-     * @param {boolean} 是否为空对象
-     */
-    isNullObj: function (obj) {
-        for (var i in obj) {
-            if (obj.hasOwnProperty(i)) {
-                return false;
-            }
-        }
-        return true;
-    },
-    /**
      * 异步加载js文件
      * @public
      * @param {string} url js文件的url路径
@@ -44,10 +31,8 @@ oojs.define({
         }
 
         callback = callback || function () {};
-        this.ev.bind(url,  oojs.proxy( this, function (data, callback) {
-            callback && callback();
-        }, callback));
 
+		//loading对象记录已经加载过的日志, 保证一个地址不会被加载多次
         this.loading = this.loading || {};
         if (this.loading[url]) {
             return;
@@ -60,20 +45,13 @@ oojs.define({
         loader.async = true;
 
         loader.src = url;
-        loader.onload = loader.onerror = loader.onreadystatechange = oojs.proxy(this, function (e, url, loader) {
-            if (typeof e === 'string') {
-                url = e;
-                loader = url;
-            }
-
+        loader.onload = loader.onerror = loader.onreadystatechange = function (e) {
             if (/loaded|complete|undefined/.test(loader.readyState)) {
                 loader.onload = loader.onerror = loader.onreadystatechange = null;
                 loader = undefined;
-                //脚本加载完毕后, 触发事件
-                this.ev.emit(url, 1);
+                callback();
             }
-        }, url, loader);
-
+        };
         var s = document.getElementsByTagName("script")[0];
         s.parentNode.insertBefore(loader, s);
         return this;
@@ -84,58 +62,49 @@ oojs.define({
      * @param {object} classObj 类对象
      * @return {object} oojs对象引用
      */
-    loadDepsBrowser: function (classObj) {
-        var deps = classObj.deps;
-        var staticConstructorName = "$" + classObj.name;
+    loadDepsBrowser: function (classObj, unloadClassArray) {
+        //创建入口类事件组
+        var parentFullClassName = classObj.namespace ?  classObj.namespace + "." + classObj.name : classObj.name;
 
-        if (!this.isNullObj(deps)) {
-            for (var key in deps) {
-                if (key && deps.hasOwnProperty(key)) {
-                    var classFullName = deps[key];
+        if( !this.ev.groupList[parentFullClassName]  ){
+            this.ev.group(parentFullClassName, [], function(){
+                oojs.reload(parentFullClassName);
+            });
+        }
 
-                    //已经加载完毕的模块
-                    var loadedClass = oojs.using(classFullName)
-                    if (loadedClass) {
-                        classObj[key] = loadedClass;
-                        continue;
-                    }
-
-                    //绑定事件
-                    this.ev.bind(classFullName, function (data) {						
-						var result = oojs.using(data.classFullName);
-						if( !result ){
-							throw new Error(data.classFullName + ' load error in url: ' + data.url);
-						}
-                        return result;
-                    });
-
-                    //创建事件组
-                    this.ev.group('loadDeps', [classFullName], oojs.proxy(this, function (data, key, classFullName, classObj) {
-                        classObj[key] = data[classFullName][0];
-                    }, key, classFullName, classObj));
-
-                    //事件组执行完毕后的事件钩子
-                    this.ev.afterGroup('loadDeps', oojs.proxy(this, function (data, classObj) {
-                        //运行静态构造函数
-                        var staticConstructorName = "$" + classObj.name;
-                        classObj[staticConstructorName] && classObj[staticConstructorName]();
-                    }, classObj));
-
-                    //加载脚本
-                    var url = oojs.getPath(classObj.namespace || "" + classObj.name); 
-                    var jsCallBack = oojs.proxy(this, function (classFullName, url) {
-                            this.ev.emit(classFullName, {class:classFullName, url:url});
-                        }, classFullName, url);
-
-                    this.loadScript(url, jsCallBack);
-                }
+        //处理依赖
+        for(var i= 0, count=unloadClassArray.length; i<count; i++){
+            var classFullName = unloadClassArray[i];
+            //绑定事件
+            if(!this.ev.eventList[classFullName]){
+                this.ev.bind(classFullName, function () {
+                    return true;
+                });
             }
-        }
-        else {
-            //运行静态构造函数
-            classObj[staticConstructorName] && classObj[staticConstructorName]();
-        }
 
-        return oojs;
+            //添加到父类分组中
+            this.ev.group(parentFullClassName, classFullName);
+
+            //为每一个依赖类创建一个group
+            if( !this.ev.groupList[classFullName] ){
+                this.ev.group(classFullName, [], function(data, className){
+                    oojs.reload(className);
+                }.proxy(this, classFullName));
+                this.ev.groupList[classFullName].status=true;
+            }
+
+            //创建队列
+            this.ev.queue(parentFullClassName, classFullName);
+
+            //加载脚本
+            var url = oojs.getClassPath(classFullName);
+            var jsCallBack = oojs.proxy(this, function (classFullName) {
+                console.log('event:' + classFullName);
+                this.ev.emit(classFullName, classFullName);
+            }, classFullName);
+            this.loadScript(url, jsCallBack);
+
+        }
+        return this;
     }
 });
