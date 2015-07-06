@@ -12,7 +12,7 @@
   <body>
     <section class="page-header">
       <h1 class="project-name">oojs</h1>
-      <h2 class="project-tagline">oojs-make codes easy</h2>
+      <h2 class="project-tagline">Make Codes Easy!</h2>
       <a href="https://github.com/zhangziqiu/oojs" class="btn">View on GitHub</a>
       <a href="https://github.com/zhangziqiu/oojs/zipball/master" class="btn">Download .zip</a>
       <a href="https://github.com/zhangziqiu/oojs/tarball/master" class="btn">Download .tar.gz</a>
@@ -20,243 +20,396 @@
 
     <section class="main-content">
       <h1>
-<a id="oojs-make-codes-easy" class="anchor" href="#oojs-make-codes-easy" aria-hidden="true"><span class="octicon octicon-link"></span></a>oojs-make codes easy</h1>
+<a id="oojs---make-codes-easy" class="anchor" href="#oojs---make-codes-easy" aria-hidden="true"><span class="octicon octicon-link"></span></a>oojs - make codes easy!</h1>
 
-<p>因为js的灵活性, 在开发中经常会出现孤零的变量, 比如:</p>
+<p>简单, 是一种美、一种哲学、一种信仰.
+oojs提供了最佳的javascript编程方式, 让代码更加简单的编写、阅读和维护.</p>
+
+<p><strong>oojs 代码示例</strong>:</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-c">//创建cookie类</span>
+oojs.define({
+    name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>cookie<span class="pl-pds">'</span></span>,                 <span class="pl-c">//类名</span>
+    namespace<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>oojs.utility<span class="pl-pds">'</span></span>,      <span class="pl-c">//命名空间</span>
+    prefix<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>prefix-<span class="pl-pds">'</span></span>,              <span class="pl-c">//属性</span>
+    <span class="pl-en">getCookie</span><span class="pl-k">:</span><span class="pl-k">function</span>(<span class="pl-smi">key</span>){...}    <span class="pl-c">//函数</span>
+});
+
+<span class="pl-c">//使用cookie类</span>
+<span class="pl-k">var</span> cookie <span class="pl-k">=</span> oojs.using(<span class="pl-s"><span class="pl-pds">'</span>oojs.utility.cookie<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> id <span class="pl-k">=</span> cookie.getCookie(<span class="pl-s"><span class="pl-pds">'</span>id<span class="pl-pds">'</span></span>);</pre></div>
+
+<p>oojs是 <strong>编程框架</strong> 而非 <strong>类库</strong> , 适用于所有的js项目, 可以和各种规范如ADM,CDM等一起使用. 
+oojs中的oo即面向对象(Object Oriented), <strong>对象是组织代码的最小单位.</strong> </p>
+
+<p><strong>oojs 核心理念</strong>:</p>
+
+<blockquote>
+<p>万物皆对象
+对象皆JSON</p>
+</blockquote>
+
+<p><strong>oojs 主要功能</strong>:</p>
+
+<blockquote>
+<p>使用JSON结构描述类.
+使用命名空间组织类.
+兼容node和浏览器环境.</p>
+</blockquote>
+
+<hr>
+
+<h1>
+<a id="传统的js编程方式" class="anchor" href="#%E4%BC%A0%E7%BB%9F%E7%9A%84js%E7%BC%96%E7%A8%8B%E6%96%B9%E5%BC%8F" aria-hidden="true"><span class="octicon octicon-link"></span></a>传统的JS编程方式</h1>
+
+<p>首先, 让我们了解为何传统js编程方式会导致代码的可读性下降. 
+因为js的灵活性, 在开发中经常会出现孤零的变量和函数, 比如:</p>
 
 <div class="highlight highlight-js"><pre><span class="pl-k">var</span> <span class="pl-en">a</span> <span class="pl-k">=</span> <span class="pl-k">function</span>(){<span class="pl-k">return</span> b};
 <span class="pl-k">var</span> b <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>hello<span class="pl-pds">'</span></span>;
-<span class="pl-k">var</span> c <span class="pl-k">=</span> a();</pre></div>
+<span class="pl-k">var</span> c <span class="pl-k">=</span> a();
+<span class="pl-k">function</span> <span class="pl-en">d</span>(){
+    <span class="pl-c">//...</span>
+}</pre></div>
 
-<p>这是导致js开发变得更像"面向过程开发". 比如找几个AMD(或者CMD)模块, 看看他们的factory函数, 基本上都是典型的面向过程开发---代码可读性差, 过程复杂不易维护. </p>
+<p>所以我们常常见到这样组织代码的:</p>
 
-<p>AMD等规范让模块接口变得干净漂亮, 但是模块的内部实现却没有控制内部实现.这是导致很多模块拥有"漂亮的外表, 丑陋的内心".</p>
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> property1 <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>a<span class="pl-pds">'</span></span>;
+<span class="pl-k">function</span> <span class="pl-en">method1</span>(){...};
+<span class="pl-k">var</span> property2 <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>b<span class="pl-pds">'</span></span>;
+<span class="pl-k">function</span> <span class="pl-en">method2</span>(){...};
+<span class="pl-k">var</span> property3 <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span><span class="pl-pds">'</span></span>;
+<span class="pl-k">if</span>(property1<span class="pl-k">===</span><span class="pl-s"><span class="pl-pds">'</span>a<span class="pl-pds">'</span></span>){
+    property3 <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>c<span class="pl-pds">'</span></span>;
+    <span class="pl-k">var</span> method3 <span class="pl-k">=</span> method1(property3);
+}</pre></div>
 
-<p>oojs框架可以解决这些问题, 用一种最简单的, 最人性化的方式, 让js代码变的更易阅读和维护. </p>
+<p>再加上匿名函数和闭包的乱入:</p>
 
-<p>首先看看我们最习惯的使用json来组织对象的方式:</p>
+<div class="highlight highlight-js"><pre><span class="pl-c">//匿名函数和闭包举例</span>
+<span class="pl-k">var</span> property4 <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>d<span class="pl-pds">'</span></span>;
+<span class="pl-k">var</span> method4 <span class="pl-k">=</span> method1(<span class="pl-k">function</span>(){
+    <span class="pl-k">function</span>(){
+        <span class="pl-k">return</span> property4;
+    }
+})</pre></div>
 
-<div class="highlight highlight-js"><pre><span class="pl-k">var</span> myObj <span class="pl-k">=</span> {
-    <span class="pl-en">a</span><span class="pl-k">:</span> <span class="pl-k">function</span>(){
-        <span class="pl-k">return</span> <span class="pl-v">this</span>
+<p>即使是有名的js项目或者大神们编写的代码已经尽量清晰的去组织变量和代码, 当代码量过多时也必然会导致可读性下降.
+本质原因是传统的js开发 <strong>将变量作为了组织代码的最小单位</strong> .</p>
+
+<p>oojs的思想是 <strong>将对象作为组织代码的最小单位</strong> . 实际上, 已经有很多的开发者意识到了这一问题.比如在最新版本的jQuery中源码, 已经通过使用JSON对象提高了代码可读性:</p>
+
+<div class="highlight highlight-js"><pre>jQuery.extend({
+    <span class="pl-c">// Unique for each copy of jQuery on the page</span>
+    expando<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>jQuery<span class="pl-pds">"</span></span> <span class="pl-k">+</span> ( version <span class="pl-k">+</span> <span class="pl-c1">Math</span>.<span class="pl-c1">random</span>() ).<span class="pl-c1">replace</span>(<span class="pl-sr"> <span class="pl-pds">/</span><span class="pl-c1">\D</span><span class="pl-pds">/</span>g</span>, <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> ),
+
+    <span class="pl-c">// Assume jQuery is ready without the ready module</span>
+    isReady<span class="pl-k">:</span> <span class="pl-c1">true</span>,
+
+    <span class="pl-en">error</span><span class="pl-k">:</span> <span class="pl-k">function</span>( <span class="pl-smi">msg</span> ) {
+        <span class="pl-k">throw</span> <span class="pl-k">new</span> <span class="pl-en">Error</span>( msg );
     },
-    b<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>hello<span class="pl-pds">'</span></span>
-}
+    ...
+    <span class="pl-en">noop</span><span class="pl-k">:</span> <span class="pl-k">function</span>() {}
+});</pre></div>
 
-<span class="pl-k">var</span> c <span class="pl-k">=</span> myObj.a();</pre></div>
+<p>由此可见, <strong>使用JSON字面量创建对象, 是最自然的面向对象编程方式.</strong></p>
 
-<p>使用json来组织代码结构是最自然的方式. oojs提供了一种用json组织项目全部代码和变量的方式. </p>
-
-<p>(PS:oojs中的oo(Object Oriented)即面向对象, 我们认为: 对象是组织代码的最小单位.)</p>
+<p>基于此, oojs诞生了.</p>
 
 <hr>
 
-<h2>
-<a id="官方首页" class="anchor" href="#%E5%AE%98%E6%96%B9%E9%A6%96%E9%A1%B5" aria-hidden="true"><span class="octicon octicon-link"></span></a>官方首页</h2>
+<h1>
+<a id="oojs入门" class="anchor" href="#oojs%E5%85%A5%E9%97%A8" aria-hidden="true"><span class="octicon octicon-link"></span></a>oojs入门</h1>
 
-<p><a href="http://www.develop.cc">http://www.develop.cc</a></p>
+<p><strong>名词解释-全限定性名</strong>:  命名空间+类名.比如类C, 所在的命名空间是A.B, 则C的全限定性名是A.B.C</p>
 
 <h2>
-<a id="oojs主要功能" class="anchor" href="#oojs%E4%B8%BB%E8%A6%81%E5%8A%9F%E8%83%BD" aria-hidden="true"><span class="octicon octicon-link"></span></a>oojs主要功能</h2>
+<a id="简单示例" class="anchor" href="#%E7%AE%80%E5%8D%95%E7%A4%BA%E4%BE%8B" aria-hidden="true"><span class="octicon octicon-link"></span></a>简单示例</h2>
+
+<p>下面是一个简单的node程序示例.</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-c">//node环境下引用oojs</span>
+<span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>node-oojs<span class="pl-pds">'</span></span>);
+
+<span class="pl-c">//定义cookie类</span>
+oojs.define({
+    name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>cookie<span class="pl-pds">'</span></span>,
+    namespace<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>oojs.utility<span class="pl-pds">'</span></span>,
+    <span class="pl-en">getCookie</span><span class="pl-k">:</span><span class="pl-k">function</span>(<span class="pl-smi">key</span>){...},
+    <span class="pl-en">setCookie</span><span class="pl-k">:</span><span class="pl-k">function</span>(<span class="pl-smi">key</span>, <span class="pl-smi">value</span>, <span class="pl-smi">option</span>){...}
+});
+
+<span class="pl-c">//使用cookie类, 因为cookie是静态类所以不需要实例化</span>
+<span class="pl-k">var</span> cookie <span class="pl-k">=</span> oojs.using(<span class="pl-s"><span class="pl-pds">'</span>oojs.utility.cookie<span class="pl-pds">'</span></span>);
+
+<span class="pl-c">//使用cookie类的getCookie函数</span>
+<span class="pl-k">var</span> id <span class="pl-k">=</span> cookie.getCookie(<span class="pl-s"><span class="pl-pds">'</span>id<span class="pl-pds">'</span></span>);</pre></div>
+
+<p>在oojs中, 使用JSON结构声明一个类. 通过oojs.define完成类的定义. 通过oojs.using获取到类的引用. </p>
+
+<h2>
+<a id="开始使用" class="anchor" href="#%E5%BC%80%E5%A7%8B%E4%BD%BF%E7%94%A8" aria-hidden="true"><span class="octicon octicon-link"></span></a>开始使用</h2>
+
+<p>下面详细的讲解使用oojs的步骤.</p>
+
+<h3>
+<a id="1-引用oojs" class="anchor" href="#1-%E5%BC%95%E7%94%A8oojs" aria-hidden="true"><span class="octicon octicon-link"></span></a>1. 引用oojs</h3>
+
+<p>oojs支持浏览器和node环境. 使用oojs的第一步就是引入oojs.</p>
+
+<h4>
+<a id="node-环境" class="anchor" href="#node-%E7%8E%AF%E5%A2%83" aria-hidden="true"><span class="octicon octicon-link"></span></a>node 环境</h4>
+
+<p>使用npm或者cnpm安装最新版本的oojs. <strong>注意oojs的npm模块名称叫做"node-oojs"</strong>(因为npm上的oojs名字已经被占用).
+在项目根目录运行npm命令:</p>
+
+<div class="highlight highlight-js"><pre>npm install node<span class="pl-k">-</span>oojs</pre></div>
+
+<p>在程序的入口处引用:</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>node-oojs<span class="pl-pds">'</span></span>);</pre></div>
+
+<p>整个程序进程只需要引用一次. </p>
+
+<h4>
+<a id="浏览器环境" class="anchor" href="#%E6%B5%8F%E8%A7%88%E5%99%A8%E7%8E%AF%E5%A2%83" aria-hidden="true"><span class="octicon octicon-link"></span></a>浏览器环境</h4>
+
+<p>在浏览器环境下, 需要手动下载oojs文件. 项目地址:</p>
+
+<div class="highlight highlight-html"><pre>https://github.com/zhangziqiu/oojs</pre></div>
+
+<p>oojs项目的bin目录下面, 有两个js文件:</p>
 
 <ul>
-<li>使用json结构描述类.</li>
-<li>兼容nodejs和browser两种环境.</li>
-<li>使用命名空间组织代码</li>
+<li>oojs.core.js: 仅包括核心的面向对象编程功能.</li>
+<li>oojs.js: 除了核心功能, 还包括loader类用于加载依赖类. 以及event类用于处理事件编程. 通常都加载此文件.</li>
+</ul>
+
+<p>将oojs.js下载到项目中后, 直接引用即可:</p>
+
+<div class="highlight highlight-html"><pre>&lt;<span class="pl-ent">script</span> <span class="pl-e">type</span>=<span class="pl-s"><span class="pl-pds">"</span>text/javascript<span class="pl-pds">"</span></span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>./bin/oojs.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</pre></div>
+
+<h3>
+<a id="2-创建类" class="anchor" href="#2-%E5%88%9B%E5%BB%BA%E7%B1%BB" aria-hidden="true"><span class="octicon octicon-link"></span></a>2. 创建类</h3>
+
+<p>在 <strong>[项目根目录]/src/utility</strong> 目录下创建template.js文件, 内容如下:</p>
+
+<div class="highlight highlight-js"><pre>    <span class="pl-c">//template类提供一个render方法用于模板和数据的拼接</span>
+    oojs.define({
+        name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>template<span class="pl-pds">'</span></span>,
+        namespace<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>utility<span class="pl-pds">'</span></span>,
+        <span class="pl-en">render</span><span class="pl-k">:</span> <span class="pl-k">function</span> (<span class="pl-smi">source</span>, <span class="pl-smi">data</span>) {
+            <span class="pl-k">var</span> regexp <span class="pl-k">=</span> /{(.<span class="pl-k">*?</span>)}/g;
+            <span class="pl-k">return</span> source.<span class="pl-c1">replace</span>(regexp, <span class="pl-k">function</span> (<span class="pl-smi">match</span>, <span class="pl-smi">subMatch</span>, <span class="pl-smi">index</span>, <span class="pl-smi">s</span>) {
+                <span class="pl-k">return</span> data[subMatch] <span class="pl-k">||</span> <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>;
+            });
+        }
+    });</pre></div>
+
+<p>上面就是一个完整类的代码. 在oojs中, js类文件都是以oojs.define开始, 里面包括一个JSON格式的对象. 开发者可以自由的添加属性和方法, 但是要注意   <strong>此JSON对象的以下属性是oojs框架使用的:</strong>    </p>
+
+<ul>
+<li>name: 类名, 比如上面的 template</li>
+<li>namespace: 类所在的命名空间. 比如template类放在了 utility 命名空间下. 我们可以将所有的工具类都放在utility命名空间下,实现类的组织管理.</li>
+<li>名字为 <strong>"类名"</strong> 的函数(比如template类的template函数): 类的构造函数. 使用 oojs.create 创建一个类实例时, 会执行一次构造函数. </li>
+<li>名字为 <strong>"$+类名"</strong> 的函数(比如template类的$template函数): 类的静态构造函数. 当使用oojs.define将一个类引入时, 会执行一次静态构造函数. 创建实例的时候不会执行. 多次执行oojs.define只有第一次引入时会调用一次.</li>
+<li>deps: 依赖的类. 使用object描述. key为引用变量名, value为类的全限定性名. 后续可以通过this.key引用到这个依赖类. <strong>在构造函数和静态构造函数执行时,所有的deps依赖类都已经加载完毕.可以安全的使用依赖类.</strong> 在构造函数或者静态构造函数中可以放心的使用this.key的方式使用依赖类. 有关加载依赖的详细说明后面会有单独的章节讲解.</li>
 </ul>
 
 <h3>
-<a id="名词解释" class="anchor" href="#%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A" aria-hidden="true"><span class="octicon octicon-link"></span></a>名词解释</h3>
+<a id="3-使用类" class="anchor" href="#3-%E4%BD%BF%E7%94%A8%E7%B1%BB" aria-hidden="true"><span class="octicon octicon-link"></span></a>3. 使用类</h3>
 
-<ul>
-<li>全限定性名:命名空间+类名.比如类C, 所在的命名空间是A.B, 则C的全限定性名是A.B.C</li>
-</ul>
+<p>现在我们已经有了一个template类. 下面介绍如何在不同的环境下使用template类.</p>
+
+<h4>
+<a id="31-创建入口类" class="anchor" href="#31-%E5%88%9B%E5%BB%BA%E5%85%A5%E5%8F%A3%E7%B1%BB" aria-hidden="true"><span class="octicon octicon-link"></span></a>3.1 创建入口类</h4>
+
+<p>通常程序都有一个main函数作为程序入口, 在oojs中稍有不同, 借助oojs的依赖管理和静态构造函数, 我们可以构造一个入口类main.js: </p>
+
+<div class="highlight highlight-js"><pre>    oojs.define({
+        name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>main<span class="pl-pds">'</span></span>,
+        deps<span class="pl-k">:</span> { template<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>utility.template<span class="pl-pds">'</span></span> },
+        $<span class="pl-en">main</span><span class="pl-k">:</span> <span class="pl-k">function</span>(){
+            <span class="pl-k">var</span> result <span class="pl-k">=</span> <span class="pl-v">this</span>.template.render(<span class="pl-s"><span class="pl-pds">'</span>My name is {name}<span class="pl-pds">'</span></span>, {name<span class="pl-k">:</span><span class="pl-s"><span class="pl-pds">'</span>ZZQ<span class="pl-pds">'</span></span>});
+            <span class="pl-en">console</span><span class="pl-c1">.log</span>(result);
+        }
+    });</pre></div>
+
+<p>main.js可以放置在任意目录,而且也没有命名空间. main的静态构造函数$main作为程序的入口, 在静态构造函数中通过"this.template"的引用到template类. </p>
+
+<h4>
+<a id="32-node环境运行" class="anchor" href="#32-node%E7%8E%AF%E5%A2%83%E8%BF%90%E8%A1%8C" aria-hidden="true"><span class="octicon octicon-link"></span></a>3.2 node环境运行</h4>
+
+<p>在node环境中运行main.js, 需要在main.js顶部添加引用oojs库的代码:</p>
+
+<div class="highlight highlight-js"><pre>    <span class="pl-c">//引用oojs库</span>
+    <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>node-oojs<span class="pl-pds">'</span></span>);
+    <span class="pl-c">//后面就是main类的完整代码.</span>
+    oojs.define({
+        name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>main<span class="pl-pds">'</span></span>,
+        deps<span class="pl-k">:</span> { template<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>utility.template<span class="pl-pds">'</span></span> },
+        $<span class="pl-en">main</span><span class="pl-k">:</span> <span class="pl-k">function</span>(){
+            <span class="pl-k">var</span> result <span class="pl-k">=</span> <span class="pl-v">this</span>.template.render(<span class="pl-s"><span class="pl-pds">'</span>My name is {name}<span class="pl-pds">'</span></span>, {name<span class="pl-k">:</span><span class="pl-s"><span class="pl-pds">'</span>ZZQ<span class="pl-pds">'</span></span>});
+            <span class="pl-en">console</span><span class="pl-c1">.log</span>(result);
+        }
+    });</pre></div>
+
+<p>运行:</p>
+
+<div class="highlight highlight-js"><pre>    node main.js</pre></div>
+
+<p>即可看到输出结果:</p>
+
+<div class="highlight highlight-js"><pre>    My name is <span class="pl-c1">ZZQ</span></pre></div>
+
+<p>在node环境下, 当加载 utility.template 类时, 默认会从如下路径加载类文件:</p>
+
+<div class="highlight highlight-js"><pre>[node运行目录]/src/utility/template.js</pre></div>
+
+<p>即将 [node运行根目录]/src 目录作为代码存放的根目录, 每一个命名空间就是一个文件夹.</p>
+
+<h4>
+<a id="33-浏览器环境" class="anchor" href="#33-%E6%B5%8F%E8%A7%88%E5%99%A8%E7%8E%AF%E5%A2%83" aria-hidden="true"><span class="octicon octicon-link"></span></a>3.3 浏览器环境</h4>
+
+<p>假设项目目录就是网站的根目录, 并且网站名称是 localhost. 
+在根目录下创建main.html, 编写如下代码:</p>
+
+<div class="highlight highlight-html"><pre>&lt;!DOCTYPE html&gt;
+&lt;<span class="pl-ent">html</span>&gt;
+    &lt;<span class="pl-ent">body</span>&gt;
+        <span class="pl-c">&lt;!-- 引入oojs, 假设将oojs.js下载到了src目录中 --&gt;</span>
+<span class="pl-s1">        &lt;<span class="pl-ent">script</span> <span class="pl-e">type</span>=<span class="pl-s"><span class="pl-pds">"</span>text/javascript<span class="pl-pds">"</span></span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>./src/oojs.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</span>
+        <span class="pl-c">&lt;!-- 设置类文件根目录 --&gt;</span>
+<span class="pl-s1">        &lt;<span class="pl-ent">script</span>&gt;</span>
+<span class="pl-s1">            oojs.setPath(<span class="pl-s"><span class="pl-pds">'</span>http://localhost/src/<span class="pl-pds">'</span></span>);</span>
+<span class="pl-s1">        &lt;/<span class="pl-ent">script</span>&gt;</span>
+<span class="pl-s1">        &lt;<span class="pl-ent">script</span>&gt;</span>
+<span class="pl-s1">                <span class="pl-c">//下面是main.js的内容, 可以将main直接写在页面里</span></span>
+<span class="pl-s1">                oojs.define({</span>
+<span class="pl-s1">                    name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>main<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                    deps<span class="pl-k">:</span> { template<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>utility.template<span class="pl-pds">'</span></span> },</span>
+<span class="pl-s1">                    $<span class="pl-en">main</span><span class="pl-k">:</span> <span class="pl-k">function</span>(){</span>
+<span class="pl-s1">                        <span class="pl-k">var</span> result <span class="pl-k">=</span> <span class="pl-v">this</span>.template.render(<span class="pl-s"><span class="pl-pds">'</span>My name is {name}<span class="pl-pds">'</span></span>, {name<span class="pl-k">:</span><span class="pl-s"><span class="pl-pds">'</span>ZZQ<span class="pl-pds">'</span></span>});</span>
+<span class="pl-s1">                        <span class="pl-en">console</span><span class="pl-c1">.log</span>(result);</span>
+<span class="pl-s1">                    }</span>
+<span class="pl-s1">                });</span>
+<span class="pl-s1">        &lt;/<span class="pl-ent">script</span>&gt;</span>
+    &lt;/<span class="pl-ent">body</span>&gt;
+&lt;/<span class="pl-ent">html</span>&gt;</pre></div>
+
+<p>打开 http://localhost/main.html页面, 即可在console控制台中看到:</p>
+
+<div class="highlight highlight-js"><pre>    My name is <span class="pl-c1">ZZQ</span></pre></div>
+
+<p>在浏览器中使用时, 需要设置类文件的根目录.oojs框架将从指定的根目录, 使用异步的方式加载类. 比如上面的例子加载 utility.template 类的地址是:</p>
+
+<div class="highlight highlight-js"><pre>    http<span class="pl-k">:</span><span class="pl-c">//localhost/src/utility/template.js</span></pre></div>
+
+<p>如果main有多个依赖类, 会同时并行异步加载, 并且在所有的类都加载完毕后在运行$main静态构造函数. </p>
+
+<p>通过上面实例的详细讲解, 已经可以使用oojs编写简单可维护的js代码了.
+下面的篇幅会介绍一些oojs细节和高级用法.</p>
 
 <hr>
 
 <h2>
-<a id="oojs快速入门" class="anchor" href="#oojs%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8" aria-hidden="true"><span class="octicon octicon-link"></span></a>oojs快速入门</h2>
+<a id="类的加载路径" class="anchor" href="#%E7%B1%BB%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%B7%AF%E5%BE%84" aria-hidden="true"><span class="octicon octicon-link"></span></a>类的加载路径</h2>
 
-<ul>
-<li>Step 1.引入oojs文件</li>
-</ul>
+<p>使用oojs的项目代码是用类组织的.在入门示例中, template.js 加载时, 默认使用如下路径:</p>
 
-<p>nodejs:    </p>
+<p><strong><em>node:</em></strong>
+[node运行的目录]/src/utility/template.js</p>
 
-<div class="highlight highlight-js"><pre><span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>./src/oojs.js<span class="pl-pds">'</span></span>);</pre></div>
+<p><strong><em>浏览器:</em></strong>
+[页面当前域名]/src/utility/template.js</p>
 
-<p>browser:</p>
+<p>即无论是node还是浏览器, 在项目的根目录里创建src文件夹, src内根据命名空间来组织文件夹.</p>
 
-<div class="highlight highlight-html"><pre>&lt;<span class="pl-ent">script</span> <span class="pl-e">type</span>=<span class="pl-s"><span class="pl-pds">"</span>text/javascript<span class="pl-pds">"</span></span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>./src/oojs.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</pre></div>
+<p>oojs提供了setPath函数, 可以为特定的类或者命名空间指定自己特殊的加载路径.</p>
 
-<p>src文件夹是js代码的根目录.里面使用命名空间组织代码. 需要将oojs.js放到根目录下, oojs.js会计算所在目录位置并记录在base.basePath中. oojs.js引入后, 会创建全局变量"oojs"和全局函数"define". </p>
+<div class="highlight highlight-js"><pre><span class="pl-c">//设置全局根目录</span>
+oojs.setPath(<span class="pl-s"><span class="pl-pds">'</span>./src2/<span class="pl-pds">'</span></span>);
+oojs.setPath(<span class="pl-s"><span class="pl-pds">'</span>http://localhost/asset/js/<span class="pl-pds">'</span></span>);
 
-<p>注意, oojs.js本身也是使用oojs框架创建和解析的, 十分便于阅读和修改. </p>
-
-<ul>
-<li>
-<p>Step 2.创建/使用类</p>
-
-<p>这里我们一个类string, 提供一个template方法用于模板和数据的拼接:</p>
-
-<div class="highlight highlight-js"><pre>define <span class="pl-k">&amp;&amp;</span> define({
-    name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>string<span class="pl-pds">'</span></span>,
-    namespace<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>base.utility<span class="pl-pds">'</span></span>,
-    <span class="pl-en">template</span><span class="pl-k">:</span> <span class="pl-k">function</span> (<span class="pl-smi">source</span>, <span class="pl-smi">data</span>) {
-        <span class="pl-k">var</span> regexp <span class="pl-k">=</span> /{(.<span class="pl-k">*?</span>)}/g;
-        <span class="pl-k">return</span> source.<span class="pl-c1">replace</span>(regexp, <span class="pl-k">function</span> (<span class="pl-smi">match</span>, <span class="pl-smi">subMatch</span>, <span class="pl-smi">index</span>, <span class="pl-smi">s</span>) {
-            <span class="pl-k">return</span> data[subMatch] <span class="pl-k">||</span> <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>;
-        });
-    }
+<span class="pl-c">//为 A 和 A.B 命名空间设置特殊的加载路径</span>
+oojs.setPath({
+    <span class="pl-s"><span class="pl-pds">'</span>A<span class="pl-pds">'</span></span><span class="pl-k">:</span><span class="pl-s"><span class="pl-pds">'</span>./src1/A/<span class="pl-pds">'</span></span>,
+    <span class="pl-s"><span class="pl-pds">'</span>A.B<span class="pl-pds">'</span></span><span class="pl-k">:</span><span class="pl-s"><span class="pl-pds">'</span>./src2/A/B/<span class="pl-pds">'</span></span>
 });</pre></div>
 
-<p>再定义一个page类, 这个类可以直接写在页面里作为页面的运行入口, 不需要提供namespace, 但是需要提供一个静态构造函数作为运行入口:</p>
-
-<div class="highlight highlight-js"><pre>    define <span class="pl-k">&amp;&amp;</span> define({
-        name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>page<span class="pl-pds">'</span></span>,
-        deps<span class="pl-k">:</span> {
-            string<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>base.utility.string<span class="pl-pds">'</span></span>
-        },
-        $<span class="pl-en">page</span><span class="pl-k">:</span><span class="pl-k">function</span>(){
-            <span class="pl-v">this</span>.string.template(<span class="pl-s"><span class="pl-pds">'</span>My name is {name}<span class="pl-pds">'</span></span>, {name<span class="pl-k">:</span><span class="pl-s"><span class="pl-pds">'</span>ZiQiu<span class="pl-pds">'</span></span>});
-        }
-    })</pre></div>
-
-<p>define函数是oojs.js引入时创建的全局函数. 调用define时要传入一个用json描述的对象.</p>
-
-<p>此对象的以下属性是oojs系统使用的:    </p>
+<p>oojs的路径查找使用的是树状结构. 以"A.B.C"这个类的查找规则为例:</p>
 
 <ul>
-<li>name: 类名, 比如上面的 string</li>
-<li>namespace: 类所在的命名空间. 比如string类我们将其放在了base.utility这个存放工具类的命名空间下.</li>
-<li>名字为 类名 的函数(比如string类的string属性): 类的构造函数. 使用base.create创建一个类实例时, 会执行的函数.</li>
-<li>名字为 "$"+类名 的函数(比如string类的$string属性): 类的静态构造函数. 当一个类引入到系统的时候, 会执行一次. 创建实例的时候不会执行.<br>
-</li>
-<li>deps: 依赖的类. 使用object描述. key为引用名, value为类的全限定性名. 后续可以通过this.key引用到这个类.</li>
+<li>首先从root根目录查找. 此时path为默认的src目录.</li>
+<li>查找命名空间A, 发现通过setPath设置了A的路径, 此时path为上面设置的 './src1/A'</li>
+<li>查找命名空间A.B, 发现通过setPath设置了A.B的路径, 此时path为上面设置的 './src2/A/B/'</li>
+<li>查找命名空间A.B.C, 未发现A.B.C的路径, 于是使用上一步的path作为结果返回</li>
 </ul>
 
-<p>page类因为提供了deps属性和$page静态构造函数, 所以运行流程是首先加载page类中deps属性描述的所有依赖类. </p>
-
-<p>加载完毕后, 会调用$page函数. 在$page函数中可以通过 this.string 获取到string类的引用.</p>
-
-<p>这里使用了oojs提供的加载器,配合deps属性来加载其他依赖的类.  还可以使用oojs.using函数来获取类引用, 举例如下:    </p>
-
-<p>string类当成一个静态类的使用代码如下:</p>
-
-<div class="highlight highlight-js"><pre>    <span class="pl-c">//获取到类的引用</span>
-    <span class="pl-k">var</span> string <span class="pl-k">=</span> oojs.using(<span class="pl-s"><span class="pl-pds">'</span>base.utility.string<span class="pl-pds">'</span></span>);
-    <span class="pl-c">//直接使用类的静态函数</span>
-    string.template(<span class="pl-s"><span class="pl-pds">'</span>My name is {name}<span class="pl-pds">'</span></span>, {name<span class="pl-k">:</span><span class="pl-s"><span class="pl-pds">'</span>ZiQiu<span class="pl-pds">'</span></span>});</pre></div>
-
-<p>同样, 也可以创建一个 string类的实例:</p>
-
-<div class="highlight highlight-js"><pre>    <span class="pl-c">//在string类中下面的用法是没有意义的, 只是演示一下如何创建类实例.</span>
-    <span class="pl-k">var</span> string <span class="pl-k">=</span> oojs.using(<span class="pl-s"><span class="pl-pds">'</span>base.utility.string<span class="pl-pds">'</span></span>);
-    <span class="pl-k">var</span> myString <span class="pl-k">=</span> oojs.create(string);
-    myString.template(<span class="pl-s"><span class="pl-pds">'</span>My name is {name}<span class="pl-pds">'</span></span>, {name<span class="pl-k">:</span><span class="pl-s"><span class="pl-pds">'</span>ZiQiu<span class="pl-pds">'</span></span>});</pre></div>
-</li>
-</ul>
+<p>通过上面的查找行为可以看出, 优先使用更加精确的类的加载路径, 否则使用父路径.</p>
 
 <hr>
 
-<h2>
-<a id="js项目代码结构" class="anchor" href="#js%E9%A1%B9%E7%9B%AE%E4%BB%A3%E7%A0%81%E7%BB%93%E6%9E%84" aria-hidden="true"><span class="octicon octicon-link"></span></a>JS项目代码结构</h2>
-
-<p>oojs使用命名空间来组织代码. 首先, 我们建立 src 文件夹, 作为放置所有js代码的目录.</p>
-
-<p>oojs.js文件需要放置在src的根目录下. 
-每个命名空间都是一个文件夹. 比如 base.utility.string 类的目录结构就是:</p>
-
-<pre><code>src/base/utility/string.js
-</code></pre>
-
-<p>所以一个项目的js源码应该是下面的样子:   </p>
-
-<pre><code>* src
-    * oojs.js
-    * base
-        * utility
-            * string.js
-            * cookie.js
-        * buseiness
-        * ui
-</code></pre>
-
-<p>在oojs加载类的时候, 会根据 oojs.basePath 根路径配合上面的相对路径来查找类文件.</p>
-
-<p>在nodejs环境中, basePath为oojs.js的所在目录. 即不需要进行basePath的路径配置, 只需要把oojs.js放在src的根目录下即可.</p>
-
-<p>在浏览器环境中, 需要通过oojs.config类设置根路径的url地址.比如:</p>
-
-<pre><code>oojs.config({basePath: 'http://www.mycdn.com/static/src/'})
-</code></pre>
-
-<p>则记载string.js类是, 会通过下面的路径查找:</p>
-
-<pre><code>http://www.mycdn.com/static/src/base/utility/string.js
-</code></pre>
-
-<hr>
+<h1>
+<a id="oojs的git源码结构" class="anchor" href="#oojs%E7%9A%84git%E6%BA%90%E7%A0%81%E7%BB%93%E6%9E%84" aria-hidden="true"><span class="octicon octicon-link"></span></a>oojs的git源码结构</h1>
 
 <h2>
-<a id="oojs的git源码结构" class="anchor" href="#oojs%E7%9A%84git%E6%BA%90%E7%A0%81%E7%BB%93%E6%9E%84" aria-hidden="true"><span class="octicon octicon-link"></span></a>oojs的git源码结构</h2>
+<a id="bin目录" class="anchor" href="#bin%E7%9B%AE%E5%BD%95" aria-hidden="true"><span class="octicon octicon-link"></span></a>bin目录</h2>
 
-<p>oojs.js文件是通过oojs项目编译出来的. 下面介绍oojs的项目结构. 并欢迎更多的开发者参与到oojs的开发和推广中来.</p>
-
-<ul>
-<li>
-<p>bin目录: 用于存放编译后的文件.</p>
+<p>bin目录中, 用于存放编译后的文件. bin目录下有以下两个js文件:</p>
 
 <ul>
-<li>oojs.compress.js : 源码压缩后的js文件.</li>
-<li>oojs.compress.js.gz: 上面js文件的gzip文件.</li>
-<li>oojs.format.js: 源码去掉注释的js文件.主要用于开发调试.因为源码中含有中文注释, 这些注释会影响js文件的编码并在部分web页面上产生兼容问题. 所以推荐使用此文件调试.</li>
-<li>oojs.source.js: 源码文件, 包含所有注释信息.</li>
+<li>oojs.core.js: 压缩后的文件. 仅包括核心的面向对象编程功能.</li>
+<li>oojs.js: 压缩后的文件. 除了核心功能, 还包括loader类用于加载依赖类.以及event类用于处理事件编程. 通常都加载此文件.</li>
+</ul>
+
+<p>在bin的根目录下, 放置的是代码压缩后的js文件. 通常在项目中引用的就是代码压缩后的js文件. 同时为了应对一些比如调试等场景, bin目录下还包括如下文件夹: </p>
+
+<ul>
+<li>format文件夹: 格式化,但是无注释的编译结果</li>
+<li>gzip文件夹: gzip后的编译结果</li>
+<li>source文件夹: 包含注释的编译结果</li>
+</ul>
+
+<p>上面每一个文件夹中, 也都包含 oojs.core.js和oojs.js两个文件(gzip目录下是.gz后缀), 可以根据需要使用.</p>
+
+<h2>
+<a id="src目录" class="anchor" href="#src%E7%9B%AE%E5%BD%95" aria-hidden="true"><span class="octicon octicon-link"></span></a>src目录</h2>
+
+<p>src目录存放oojs的源码文件. oojs框架自身也是按照oojs的编程方式实现的, 即oojs是自解析的. </p>
+
+<ul>
+<li>oojs文件夹 : oojs命名空间
+
+<ul>
+<li>event.js : oojs.event类实现了事件编程和promise编程模式. 这是异步编程时必不可少的类.</li>
+<li>loader.js : oojs.loader类提供了浏览器环境加载依赖类的加载器. </li>
 </ul>
 </li>
-<li>
-<p>src目录: 存放oojs的源码文件</p>
+<li>oojs.js : oojs的核心编程框架. oojs.core.js就是直接从这个文件编译出来的.</li>
+</ul>
+
+<h2>
+<a id="项目根目录" class="anchor" href="#%E9%A1%B9%E7%9B%AE%E6%A0%B9%E7%9B%AE%E5%BD%95" aria-hidden="true"><span class="octicon octicon-link"></span></a>项目根目录</h2>
+
+<p>bin和src两个目录是最主要的文件夹. 除了这两个文件夹, oojs的项目根目录还包括如下文件:</p>
 
 <ul>
-<li>core.js : oojs核心, 提供使用JSON的面向对象编程方式</li>
-<li>event.js: 事件模块, 通过oojs.event引用. 提供事件机制. </li>
-<li>loader.js: 加载器, 依赖event.js, 提供浏览器和node环境下的依赖加载.</li>
-</ul>
-</li>
 <li><p>.gitignore: git配置文件, 里面写明了git不需要管理的文件. 比如 node_modules 文件夹.</p></li>
 <li><p>README.md: 说明文档. 即您正在阅读的这个页面的内容.</p></li>
 <li><p>make.js: 编译文件. 使用 node make.js 命令, 可以从src目录生成bin目录下面的所有文件.</p></li>
 <li><p>package.json: 包描述文件.</p></li>
 </ul>
 
-<p>[小结]:
-通常的开发方式是在src中修改源码, 然后执行:</p>
-
-<pre><code>node make.js
-</code></pre>
-
-<p>make.js执行后, 会生成bin下面的各个编译后的文件.
-make.js需要使用uglify-js模块进行js的压缩处理.执行make.js的时候会自动判断是否安装了uglify-js模块, 如果没有安装则会自动执行:</p>
-
-<pre><code>npm install uglify-js
-</code></pre>
-
-<p>如果中国用户使用npm遇到网络问题, 推荐使用cnpm替代npm:</p>
-
-<pre><code>npm install cnpm
-cnpm install uglify-js
-</code></pre>
-
-<p>上面命令可以在执行make.js前手动执行. make.js运行时发现已经安装过uglify-js则不会再进行安装.</p>
-
 <hr>
 
-<h2>
-<a id="事件函数与this指针" class="anchor" href="#%E4%BA%8B%E4%BB%B6%E5%87%BD%E6%95%B0%E4%B8%8Ethis%E6%8C%87%E9%92%88" aria-hidden="true"><span class="octicon octicon-link"></span></a>事件函数与this指针</h2>
+<h1>
+<a id="事件函数与this指针" class="anchor" href="#%E4%BA%8B%E4%BB%B6%E5%87%BD%E6%95%B0%E4%B8%8Ethis%E6%8C%87%E9%92%88" aria-hidden="true"><span class="octicon octicon-link"></span></a>事件函数与this指针</h1>
 
 <p>假设我们声明了一个类:</p>
 
-<div class="highlight highlight-js"><pre>    define <span class="pl-k">&amp;&amp;</span> define({
+<div class="highlight highlight-js"><pre>    oojs.define({
         name<span class="pl-k">:</span><span class="pl-s"><span class="pl-pds">'</span>myClass<span class="pl-pds">'</span></span>,
         word<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>Hello World<span class="pl-pds">'</span></span>,
         <span class="pl-en">say</span><span class="pl-k">:</span> <span class="pl-k">function</span>(){
@@ -264,25 +417,28 @@ cnpm install uglify-js
         }
     })</pre></div>
 
-<p>myClss类有一个say函数, 回输出myClass类的word属性. say函数中通过this引用myClass类自身. 这在通常情况下都是正确的.</p>
+<p>myClss类有一个say函数, 输出myClass类的word属性. say函数中通过this引用myClass类自身. 这在通常情况下都是正确的.</p>
 
 <p>但是在事件中, 比如常见的按钮单击事件, 或者一个定时器函数, this指针并不是总指向myClass自身的:</p>
 
-<div class="highlight highlight-js"><pre>    <span class="pl-k">var</span> myClass <span class="pl-k">=</span> oojs.using(<span class="pl-s"><span class="pl-pds">'</span>myClass<span class="pl-pds">'</span></span>);
+<div class="highlight highlight-js"><pre>    <span class="pl-c1">window</span>.word <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>I am window<span class="pl-pds">'</span></span>;
+    <span class="pl-k">var</span> myClass <span class="pl-k">=</span> oojs.using(<span class="pl-s"><span class="pl-pds">'</span>myClass<span class="pl-pds">'</span></span>);
     <span class="pl-c1">setTimeout</span>(myClass.say, <span class="pl-c1">1000</span>);</pre></div>
 
-<p>上面的代码不会输出任何信息. 因为在setTimeout中的this指向了window对象而不是myClass. 所以oojs修改了function的圆形, 为每一个function对象提供了一个proxy函数.</p>
+<p>上面的代码会输出"I am window"而不是myClass类中的"Hello World". 因为在setTimeout中的this指向了window对象而不是myClass.</p>
+
+<p>oojs提供了proxy函数用于解决this指针问题. 默认情况下为了使用方便, 会为function的原型添加proxy函数. 如果不希望对原型造成污染也可以通过配置取消此功能. </p>
 
 <p>proxy函数用来修改事件的this指针. 比如上面的代码可以这样修改:</p>
 
 <div class="highlight highlight-js"><pre>    <span class="pl-k">var</span> myClass <span class="pl-k">=</span> oojs.using(<span class="pl-s"><span class="pl-pds">'</span>myClass<span class="pl-pds">'</span></span>);
     <span class="pl-c1">setTimeout</span>(myClass.say.proxy(myClass), <span class="pl-c1">1000</span>);</pre></div>
 
-<p>使用了proxy之后, 就可以正常的输出Hello World了.</p>
+<p>使用了proxy之后, 可以正常的输出"Hello World".</p>
 
-<p>proxy函数的第一个参数就是this指针需要指向的对象. </p>
+<p>proxy函数的第一个参数表示this指针需要指向的对象. </p>
 
-<p>proxy函数还可以修改事件处理函数的签名, 下面举一个复杂的例子.</p>
+<p>proxy函数还可以 <strong><em>修改事件处理函数的签名</em></strong> , 下面举一个复杂的例子.</p>
 
 <p>在nodejs中, 系统提供了socket对象, 用于网络编程. </p>
 
@@ -293,29 +449,73 @@ cnpm install uglify-js
           client.<span class="pl-c1">write</span>(<span class="pl-s"><span class="pl-pds">'</span>world!<span class="pl-cce">\r\n</span><span class="pl-pds">'</span></span>);
 });</pre></div>
 
-<p>其中的client变量就是socket对象. 这里使用了一个匿名函数, 执行client.write来向客户端发送数据. client是通过闭包调用的. </p>
+<p>调用 net.connect函数时, 需要传递一个回调函数, 并且回调函数是无参数的.
+通常, 使用上面的例子, 我们传递了一个匿名的回调函数, 并且在这个回调函数中使用 client变量, 此时会生成一个闭包, 以便在回调函数执行时, 可以正确访问到client变量.</p>
 
-<p>因为这个匿名的function函数是由系统调用的, 即nodejs收到connection的请求的时候, 回调用函数. 函数内再使用闭包获取到client. </p>
-
-<p>使用下面的方式, 可以避免使用闭包, 让client通过函数参数传递过去:</p>
+<p>使用proxy函数, 可以用一种 <strong><em>显式闭包</em></strong> 的方式, 将client作为参数传递, 让其看起来是通过参数传递的而不是使用闭包:</p>
 
 <div class="highlight highlight-js"><pre><span class="pl-k">var</span> net <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>net<span class="pl-pds">'</span></span>);
 <span class="pl-k">var</span> client <span class="pl-k">=</span> net.connect({port<span class="pl-k">:</span> <span class="pl-c1">8124</span>},
-    <span class="pl-k">function</span>(<span class="pl-smi">socket</span>) { <span class="pl-c">//'connect' listener</span>
+    <span class="pl-k">function</span>(<span class="pl-smi">mySocket</span>) { <span class="pl-c">//'connect' listener</span>
           <span class="pl-en">console</span><span class="pl-c1">.log</span>(<span class="pl-s"><span class="pl-pds">'</span>client connected<span class="pl-pds">'</span></span>);
-          socket.<span class="pl-c1">write</span>(<span class="pl-s"><span class="pl-pds">'</span>world!<span class="pl-cce">\r\n</span><span class="pl-pds">'</span></span>);
+          mySocket.<span class="pl-c1">write</span>(<span class="pl-s"><span class="pl-pds">'</span>world!<span class="pl-cce">\r\n</span><span class="pl-pds">'</span></span>);
 }.proxy(<span class="pl-v">this</span>, client));</pre></div>
 
-<p>注意, 这里通过proxy除了传递this对象外, 还传递了一个socket对象. 虽然系统调用匿名function的时候, 不会传递socket对象, 但是通过proxy的方式却可以在匿名function中获取到参数中的socket. </p>
+<p>注意, 这里通过proxy除了传递this对象外, 还传递了client变量.
+connect原本的回调函数是没有签名的, 但是你会发现在回调函数执行时, mySocket可以被正常访问. 此时我们将原本无参数的事件处理函数, 变成了一个有参数的事件处理函数. </p>
 
-<p>实现原理是依旧是通过闭包, proxy函数本身就是形成一个闭包. 但是proxy函数的设计将闭包做成了参数形式传递, 十分便于代码的阅读和维护.</p>
+<p>proxy函数看似神奇,其实内部还是使用闭包实现. 所以我在这里称其为 <strong><em>显式闭包</em></strong> .
+使用显示闭包极大的增加了代码的可读性和可维护性. 可以说显示闭包让邪恶的闭包从良了.</p>
+
+<p>另外, 显示闭包还可以解决循环中使用闭包的常见错误, 看下面的例子:
+(参见:<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Closures">https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Closures</a>)</p>
+
+<div class="highlight highlight-html"><pre>&lt;<span class="pl-ent">p</span> <span class="pl-e">id</span>=<span class="pl-s"><span class="pl-pds">"</span>help<span class="pl-pds">"</span></span>&gt;Helpful notes will appear here&lt;/<span class="pl-ent">p</span>&gt;
+&lt;<span class="pl-ent">p</span>&gt;E-mail: &lt;<span class="pl-ent">input</span> <span class="pl-e">type</span>=<span class="pl-s"><span class="pl-pds">"</span>text<span class="pl-pds">"</span></span> <span class="pl-e">id</span>=<span class="pl-s"><span class="pl-pds">"</span>email<span class="pl-pds">"</span></span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span>email<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">p</span>&gt;
+&lt;<span class="pl-ent">p</span>&gt;Name: &lt;<span class="pl-ent">input</span> <span class="pl-e">type</span>=<span class="pl-s"><span class="pl-pds">"</span>text<span class="pl-pds">"</span></span> <span class="pl-e">id</span>=<span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">p</span>&gt;
+&lt;<span class="pl-ent">p</span>&gt;Age: &lt;<span class="pl-ent">input</span> <span class="pl-e">type</span>=<span class="pl-s"><span class="pl-pds">"</span>text<span class="pl-pds">"</span></span> <span class="pl-e">id</span>=<span class="pl-s"><span class="pl-pds">"</span>age<span class="pl-pds">"</span></span> <span class="pl-e">name</span>=<span class="pl-s"><span class="pl-pds">"</span>age<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">p</span>&gt;</pre></div>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">function</span> <span class="pl-en">showHelp</span>(<span class="pl-smi">help</span>) {
+  <span class="pl-c1">document</span>.<span class="pl-c1">getElementById</span>(<span class="pl-s"><span class="pl-pds">'</span>help<span class="pl-pds">'</span></span>).innerHTML <span class="pl-k">=</span> help;
+}
+
+<span class="pl-k">function</span> <span class="pl-en">setupHelp</span>() {
+  <span class="pl-k">var</span> helpText <span class="pl-k">=</span> [
+      {<span class="pl-s"><span class="pl-pds">'</span>id<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>email<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>help<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>Your e-mail address<span class="pl-pds">'</span></span>},
+      {<span class="pl-s"><span class="pl-pds">'</span>id<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>help<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>Your full name<span class="pl-pds">'</span></span>},
+      {<span class="pl-s"><span class="pl-pds">'</span>id<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>age<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>help<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>Your age (you must be over 16)<span class="pl-pds">'</span></span>}
+    ];
+
+  <span class="pl-k">for</span> (<span class="pl-k">var</span> i <span class="pl-k">=</span> <span class="pl-c1">0</span>; i <span class="pl-k">&lt;</span> helpText.<span class="pl-c1">length</span>; i<span class="pl-k">++</span>) {
+    <span class="pl-k">var</span> item <span class="pl-k">=</span> helpText[i];
+    <span class="pl-c1">document</span>.<span class="pl-c1">getElementById</span>(item.<span class="pl-c1">id</span>).<span class="pl-en">onfocus</span> <span class="pl-k">=</span> <span class="pl-k">function</span>() {
+      <span class="pl-c1">showHelp</span>(item.help);
+    }
+  }
+}
+
+setupHelp();</pre></div>
+
+<p>数组 helpText 中定义了三个有用的提示信息，每一个都关联于对应的文档中的输入域的 ID。通过循环这三项定义，依次为每一个输入域添加了一个 onfocus 事件处理函数，以便显示帮助信息。</p>
+
+<p>运行这段代码后，您会发现它没有达到想要的效果。无论焦点在哪个输入域上，显示的都是关于年龄的消息。</p>
+
+<p>该问题的原因在于赋给 onfocus 是闭包（showHelp）中的匿名函数而不是闭包对象；在闭包（showHelp）中一共创建了三个匿名函数，但是它们都共享同一个环境（item）。在 onfocus 的回调被执行时，循环早已经完成，且此时 item 变量（由所有三个闭包所共享）已经指向了 helpText 列表中的最后一项。</p>
+
+<p>使用proxy函数就不会出现上面的问题:</p>
+
+<div class="highlight highlight-js"><pre>    <span class="pl-c1">document</span>.<span class="pl-c1">getElementById</span>(item.<span class="pl-c1">id</span>).<span class="pl-en">onfocus</span> <span class="pl-k">=</span> <span class="pl-k">function</span>(<span class="pl-smi">ev</span>, <span class="pl-smi">item</span>) {
+      <span class="pl-c1">showHelp</span>(item.help);
+    }.proxy(<span class="pl-v">this</span>, item);</pre></div>
+
+<p>特别要注意, proxy函数只能在原有的事件处理函数后面新增参数. onfocus事件原本是包括一个事件对象参数的. 即上面的ev. 所以需要将item作为第二个函数参数使用.</p>
 
 <p>相对于传统的node变成, 下面来看看使用oojs实现的完整的socket服务器的例子:</p>
 
-<div class="highlight highlight-js"><pre><span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>./src/oojs.js<span class="pl-pds">'</span></span>);
+<div class="highlight highlight-js"><pre><span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>node-oojs<span class="pl-pds">'</span></span>);
 
 
-define <span class="pl-k">&amp;&amp;</span> define({
+oojs.define({
     name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>socketServer<span class="pl-pds">'</span></span>,    
     <span class="pl-c">/**</span>
 <span class="pl-c">     * 静态构造函数</span>
@@ -371,8 +571,8 @@ define <span class="pl-k">&amp;&amp;</span> define({
 
 <hr>
 
-<h2>
-<a id="oojs的原型继承和快速克隆" class="anchor" href="#oojs%E7%9A%84%E5%8E%9F%E5%9E%8B%E7%BB%A7%E6%89%BF%E5%92%8C%E5%BF%AB%E9%80%9F%E5%85%8B%E9%9A%86" aria-hidden="true"><span class="octicon octicon-link"></span></a>oojs的原型继承和快速克隆</h2>
+<h1>
+<a id="oojs的原型继承和快速克隆" class="anchor" href="#oojs%E7%9A%84%E5%8E%9F%E5%9E%8B%E7%BB%A7%E6%89%BF%E5%92%8C%E5%BF%AB%E9%80%9F%E5%85%8B%E9%9A%86" aria-hidden="true"><span class="octicon octicon-link"></span></a>oojs的原型继承和快速克隆</h1>
 
 <p>oojs中使用特有的快速克隆方法实现高效的对象创建. 主要用在内部的oojs.create函数中, 此函数用于创建一个类实例.</p>
 
@@ -427,7 +627,7 @@ define <span class="pl-k">&amp;&amp;</span> define({
 <li>如果一个属性是实例属性, 则应该在动态构造函数中赋值.比如:</li>
 </ul>
 
-<div class="highlight highlight-js"><pre>define <span class="pl-k">&amp;&amp;</span> define({
+<div class="highlight highlight-js"><pre>oojs.define({
     name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>classA<span class="pl-pds">'</span></span>
     A<span class="pl-k">:</span> <span class="pl-c1">null</span>
     <span class="pl-en">classA</span><span class="pl-k">:</span><span class="pl-k">function</span>(){
@@ -447,8 +647,8 @@ define <span class="pl-k">&amp;&amp;</span> define({
 
 <hr>
 
-<h2>
-<a id="事件编程" class="anchor" href="#%E4%BA%8B%E4%BB%B6%E7%BC%96%E7%A8%8B" aria-hidden="true"><span class="octicon octicon-link"></span></a>事件编程</h2>
+<h1>
+<a id="事件编程" class="anchor" href="#%E4%BA%8B%E4%BB%B6%E7%BC%96%E7%A8%8B" aria-hidden="true"><span class="octicon octicon-link"></span></a>事件编程</h1>
 
 <p>js中常常使用事件和异步, 在浏览器端的Ajax是异步, 在nodejs中更是到处都是异步事件.</p>
 
@@ -518,8 +718,8 @@ ev.afterGroup(<span class="pl-s"><span class="pl-pds">'</span>myGroup<span class
 
 <hr>
 
-<h2>
-<a id="为什么要用面向对象的思想写js" class="anchor" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%80%9D%E6%83%B3%E5%86%99js" aria-hidden="true"><span class="octicon octicon-link"></span></a>为什么要用面向对象的思想写js?</h2>
+<h1>
+<a id="为什么要用面向对象的思想写js" class="anchor" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%80%9D%E6%83%B3%E5%86%99js" aria-hidden="true"><span class="octicon octicon-link"></span></a>为什么要用面向对象的思想写js?</h1>
 
 <p>oo不仅仅是一种编程方法, 而是组织代码的最小单位. </p>
 
@@ -535,36 +735,12 @@ ev.afterGroup(<span class="pl-s"><span class="pl-pds">'</span>myGroup<span class
 
 <hr>
 
-<h2>
-<a id="to-do" class="anchor" href="#to-do" aria-hidden="true"><span class="octicon octicon-link"></span></a>To Do</h2>
-
-<ul>
-<li>如何处理public和private</li>
-<li>dispose模式</li>
-<li>标准化的单元测试和性能测试</li>
-<li>网站建设</li>
-</ul>
-
-<h2>
-<a id="加入我们" class="anchor" href="#%E5%8A%A0%E5%85%A5%E6%88%91%E4%BB%AC" aria-hidden="true"><span class="octicon octicon-link"></span></a>加入我们</h2>
+<h1>
+<a id="加入我们" class="anchor" href="#%E5%8A%A0%E5%85%A5%E6%88%91%E4%BB%AC" aria-hidden="true"><span class="octicon octicon-link"></span></a>加入我们</h1>
 
 <p>oojs还在发展中, 我们尽量不在核心的oojs.js中加入过多的功能, 保持核心精简. 同时通过oojs团队成员的努力, 让oojs适用于更多的场景. </p>
 
 <p>欢迎有志之士加入到oojs的开发中来! </p>
-
-<p>oojs项目现有团队成员列表:  </p>
-
-<ul>
-<li>
-<code>zhangziqiu</code>:<a href="mailto:zhangziqiu@qq.com">zhangziqiu@qq.com</a>
-</li>
-<li>
-<code>fanwenjuan</code>:<a href="mailto:914399187@qq.com">914399187@qq.com</a>
-</li>
-<li>
-<code>wangbin</code>:<a href="mailto:feeyarcat@gmail.com">feeyarcat@gmail.com</a><br>
-</li>
-</ul>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/zhangziqiu/oojs">oojs</a> is maintained by <a href="https://github.com/zhangziqiu">zhangziqiu</a>.</span>
