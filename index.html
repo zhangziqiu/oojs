@@ -1,52 +1,32 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en-us">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta charset="UTF-8">
     <title>oojs by zhangziqiu</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/respond.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <!--[if lt IE 8]>
-    <link rel="stylesheet" href="stylesheets/ie.css">
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
   <body>
-      <div id="header">
-        <nav>
-          <li class="fork"><a href="https://github.com/zhangziqiu/oojs">View On GitHub</a></li>
-          <li class="downloads"><a href="https://github.com/zhangziqiu/oojs/zipball/master">ZIP</a></li>
-          <li class="downloads"><a href="https://github.com/zhangziqiu/oojs/tarball/master">TAR</a></li>
-          <li class="title">DOWNLOADS</li>
-        </nav>
-      </div><!-- end header -->
+    <section class="page-header">
+      <h1 class="project-name">oojs</h1>
+      <h2 class="project-tagline">oojs-make codes easy</h2>
+      <a href="https://github.com/zhangziqiu/oojs" class="btn">View on GitHub</a>
+      <a href="https://github.com/zhangziqiu/oojs/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/zhangziqiu/oojs/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-    <div class="wrapper">
-
-      <section>
-        <div id="title">
-          <h1>oojs</h1>
-          <p>oojs-make codes easy</p>
-          <hr>
-          <span class="credits left">Project maintained by <a href="https://github.com/zhangziqiu">zhangziqiu</a></span>
-          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
-        </div>
-
-        <h1>
-<a name="oojs-make-codes-easy" class="anchor" href="#oojs-make-codes-easy"><span class="octicon octicon-link"></span></a>oojs-make codes easy</h1>
+    <section class="main-content">
+      <h1>
+<a id="oojs-make-codes-easy" class="anchor" href="#oojs-make-codes-easy" aria-hidden="true"><span class="octicon octicon-link"></span></a>oojs-make codes easy</h1>
 
 <p>因为js的灵活性, 在开发中经常会出现孤零的变量, 比如:</p>
 
-<div class="highlight highlight-js"><pre><span class="kd">var</span> <span class="nx">a</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span><span class="k">return</span> <span class="nx">b</span><span class="p">};</span>
-<span class="kd">var</span> <span class="nx">b</span> <span class="o">=</span> <span class="s1">'hello'</span><span class="p">;</span>
-<span class="kd">var</span> <span class="nx">c</span> <span class="o">=</span> <span class="nx">a</span><span class="p">();</span>
-</pre></div>
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> <span class="pl-en">a</span> <span class="pl-k">=</span> <span class="pl-k">function</span>(){<span class="pl-k">return</span> b};
+<span class="pl-k">var</span> b <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>hello<span class="pl-pds">'</span></span>;
+<span class="pl-k">var</span> c <span class="pl-k">=</span> a();</pre></div>
 
 <p>这是导致js开发变得更像"面向过程开发". 比如找几个AMD(或者CMD)模块, 看看他们的factory函数, 基本上都是典型的面向过程开发---代码可读性差, 过程复杂不易维护. </p>
 
@@ -56,51 +36,58 @@
 
 <p>首先看看我们最习惯的使用json来组织对象的方式:</p>
 
-<div class="highlight highlight-js"><pre><span class="kd">var</span> <span class="nx">myObj</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="nx">a</span><span class="o">:</span> <span class="kd">function</span><span class="p">(){</span>
-        <span class="k">return</span> <span class="k">this</span>
-    <span class="p">},</span>
-    <span class="nx">b</span><span class="o">:</span> <span class="s1">'hello'</span>
-<span class="p">}</span>
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> myObj <span class="pl-k">=</span> {
+    <span class="pl-en">a</span><span class="pl-k">:</span> <span class="pl-k">function</span>(){
+        <span class="pl-k">return</span> <span class="pl-v">this</span>
+    },
+    b<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>hello<span class="pl-pds">'</span></span>
+}
 
-<span class="kd">var</span> <span class="nx">c</span> <span class="o">=</span> <span class="nx">myObj</span><span class="p">.</span><span class="nx">a</span><span class="p">();</span>
-</pre></div>
+<span class="pl-k">var</span> c <span class="pl-k">=</span> myObj.a();</pre></div>
 
 <p>使用json来组织代码结构是最自然的方式. oojs提供了一种用json组织项目全部代码和变量的方式. </p>
 
 <p>(PS:oojs中的oo(Object Oriented)即面向对象, 我们认为: 对象是组织代码的最小单位.)</p>
 
-<hr><h2>
-<a name="%E5%AE%98%E6%96%B9%E9%A6%96%E9%A1%B5" class="anchor" href="#%E5%AE%98%E6%96%B9%E9%A6%96%E9%A1%B5"><span class="octicon octicon-link"></span></a>官方首页</h2>
+<hr>
+
+<h2>
+<a id="官方首页" class="anchor" href="#%E5%AE%98%E6%96%B9%E9%A6%96%E9%A1%B5" aria-hidden="true"><span class="octicon octicon-link"></span></a>官方首页</h2>
 
 <p><a href="http://www.develop.cc">http://www.develop.cc</a></p>
 
 <h2>
-<a name="oojs%E4%B8%BB%E8%A6%81%E5%8A%9F%E8%83%BD" class="anchor" href="#oojs%E4%B8%BB%E8%A6%81%E5%8A%9F%E8%83%BD"><span class="octicon octicon-link"></span></a>oojs主要功能</h2>
+<a id="oojs主要功能" class="anchor" href="#oojs%E4%B8%BB%E8%A6%81%E5%8A%9F%E8%83%BD" aria-hidden="true"><span class="octicon octicon-link"></span></a>oojs主要功能</h2>
 
 <ul>
 <li>使用json结构描述类.</li>
 <li>兼容nodejs和browser两种环境.</li>
 <li>使用命名空间组织代码</li>
-</ul><h3>
-<a name="%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A" class="anchor" href="#%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A"><span class="octicon octicon-link"></span></a>名词解释</h3>
+</ul>
+
+<h3>
+<a id="名词解释" class="anchor" href="#%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A" aria-hidden="true"><span class="octicon octicon-link"></span></a>名词解释</h3>
 
 <ul>
 <li>全限定性名:命名空间+类名.比如类C, 所在的命名空间是A.B, 则C的全限定性名是A.B.C</li>
-</ul><hr><h2>
-<a name="oojs%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8" class="anchor" href="#oojs%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8"><span class="octicon octicon-link"></span></a>oojs快速入门</h2>
+</ul>
+
+<hr>
+
+<h2>
+<a id="oojs快速入门" class="anchor" href="#oojs%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8" aria-hidden="true"><span class="octicon octicon-link"></span></a>oojs快速入门</h2>
 
 <ul>
 <li>Step 1.引入oojs文件</li>
-</ul><p>nodejs:    </p>
+</ul>
 
-<div class="highlight highlight-js"><pre><span class="nx">require</span><span class="p">(</span><span class="s1">'./src/oojs.js'</span><span class="p">);</span>
-</pre></div>
+<p>nodejs:    </p>
+
+<div class="highlight highlight-js"><pre><span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>./src/oojs.js<span class="pl-pds">'</span></span>);</pre></div>
 
 <p>browser:</p>
 
-<div class="highlight highlight-html"><pre><span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span> <span class="na">src=</span><span class="s">"./src/oojs.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
-</pre></div>
+<div class="highlight highlight-html"><pre>&lt;<span class="pl-ent">script</span> <span class="pl-e">type</span>=<span class="pl-s"><span class="pl-pds">"</span>text/javascript<span class="pl-pds">"</span></span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>./src/oojs.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</pre></div>
 
 <p>src文件夹是js代码的根目录.里面使用命名空间组织代码. 需要将oojs.js放到根目录下, oojs.js会计算所在目录位置并记录在base.basePath中. oojs.js引入后, 会创建全局变量"oojs"和全局函数"define". </p>
 
@@ -112,30 +99,28 @@
 
 <p>这里我们一个类string, 提供一个template方法用于模板和数据的拼接:</p>
 
-<div class="highlight highlight-js"><pre><span class="nx">define</span> <span class="o">&amp;&amp;</span> <span class="nx">define</span><span class="p">({</span>
-    <span class="nx">name</span><span class="o">:</span> <span class="s1">'string'</span><span class="p">,</span>
-    <span class="nx">namespace</span><span class="o">:</span> <span class="s1">'base.utility'</span><span class="p">,</span>
-    <span class="nx">template</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">source</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
-        <span class="kd">var</span> <span class="nx">regexp</span> <span class="o">=</span> <span class="sr">/{(.*?)}/g</span><span class="p">;</span>
-        <span class="k">return</span> <span class="nx">source</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="nx">regexp</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">match</span><span class="p">,</span> <span class="nx">subMatch</span><span class="p">,</span> <span class="nx">index</span><span class="p">,</span> <span class="nx">s</span><span class="p">)</span> <span class="p">{</span>
-            <span class="k">return</span> <span class="nx">data</span><span class="p">[</span><span class="nx">subMatch</span><span class="p">]</span> <span class="o">||</span> <span class="s2">""</span><span class="p">;</span>
-        <span class="p">});</span>
-    <span class="p">}</span>
-<span class="p">});</span>
-</pre></div>
+<div class="highlight highlight-js"><pre>define <span class="pl-k">&amp;&amp;</span> define({
+    name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>string<span class="pl-pds">'</span></span>,
+    namespace<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>base.utility<span class="pl-pds">'</span></span>,
+    <span class="pl-en">template</span><span class="pl-k">:</span> <span class="pl-k">function</span> (<span class="pl-smi">source</span>, <span class="pl-smi">data</span>) {
+        <span class="pl-k">var</span> regexp <span class="pl-k">=</span> /{(.<span class="pl-k">*?</span>)}/g;
+        <span class="pl-k">return</span> source.<span class="pl-c1">replace</span>(regexp, <span class="pl-k">function</span> (<span class="pl-smi">match</span>, <span class="pl-smi">subMatch</span>, <span class="pl-smi">index</span>, <span class="pl-smi">s</span>) {
+            <span class="pl-k">return</span> data[subMatch] <span class="pl-k">||</span> <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>;
+        });
+    }
+});</pre></div>
 
 <p>再定义一个page类, 这个类可以直接写在页面里作为页面的运行入口, 不需要提供namespace, 但是需要提供一个静态构造函数作为运行入口:</p>
 
-<div class="highlight highlight-js"><pre>    <span class="nx">define</span> <span class="o">&amp;&amp;</span> <span class="nx">define</span><span class="p">({</span>
-        <span class="nx">name</span><span class="o">:</span> <span class="s1">'page'</span><span class="p">,</span>
-        <span class="nx">deps</span><span class="o">:</span> <span class="p">{</span>
-            <span class="nx">string</span><span class="o">:</span> <span class="s1">'base.utility.string'</span>
-        <span class="p">},</span>
-        <span class="nx">$page</span><span class="o">:</span><span class="kd">function</span><span class="p">(){</span>
-            <span class="k">this</span><span class="p">.</span><span class="nx">string</span><span class="p">.</span><span class="nx">template</span><span class="p">(</span><span class="s1">'My name is {name}'</span><span class="p">,</span> <span class="p">{</span><span class="nx">name</span><span class="o">:</span><span class="s1">'ZiQiu'</span><span class="p">});</span>
-        <span class="p">}</span>
-    <span class="p">})</span>
-</pre></div>
+<div class="highlight highlight-js"><pre>    define <span class="pl-k">&amp;&amp;</span> define({
+        name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>page<span class="pl-pds">'</span></span>,
+        deps<span class="pl-k">:</span> {
+            string<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>base.utility.string<span class="pl-pds">'</span></span>
+        },
+        $<span class="pl-en">page</span><span class="pl-k">:</span><span class="pl-k">function</span>(){
+            <span class="pl-v">this</span>.string.template(<span class="pl-s"><span class="pl-pds">'</span>My name is {name}<span class="pl-pds">'</span></span>, {name<span class="pl-k">:</span><span class="pl-s"><span class="pl-pds">'</span>ZiQiu<span class="pl-pds">'</span></span>});
+        }
+    })</pre></div>
 
 <p>define函数是oojs.js引入时创建的全局函数. 调用define时要传入一个用json描述的对象.</p>
 
@@ -149,6 +134,7 @@
 </li>
 <li>deps: 依赖的类. 使用object描述. key为引用名, value为类的全限定性名. 后续可以通过this.key引用到这个类.</li>
 </ul>
+
 <p>page类因为提供了deps属性和$page静态构造函数, 所以运行流程是首先加载page类中deps属性描述的所有依赖类. </p>
 
 <p>加载完毕后, 会调用$page函数. 在$page函数中可以通过 this.string 获取到string类的引用.</p>
@@ -157,22 +143,24 @@
 
 <p>string类当成一个静态类的使用代码如下:</p>
 
-<div class="highlight highlight-js"><pre>    <span class="c1">//获取到类的引用</span>
-    <span class="kd">var</span> <span class="nx">string</span> <span class="o">=</span> <span class="nx">oojs</span><span class="p">.</span><span class="nx">using</span><span class="p">(</span><span class="s1">'base.utility.string'</span><span class="p">);</span>
-    <span class="c1">//直接使用类的静态函数</span>
-    <span class="nx">string</span><span class="p">.</span><span class="nx">template</span><span class="p">(</span><span class="s1">'My name is {name}'</span><span class="p">,</span> <span class="p">{</span><span class="nx">name</span><span class="o">:</span><span class="s1">'ZiQiu'</span><span class="p">});</span>
-</pre></div>
+<div class="highlight highlight-js"><pre>    <span class="pl-c">//获取到类的引用</span>
+    <span class="pl-k">var</span> string <span class="pl-k">=</span> oojs.using(<span class="pl-s"><span class="pl-pds">'</span>base.utility.string<span class="pl-pds">'</span></span>);
+    <span class="pl-c">//直接使用类的静态函数</span>
+    string.template(<span class="pl-s"><span class="pl-pds">'</span>My name is {name}<span class="pl-pds">'</span></span>, {name<span class="pl-k">:</span><span class="pl-s"><span class="pl-pds">'</span>ZiQiu<span class="pl-pds">'</span></span>});</pre></div>
 
 <p>同样, 也可以创建一个 string类的实例:</p>
 
-<div class="highlight highlight-js"><pre>    <span class="c1">//在string类中下面的用法是没有意义的, 只是演示一下如何创建类实例.</span>
-    <span class="kd">var</span> <span class="nx">string</span> <span class="o">=</span> <span class="nx">oojs</span><span class="p">.</span><span class="nx">using</span><span class="p">(</span><span class="s1">'base.utility.string'</span><span class="p">);</span>
-    <span class="kd">var</span> <span class="nx">myString</span> <span class="o">=</span> <span class="nx">oojs</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">string</span><span class="p">);</span>
-    <span class="nx">myString</span><span class="p">.</span><span class="nx">template</span><span class="p">(</span><span class="s1">'My name is {name}'</span><span class="p">,</span> <span class="p">{</span><span class="nx">name</span><span class="o">:</span><span class="s1">'ZiQiu'</span><span class="p">});</span>
-</pre></div>
+<div class="highlight highlight-js"><pre>    <span class="pl-c">//在string类中下面的用法是没有意义的, 只是演示一下如何创建类实例.</span>
+    <span class="pl-k">var</span> string <span class="pl-k">=</span> oojs.using(<span class="pl-s"><span class="pl-pds">'</span>base.utility.string<span class="pl-pds">'</span></span>);
+    <span class="pl-k">var</span> myString <span class="pl-k">=</span> oojs.create(string);
+    myString.template(<span class="pl-s"><span class="pl-pds">'</span>My name is {name}<span class="pl-pds">'</span></span>, {name<span class="pl-k">:</span><span class="pl-s"><span class="pl-pds">'</span>ZiQiu<span class="pl-pds">'</span></span>});</pre></div>
 </li>
-</ul><hr><h2>
-<a name="js%E9%A1%B9%E7%9B%AE%E4%BB%A3%E7%A0%81%E7%BB%93%E6%9E%84" class="anchor" href="#js%E9%A1%B9%E7%9B%AE%E4%BB%A3%E7%A0%81%E7%BB%93%E6%9E%84"><span class="octicon octicon-link"></span></a>JS项目代码结构</h2>
+</ul>
+
+<hr>
+
+<h2>
+<a id="js项目代码结构" class="anchor" href="#js%E9%A1%B9%E7%9B%AE%E4%BB%A3%E7%A0%81%E7%BB%93%E6%9E%84" aria-hidden="true"><span class="octicon octicon-link"></span></a>JS项目代码结构</h2>
 
 <p>oojs使用命名空间来组织代码. 首先, 我们建立 src 文件夹, 作为放置所有js代码的目录.</p>
 
@@ -208,8 +196,10 @@
 <pre><code>http://www.mycdn.com/static/src/base/utility/string.js
 </code></pre>
 
-<hr><h2>
-<a name="oojs%E7%9A%84git%E6%BA%90%E7%A0%81%E7%BB%93%E6%9E%84" class="anchor" href="#oojs%E7%9A%84git%E6%BA%90%E7%A0%81%E7%BB%93%E6%9E%84"><span class="octicon octicon-link"></span></a>oojs的git源码结构</h2>
+<hr>
+
+<h2>
+<a id="oojs的git源码结构" class="anchor" href="#oojs%E7%9A%84git%E6%BA%90%E7%A0%81%E7%BB%93%E6%9E%84" aria-hidden="true"><span class="octicon octicon-link"></span></a>oojs的git源码结构</h2>
 
 <p>oojs.js文件是通过oojs项目编译出来的. 下面介绍oojs的项目结构. 并欢迎更多的开发者参与到oojs的开发和推广中来.</p>
 
@@ -237,7 +227,9 @@
 <li><p>README.md: 说明文档. 即您正在阅读的这个页面的内容.</p></li>
 <li><p>make.js: 编译文件. 使用 node make.js 命令, 可以从src目录生成bin目录下面的所有文件.</p></li>
 <li><p>package.json: 包描述文件.</p></li>
-</ul><p>[小结]:
+</ul>
+
+<p>[小结]:
 通常的开发方式是在src中修改源码, 然后执行:</p>
 
 <pre><code>node make.js
@@ -257,35 +249,34 @@ cnpm install uglify-js
 
 <p>上面命令可以在执行make.js前手动执行. make.js运行时发现已经安装过uglify-js则不会再进行安装.</p>
 
-<hr><h2>
-<a name="%E4%BA%8B%E4%BB%B6%E5%87%BD%E6%95%B0%E4%B8%8Ethis%E6%8C%87%E9%92%88" class="anchor" href="#%E4%BA%8B%E4%BB%B6%E5%87%BD%E6%95%B0%E4%B8%8Ethis%E6%8C%87%E9%92%88"><span class="octicon octicon-link"></span></a>事件函数与this指针</h2>
+<hr>
+
+<h2>
+<a id="事件函数与this指针" class="anchor" href="#%E4%BA%8B%E4%BB%B6%E5%87%BD%E6%95%B0%E4%B8%8Ethis%E6%8C%87%E9%92%88" aria-hidden="true"><span class="octicon octicon-link"></span></a>事件函数与this指针</h2>
 
 <p>假设我们声明了一个类:</p>
 
-<div class="highlight highlight-js"><pre>    <span class="nx">define</span> <span class="o">&amp;&amp;</span> <span class="nx">define</span><span class="p">({</span>
-        <span class="nx">name</span><span class="o">:</span><span class="s1">'myClass'</span><span class="p">,</span>
-        <span class="nx">word</span><span class="o">:</span> <span class="s1">'Hello World'</span><span class="p">,</span>
-        <span class="nx">say</span><span class="o">:</span> <span class="kd">function</span><span class="p">(){</span>
-            <span class="nx">alert</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">word</span><span class="p">);</span>
-        <span class="p">}</span>
-    <span class="p">})</span>
-</pre></div>
+<div class="highlight highlight-js"><pre>    define <span class="pl-k">&amp;&amp;</span> define({
+        name<span class="pl-k">:</span><span class="pl-s"><span class="pl-pds">'</span>myClass<span class="pl-pds">'</span></span>,
+        word<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>Hello World<span class="pl-pds">'</span></span>,
+        <span class="pl-en">say</span><span class="pl-k">:</span> <span class="pl-k">function</span>(){
+            <span class="pl-c1">alert</span>(<span class="pl-v">this</span>.word);
+        }
+    })</pre></div>
 
 <p>myClss类有一个say函数, 回输出myClass类的word属性. say函数中通过this引用myClass类自身. 这在通常情况下都是正确的.</p>
 
 <p>但是在事件中, 比如常见的按钮单击事件, 或者一个定时器函数, this指针并不是总指向myClass自身的:</p>
 
-<div class="highlight highlight-js"><pre>    <span class="kd">var</span> <span class="nx">myClass</span> <span class="o">=</span> <span class="nx">oojs</span><span class="p">.</span><span class="nx">using</span><span class="p">(</span><span class="s1">'myClass'</span><span class="p">);</span>
-    <span class="nx">setTimeout</span><span class="p">(</span><span class="nx">myClass</span><span class="p">.</span><span class="nx">say</span><span class="p">,</span> <span class="mi">1000</span><span class="p">);</span>
-</pre></div>
+<div class="highlight highlight-js"><pre>    <span class="pl-k">var</span> myClass <span class="pl-k">=</span> oojs.using(<span class="pl-s"><span class="pl-pds">'</span>myClass<span class="pl-pds">'</span></span>);
+    <span class="pl-c1">setTimeout</span>(myClass.say, <span class="pl-c1">1000</span>);</pre></div>
 
 <p>上面的代码不会输出任何信息. 因为在setTimeout中的this指向了window对象而不是myClass. 所以oojs修改了function的圆形, 为每一个function对象提供了一个proxy函数.</p>
 
 <p>proxy函数用来修改事件的this指针. 比如上面的代码可以这样修改:</p>
 
-<div class="highlight highlight-js"><pre>    <span class="kd">var</span> <span class="nx">myClass</span> <span class="o">=</span> <span class="nx">oojs</span><span class="p">.</span><span class="nx">using</span><span class="p">(</span><span class="s1">'myClass'</span><span class="p">);</span>
-    <span class="nx">setTimeout</span><span class="p">(</span><span class="nx">myClass</span><span class="p">.</span><span class="nx">say</span><span class="p">.</span><span class="nx">proxy</span><span class="p">(</span><span class="nx">myClass</span><span class="p">),</span> <span class="mi">1000</span><span class="p">);</span>
-</pre></div>
+<div class="highlight highlight-js"><pre>    <span class="pl-k">var</span> myClass <span class="pl-k">=</span> oojs.using(<span class="pl-s"><span class="pl-pds">'</span>myClass<span class="pl-pds">'</span></span>);
+    <span class="pl-c1">setTimeout</span>(myClass.say.proxy(myClass), <span class="pl-c1">1000</span>);</pre></div>
 
 <p>使用了proxy之后, 就可以正常的输出Hello World了.</p>
 
@@ -295,13 +286,12 @@ cnpm install uglify-js
 
 <p>在nodejs中, 系统提供了socket对象, 用于网络编程. </p>
 
-<div class="highlight highlight-js"><pre><span class="kd">var</span> <span class="nx">net</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'net'</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">client</span> <span class="o">=</span> <span class="nx">net</span><span class="p">.</span><span class="nx">connect</span><span class="p">({</span><span class="nx">port</span><span class="o">:</span> <span class="mi">8124</span><span class="p">},</span>
-    <span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="c1">//'connect' listener</span>
-          <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'client connected'</span><span class="p">);</span>
-          <span class="nx">client</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="s1">'world!\r\n'</span><span class="p">);</span>
-<span class="p">});</span>
-</pre></div>
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> net <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>net<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> client <span class="pl-k">=</span> net.connect({port<span class="pl-k">:</span> <span class="pl-c1">8124</span>},
+    <span class="pl-k">function</span>() { <span class="pl-c">//'connect' listener</span>
+          <span class="pl-en">console</span><span class="pl-c1">.log</span>(<span class="pl-s"><span class="pl-pds">'</span>client connected<span class="pl-pds">'</span></span>);
+          client.<span class="pl-c1">write</span>(<span class="pl-s"><span class="pl-pds">'</span>world!<span class="pl-cce">\r\n</span><span class="pl-pds">'</span></span>);
+});</pre></div>
 
 <p>其中的client变量就是socket对象. 这里使用了一个匿名函数, 执行client.write来向客户端发送数据. client是通过闭包调用的. </p>
 
@@ -309,13 +299,12 @@ cnpm install uglify-js
 
 <p>使用下面的方式, 可以避免使用闭包, 让client通过函数参数传递过去:</p>
 
-<div class="highlight highlight-js"><pre><span class="kd">var</span> <span class="nx">net</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'net'</span><span class="p">);</span>
-<span class="kd">var</span> <span class="nx">client</span> <span class="o">=</span> <span class="nx">net</span><span class="p">.</span><span class="nx">connect</span><span class="p">({</span><span class="nx">port</span><span class="o">:</span> <span class="mi">8124</span><span class="p">},</span>
-    <span class="kd">function</span><span class="p">(</span><span class="nx">socket</span><span class="p">)</span> <span class="p">{</span> <span class="c1">//'connect' listener</span>
-          <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'client connected'</span><span class="p">);</span>
-          <span class="nx">socket</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="s1">'world!\r\n'</span><span class="p">);</span>
-<span class="p">}.</span><span class="nx">proxy</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">client</span><span class="p">));</span>
-</pre></div>
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> net <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>net<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> client <span class="pl-k">=</span> net.connect({port<span class="pl-k">:</span> <span class="pl-c1">8124</span>},
+    <span class="pl-k">function</span>(<span class="pl-smi">socket</span>) { <span class="pl-c">//'connect' listener</span>
+          <span class="pl-en">console</span><span class="pl-c1">.log</span>(<span class="pl-s"><span class="pl-pds">'</span>client connected<span class="pl-pds">'</span></span>);
+          socket.<span class="pl-c1">write</span>(<span class="pl-s"><span class="pl-pds">'</span>world!<span class="pl-cce">\r\n</span><span class="pl-pds">'</span></span>);
+}.proxy(<span class="pl-v">this</span>, client));</pre></div>
 
 <p>注意, 这里通过proxy除了传递this对象外, 还传递了一个socket对象. 虽然系统调用匿名function的时候, 不会传递socket对象, 但是通过proxy的方式却可以在匿名function中获取到参数中的socket. </p>
 
@@ -323,66 +312,67 @@ cnpm install uglify-js
 
 <p>相对于传统的node变成, 下面来看看使用oojs实现的完整的socket服务器的例子:</p>
 
-<div class="highlight highlight-js"><pre><span class="nx">require</span><span class="p">(</span><span class="s1">'./src/oojs.js'</span><span class="p">);</span>
+<div class="highlight highlight-js"><pre><span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>./src/oojs.js<span class="pl-pds">'</span></span>);
 
 
-<span class="nx">define</span> <span class="o">&amp;&amp;</span> <span class="nx">define</span><span class="p">({</span>
-    <span class="nx">name</span><span class="o">:</span> <span class="s1">'socketServer'</span><span class="p">,</span>    
-    <span class="cm">/**</span>
-<span class="cm">     * 静态构造函数</span>
-<span class="cm">     */</span>
-    <span class="nx">$socketServer</span><span class="o">:</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-        <span class="kd">var</span> <span class="nx">net</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'net'</span><span class="p">);</span>
+define <span class="pl-k">&amp;&amp;</span> define({
+    name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>socketServer<span class="pl-pds">'</span></span>,    
+    <span class="pl-c">/**</span>
+<span class="pl-c">     * 静态构造函数</span>
+<span class="pl-c">     */</span>
+    $<span class="pl-en">socketServer</span><span class="pl-k">:</span> <span class="pl-k">function</span> () {
+        <span class="pl-k">var</span> net <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>net<span class="pl-pds">'</span></span>);
 
-        <span class="c1">//启动服务</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">server</span> <span class="o">=</span> <span class="nx">net</span><span class="p">.</span><span class="nx">createServer</span><span class="p">();</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">server</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'connection'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">onConnection</span><span class="p">.</span><span class="nx">proxy</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">server</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'error'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">onError</span><span class="p">.</span><span class="nx">proxy</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">server</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">8088</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-            <span class="nx">base</span><span class="p">.</span><span class="nx">log</span><span class="p">.</span><span class="nx">info</span><span class="p">(</span><span class="s1">'server bound'</span><span class="p">);</span>
-        <span class="p">});</span>
-    <span class="p">},</span>
+        <span class="pl-c">//启动服务</span>
+        <span class="pl-v">this</span>.server <span class="pl-k">=</span> net.createServer();
+        <span class="pl-v">this</span>.server.on(<span class="pl-s"><span class="pl-pds">'</span>connection<span class="pl-pds">'</span></span>, <span class="pl-v">this</span>.onConnection.proxy(<span class="pl-v">this</span>));
+        <span class="pl-v">this</span>.server.on(<span class="pl-s"><span class="pl-pds">'</span>error<span class="pl-pds">'</span></span>, <span class="pl-v">this</span>.<span class="pl-c1">onError</span>.proxy(<span class="pl-v">this</span>));
+        <span class="pl-v">this</span>.server.listen(<span class="pl-c1">8088</span>, <span class="pl-k">function</span> () {
+            base<span class="pl-c1">.log.info</span>(<span class="pl-s"><span class="pl-pds">'</span>server bound<span class="pl-pds">'</span></span>);
+        });
+    },
 
-    <span class="cm">/**</span>
-<span class="cm">     * 服务器连接事件处理函数. </span>
-<span class="cm">     * @param {Object} socket 本次连接的socket对象</span>
-<span class="cm">     */</span>
-    <span class="nx">onConnection</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">socket</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nx">socket</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'data'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">onData</span><span class="p">.</span><span class="nx">proxy</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">socket</span><span class="p">));</span>
-        <span class="nx">socket</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'end'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">onEnd</span><span class="p">.</span><span class="nx">proxy</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">socket</span><span class="p">));</span>
-        <span class="nx">socket</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'error'</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">onError</span><span class="p">.</span><span class="nx">proxy</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">socket</span><span class="p">));</span>
-    <span class="p">},</span>
+    <span class="pl-c">/**</span>
+<span class="pl-c">     * 服务器连接事件处理函数. </span>
+<span class="pl-c">     * <span class="pl-k">@param</span> {Object} socket 本次连接的socket对象</span>
+<span class="pl-c">     */</span>
+    <span class="pl-en">onConnection</span><span class="pl-k">:</span> <span class="pl-k">function</span> (<span class="pl-smi">socket</span>) {
+        socket.on(<span class="pl-s"><span class="pl-pds">'</span>data<span class="pl-pds">'</span></span>, <span class="pl-v">this</span>.onData.proxy(<span class="pl-v">this</span>, socket));
+        socket.on(<span class="pl-s"><span class="pl-pds">'</span>end<span class="pl-pds">'</span></span>, <span class="pl-v">this</span>.onEnd.proxy(<span class="pl-v">this</span>, socket));
+        socket.on(<span class="pl-s"><span class="pl-pds">'</span>error<span class="pl-pds">'</span></span>, <span class="pl-v">this</span>.<span class="pl-c1">onError</span>.proxy(<span class="pl-v">this</span>, socket));
+    },
 
-     <span class="cm">/**</span>
-<span class="cm">     * socket接收数据事件处理函数. </span>
-<span class="cm">     * @param {Object} data 本次介绍到的数据对象buffer</span>
-<span class="cm">     * @param {Object} socket 本次连接的socket对象</span>
-<span class="cm">     */</span>
-    <span class="nx">onData</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">data</span><span class="p">,</span> <span class="nx">socket</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">//do something...</span>
-    <span class="p">},</span>
+     <span class="pl-c">/**</span>
+<span class="pl-c">     * socket接收数据事件处理函数. </span>
+<span class="pl-c">     * <span class="pl-k">@param</span> {Object} data 本次介绍到的数据对象buffer</span>
+<span class="pl-c">     * <span class="pl-k">@param</span> {Object} socket 本次连接的socket对象</span>
+<span class="pl-c">     */</span>
+    <span class="pl-en">onData</span><span class="pl-k">:</span> <span class="pl-k">function</span> (<span class="pl-smi">data</span>, <span class="pl-smi">socket</span>) {
+        <span class="pl-c">//do something...</span>
+    },
 
-    <span class="cm">/**</span>
-<span class="cm">     * socket 关闭事件处理函数. </span>
-<span class="cm">     * @param {Object} socket 本次连接的socket对象</span>
-<span class="cm">     */</span>
-    <span class="nx">onEnd</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">socket</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">//do something...</span>
-    <span class="p">},</span>
+    <span class="pl-c">/**</span>
+<span class="pl-c">     * socket 关闭事件处理函数. </span>
+<span class="pl-c">     * <span class="pl-k">@param</span> {Object} socket 本次连接的socket对象</span>
+<span class="pl-c">     */</span>
+    <span class="pl-en">onEnd</span><span class="pl-k">:</span> <span class="pl-k">function</span> (<span class="pl-smi">socket</span>) {
+        <span class="pl-c">//do something...</span>
+    },
 
-    <span class="cm">/**</span>
-<span class="cm">     * socket 异常事件处理函数. </span>
-<span class="cm">     * @param {Object} err 异常对象</span>
-<span class="cm">     * @param {Object} socket 本次连接的socket对象</span>
-<span class="cm">     */</span>
-    <span class="nx">onError</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">socket</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">//do something...</span>
-    <span class="p">}</span>
-<span class="p">});</span>
-</pre></div>
+    <span class="pl-c">/**</span>
+<span class="pl-c">     * socket 异常事件处理函数. </span>
+<span class="pl-c">     * <span class="pl-k">@param</span> {Object} err 异常对象</span>
+<span class="pl-c">     * <span class="pl-k">@param</span> {Object} socket 本次连接的socket对象</span>
+<span class="pl-c">     */</span>
+    <span class="pl-en">onError</span><span class="pl-k">:</span> <span class="pl-k">function</span> (<span class="pl-smi">err</span>, <span class="pl-smi">socket</span>) {
+        <span class="pl-c">//do something...</span>
+    }
+});</pre></div>
 
-<hr><h2>
-<a name="oojs%E7%9A%84%E5%8E%9F%E5%9E%8B%E7%BB%A7%E6%89%BF%E5%92%8C%E5%BF%AB%E9%80%9F%E5%85%8B%E9%9A%86" class="anchor" href="#oojs%E7%9A%84%E5%8E%9F%E5%9E%8B%E7%BB%A7%E6%89%BF%E5%92%8C%E5%BF%AB%E9%80%9F%E5%85%8B%E9%9A%86"><span class="octicon octicon-link"></span></a>oojs的原型继承和快速克隆</h2>
+<hr>
+
+<h2>
+<a id="oojs的原型继承和快速克隆" class="anchor" href="#oojs%E7%9A%84%E5%8E%9F%E5%9E%8B%E7%BB%A7%E6%89%BF%E5%92%8C%E5%BF%AB%E9%80%9F%E5%85%8B%E9%9A%86" aria-hidden="true"><span class="octicon octicon-link"></span></a>oojs的原型继承和快速克隆</h2>
 
 <p>oojs中使用特有的快速克隆方法实现高效的对象创建. 主要用在内部的oojs.create函数中, 此函数用于创建一个类实例.</p>
 
@@ -400,21 +390,22 @@ cnpm install uglify-js
 <li>属性是引用类型(比如object类型):
 访问: 通过原型链获取到classA的属性
 赋值: 因为是引用类型, 所以实际上是对classA上的引用对象赋值. 即classA被修改, 所有实例的此属性都被修改</li>
-</ol><p>为了解决此问题, oojs在创建classA的实例时, 会遍历classA的属性, 如果发现属性的类型是引用类型, 则对其进行快速克隆:</p>
+</ol>
 
-<div class="highlight highlight-js"><pre>        <span class="cm">/**</span>
-<span class="cm">         * 快速克隆方法</span>
-<span class="cm">         * @public</span>
-<span class="cm">         * @method fastClone</span>
-<span class="cm">         * @param {Object} source 带克隆的对象. 使用此方法克隆出来的对象, 如果source对象被修改, 则所有克隆对象也会被修改</span>
-<span class="cm">         * @return {Object} 克隆出来的对象.</span>
-<span class="cm">         */</span>
-        <span class="nx">fastClone</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">source</span><span class="p">)</span> <span class="p">{</span>
-            <span class="kd">var</span> <span class="nx">temp</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{};</span>
-            <span class="nx">temp</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="nx">source</span><span class="p">;</span>
-            <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">temp</span><span class="p">();</span>
-        <span class="p">}</span>
-</pre></div>
+<p>为了解决此问题, oojs在创建classA的实例时, 会遍历classA的属性, 如果发现属性的类型是引用类型, 则对其进行快速克隆:</p>
+
+<div class="highlight highlight-js"><pre>        <span class="pl-c">/**</span>
+<span class="pl-c">         * 快速克隆方法</span>
+<span class="pl-c">         * @public</span>
+<span class="pl-c">         * <span class="pl-k">@method</span> fastClone</span>
+<span class="pl-c">         * <span class="pl-k">@param</span> {Object} source 带克隆的对象. 使用此方法克隆出来的对象, 如果source对象被修改, 则所有克隆对象也会被修改</span>
+<span class="pl-c">         * <span class="pl-k">@return</span> {Object} 克隆出来的对象.</span>
+<span class="pl-c">         */</span>
+        <span class="pl-en">fastClone</span><span class="pl-k">:</span> <span class="pl-k">function</span> (<span class="pl-smi">source</span>) {
+            <span class="pl-k">var</span> <span class="pl-en">temp</span> <span class="pl-k">=</span> <span class="pl-k">function</span> () {};
+            <span class="pl-c1">temp</span>.<span class="pl-c1">prototype</span> <span class="pl-k">=</span> source;
+            <span class="pl-k">var</span> result <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">temp</span>();
+        }</pre></div>
 
 <p>传统的克隆对象是十分消耗性能的, oojs的最初也是用了传统的克隆方法. 最后改进成使用快速克隆方法. </p>
 
@@ -434,101 +425,101 @@ cnpm install uglify-js
 <ul>
 <li>在类声明时赋值的属性, 即JSON中直接描述的属性值, 应该是静态static类型. 不应在运行时修改.</li>
 <li>如果一个属性是实例属性, 则应该在动态构造函数中赋值.比如:</li>
-</ul><div class="highlight highlight-js"><pre><span class="nx">define</span> <span class="o">&amp;&amp;</span> <span class="nx">define</span><span class="p">({</span>
-    <span class="nx">name</span><span class="o">:</span> <span class="s1">'classA'</span>
-    <span class="nx">A</span><span class="o">:</span> <span class="kc">null</span>
-    <span class="nx">classA</span><span class="o">:</span><span class="kd">function</span><span class="p">(){</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">A</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">B</span><span class="o">:</span><span class="mi">1</span> <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">});</span>
-</pre></div>
+</ul>
+
+<div class="highlight highlight-js"><pre>define <span class="pl-k">&amp;&amp;</span> define({
+    name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>classA<span class="pl-pds">'</span></span>
+    A<span class="pl-k">:</span> <span class="pl-c1">null</span>
+    <span class="pl-en">classA</span><span class="pl-k">:</span><span class="pl-k">function</span>(){
+        <span class="pl-v">this</span>.A <span class="pl-k">=</span> { B<span class="pl-k">:</span><span class="pl-c1">1</span> }
+    }
+});</pre></div>
 
 <p>所以一定要注意, 如果类的属性是对象, 并且是实例属性(运行时会被修改),则必须在动态构造函数中创建.</p>
 
 <p>另改一个问题就是a对象的遍历. 同样因为使用了原型继承, 不能够通过hasOwnProperty来判断一个属性是否是实例a的. 可以通过遍历classA来解决:</p>
 
-<div class="highlight highlight-js"><pre><span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">a</span><span class="p">){</span>
-    <span class="k">if</span><span class="p">(</span><span class="nx">key</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">a</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">!==</span> <span class="s1">'undefined'</span> <span class="o">&amp;&amp;</span> <span class="nx">classA</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="nx">key</span><span class="p">)){</span>
-        <span class="c1">//do something...</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
+<div class="highlight highlight-js"><pre><span class="pl-k">for</span>(<span class="pl-k">var</span> key <span class="pl-k">in</span> a){
+    <span class="pl-k">if</span>(key <span class="pl-k">&amp;&amp;</span> <span class="pl-k">typeof</span> a[key] <span class="pl-k">!==</span> <span class="pl-s"><span class="pl-pds">'</span>undefined<span class="pl-pds">'</span></span> <span class="pl-k">&amp;&amp;</span> classA.hasOwnProperty(key)){
+        <span class="pl-c">//do something...</span>
+    }
+}</pre></div>
 
-<hr><h2>
-<a name="%E4%BA%8B%E4%BB%B6%E7%BC%96%E7%A8%8B" class="anchor" href="#%E4%BA%8B%E4%BB%B6%E7%BC%96%E7%A8%8B"><span class="octicon octicon-link"></span></a>事件编程</h2>
+<hr>
+
+<h2>
+<a id="事件编程" class="anchor" href="#%E4%BA%8B%E4%BB%B6%E7%BC%96%E7%A8%8B" aria-hidden="true"><span class="octicon octicon-link"></span></a>事件编程</h2>
 
 <p>js中常常使用事件和异步, 在浏览器端的Ajax是异步, 在nodejs中更是到处都是异步事件.</p>
 
 <p>在异步事件的编程中, 常常会遇到多层嵌套的情况. 比如:</p>
 
-<div class="highlight highlight-js"><pre><span class="kd">var</span> <span class="nx">render</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">template</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">l10n</span><span class="p">)</span> <span class="p">{</span>
-  <span class="c1">//do something...</span>
-<span class="p">};</span>
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> <span class="pl-en">render</span> <span class="pl-k">=</span> <span class="pl-k">function</span> (<span class="pl-smi">template</span>, <span class="pl-smi">data</span>, <span class="pl-smi">l10n</span>) {
+  <span class="pl-c">//do something...</span>
+};
 
-<span class="nx">$</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"template"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">template</span><span class="p">)</span> <span class="p">{</span>
-  <span class="c1">// something</span>
-  <span class="nx">$</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
-    <span class="c1">// something</span>
-    <span class="nx">$</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s2">"l10n"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">l10n</span><span class="p">)</span> <span class="p">{</span>
-      <span class="c1">// something</span>
-      <span class="nx">render</span><span class="p">(</span><span class="nx">template</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">l10n</span><span class="p">);</span>
-    <span class="p">});</span>
-  <span class="p">});</span>
-<span class="p">});</span>
-</pre></div>
+$.get(<span class="pl-s"><span class="pl-pds">"</span>template<span class="pl-pds">"</span></span>, <span class="pl-k">function</span> (<span class="pl-smi">template</span>) {
+  <span class="pl-c">// something</span>
+  $.get(<span class="pl-s"><span class="pl-pds">"</span>data<span class="pl-pds">"</span></span>, <span class="pl-k">function</span> (<span class="pl-smi">data</span>) {
+    <span class="pl-c">// something</span>
+    $.get(<span class="pl-s"><span class="pl-pds">"</span>l10n<span class="pl-pds">"</span></span>, <span class="pl-k">function</span> (<span class="pl-smi">l10n</span>) {
+      <span class="pl-c">// something</span>
+      render(template, data, l10n);
+    });
+  });
+});</pre></div>
 
 <p>在异步的世界里, 需要在回调函数中获取调用结果, 然后再进行接下来的处理流程, 所以导致了回调函数的多层嵌套, 并且只能串行处理.</p>
 
 <p>oojs提供了oojs.event, 来解决此问题. 比如要实现上面的功能, 可以进行如下改造:</p>
 
-<div class="highlight highlight-js"><pre><span class="kd">var</span> <span class="nx">render</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">template</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">l10n</span><span class="p">)</span> <span class="p">{</span>
-  <span class="c1">//do something...</span>
-<span class="p">};</span>
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> <span class="pl-en">render</span> <span class="pl-k">=</span> <span class="pl-k">function</span> (<span class="pl-smi">template</span>, <span class="pl-smi">data</span>, <span class="pl-smi">l10n</span>) {
+  <span class="pl-c">//do something...</span>
+};
 
-<span class="kd">var</span> <span class="nx">ev</span> <span class="o">=</span> <span class="nx">oojs</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">oojs</span><span class="p">.</span><span class="nx">event</span><span class="p">);</span>
-<span class="nx">ev</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="s1">'l10n'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
-    <span class="nx">ev</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="s1">'l10n'</span><span class="p">,</span> <span class="nx">data</span><span class="p">);</span>
-<span class="p">});</span>
-<span class="nx">ev</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="s1">'data'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
-    <span class="nx">ev</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="s1">'data'</span><span class="p">,</span> <span class="nx">data</span><span class="p">);</span>
-<span class="p">});</span>
-<span class="nx">ev</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="s1">'template'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
-    <span class="nx">ev</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="s1">'template'</span><span class="p">,</span> <span class="nx">data</span><span class="p">);</span>
-<span class="p">});</span>
-<span class="c1">//并行执行template, data和l10n事件, 都执行完毕后会触发group中的回调函数</span>
-<span class="nx">ev</span><span class="p">.</span><span class="nx">group</span><span class="p">(</span><span class="s1">'myGroup'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'template'</span><span class="p">,</span><span class="s1">'data'</span><span class="p">,</span><span class="s1">'l10n'</span><span class="p">],</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
-    <span class="nx">render</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">template</span><span class="p">,</span> <span class="nx">data</span><span class="p">.</span><span class="nx">data</span><span class="p">,</span> <span class="nx">data</span><span class="p">.</span><span class="nx">l10n</span><span class="p">);</span>
-<span class="p">});</span>
-</pre></div>
+<span class="pl-k">var</span> ev <span class="pl-k">=</span> oojs.create(oojs.<span class="pl-c1">event</span>);
+ev.bind(<span class="pl-s"><span class="pl-pds">'</span>l10n<span class="pl-pds">'</span></span>, <span class="pl-k">function</span>(<span class="pl-smi">data</span>){
+    ev.emit(<span class="pl-s"><span class="pl-pds">'</span>l10n<span class="pl-pds">'</span></span>, data);
+});
+ev.bind(<span class="pl-s"><span class="pl-pds">'</span>data<span class="pl-pds">'</span></span>, <span class="pl-k">function</span>(<span class="pl-smi">data</span>){
+    ev.emit(<span class="pl-s"><span class="pl-pds">'</span>data<span class="pl-pds">'</span></span>, data);
+});
+ev.bind(<span class="pl-s"><span class="pl-pds">'</span>template<span class="pl-pds">'</span></span>, <span class="pl-k">function</span>(<span class="pl-smi">data</span>){
+    ev.emit(<span class="pl-s"><span class="pl-pds">'</span>template<span class="pl-pds">'</span></span>, data);
+});
+<span class="pl-c">//并行执行template, data和l10n事件, 都执行完毕后会触发group中的回调函数</span>
+ev.group(<span class="pl-s"><span class="pl-pds">'</span>myGroup<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>template<span class="pl-pds">'</span></span>,<span class="pl-s"><span class="pl-pds">'</span>data<span class="pl-pds">'</span></span>,<span class="pl-s"><span class="pl-pds">'</span>l10n<span class="pl-pds">'</span></span>], <span class="pl-k">function</span>(<span class="pl-smi">data</span>){
+    render(data.template, data.<span class="pl-c1">data</span>, data.l10n);
+});</pre></div>
 
 <p>oojs.event的group可以将事件打包成一组. 在group的回调函数中, 会传递一个参数data, 这是一个object对象, 其中key为group中绑定的每一个事件名, value为事件的返回值. 所以可以通过data[事件名]获取到某一个事件的返回值. </p>
 
 <p>oojs.event中的group还可以动态添加新的事件. 比如:</p>
 
-<div class="highlight highlight-js"><pre><span class="nx">ev</span><span class="p">.</span><span class="nx">group</span><span class="p">(</span><span class="s1">'myGroup'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'template'</span><span class="p">,</span><span class="s1">'data'</span><span class="p">,</span><span class="s1">'l10n'</span><span class="p">],</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
-    <span class="nx">render</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">template</span><span class="p">,</span> <span class="nx">data</span><span class="p">.</span><span class="nx">data</span><span class="p">,</span> <span class="nx">data</span><span class="p">.</span><span class="nx">l10n</span><span class="p">);</span>
-<span class="p">});</span>
+<div class="highlight highlight-js"><pre>ev.group(<span class="pl-s"><span class="pl-pds">'</span>myGroup<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>template<span class="pl-pds">'</span></span>,<span class="pl-s"><span class="pl-pds">'</span>data<span class="pl-pds">'</span></span>,<span class="pl-s"><span class="pl-pds">'</span>l10n<span class="pl-pds">'</span></span>], <span class="pl-k">function</span>(<span class="pl-smi">data</span>){
+    render(data.template, data.<span class="pl-c1">data</span>, data.l10n);
+});
 
-<span class="nx">ev</span><span class="p">.</span><span class="nx">group</span><span class="p">(</span><span class="s1">'myGroup'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'another'</span><span class="p">],</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
-    <span class="nx">anotherData</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">another</span><span class="p">;</span>
-<span class="p">});</span>
-</pre></div>
+ev.group(<span class="pl-s"><span class="pl-pds">'</span>myGroup<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>another<span class="pl-pds">'</span></span>], <span class="pl-k">function</span>(<span class="pl-smi">data</span>){
+    anotherData <span class="pl-k">=</span> data.another;
+});</pre></div>
 
 <p>注意上面的代码, 虽然为myGroup又添加了一个another事件. 但是此时mygroup绑定了两个事件处理函数, 这两个函数都会在所有事件完成时执行, 但是不一定哪个在前. 所以oojs.event还提供了afterGroup事件, 此事件会在所有group绑定的callback执行完毕后再执行:</p>
 
-<div class="highlight highlight-js"><pre><span class="nx">ev</span><span class="p">.</span><span class="nx">group</span><span class="p">(</span><span class="s1">'myGroup'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'template'</span><span class="p">,</span><span class="s1">'data'</span><span class="p">,</span><span class="s1">'l10n'</span><span class="p">]);</span>
+<div class="highlight highlight-js"><pre>ev.group(<span class="pl-s"><span class="pl-pds">'</span>myGroup<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>template<span class="pl-pds">'</span></span>,<span class="pl-s"><span class="pl-pds">'</span>data<span class="pl-pds">'</span></span>,<span class="pl-s"><span class="pl-pds">'</span>l10n<span class="pl-pds">'</span></span>]);
 
-<span class="nx">ev</span><span class="p">.</span><span class="nx">group</span><span class="p">(</span><span class="s1">'myGroup'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'another'</span><span class="p">]);</span>
+ev.group(<span class="pl-s"><span class="pl-pds">'</span>myGroup<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>another<span class="pl-pds">'</span></span>]);
 
-<span class="nx">ev</span><span class="p">.</span><span class="nx">afterGroup</span><span class="p">(</span><span class="s1">'myGroup'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
-    <span class="nx">render</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">template</span><span class="p">,</span> <span class="nx">data</span><span class="p">.</span><span class="nx">data</span><span class="p">,</span> <span class="nx">data</span><span class="p">.</span><span class="nx">l10n</span><span class="p">,</span> <span class="nx">data</span><span class="p">.</span><span class="nx">another</span><span class="p">);</span>
-<span class="p">});</span>
-</pre></div>
+ev.afterGroup(<span class="pl-s"><span class="pl-pds">'</span>myGroup<span class="pl-pds">'</span></span>, <span class="pl-k">function</span>(<span class="pl-smi">data</span>){
+    render(data.template, data.<span class="pl-c1">data</span>, data.l10n, data.another);
+});</pre></div>
 
 <p>oojs.event使用oo的思想实现. node中本身自带EventEmmiter也实现了部分功能. </p>
 
-<hr><h2>
-<a name="%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%80%9D%E6%83%B3%E5%86%99js" class="anchor" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%80%9D%E6%83%B3%E5%86%99js"><span class="octicon octicon-link"></span></a>为什么要用面向对象的思想写js?</h2>
+<hr>
+
+<h2>
+<a id="为什么要用面向对象的思想写js" class="anchor" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%80%9D%E6%83%B3%E5%86%99js" aria-hidden="true"><span class="octicon octicon-link"></span></a>为什么要用面向对象的思想写js?</h2>
 
 <p>oo不仅仅是一种编程方法, 而是组织代码的最小单位. </p>
 
@@ -542,16 +533,20 @@ cnpm install uglify-js
 
 <p>可以说oojs为js的大规模开发提供了有效地基础保障.</p>
 
-<hr><h2>
-<a name="to-do" class="anchor" href="#to-do"><span class="octicon octicon-link"></span></a>To Do</h2>
+<hr>
+
+<h2>
+<a id="to-do" class="anchor" href="#to-do" aria-hidden="true"><span class="octicon octicon-link"></span></a>To Do</h2>
 
 <ul>
 <li>如何处理public和private</li>
 <li>dispose模式</li>
 <li>标准化的单元测试和性能测试</li>
 <li>网站建设</li>
-</ul><h2>
-<a name="%E5%8A%A0%E5%85%A5%E6%88%91%E4%BB%AC" class="anchor" href="#%E5%8A%A0%E5%85%A5%E6%88%91%E4%BB%AC"><span class="octicon octicon-link"></span></a>加入我们</h2>
+</ul>
+
+<h2>
+<a id="加入我们" class="anchor" href="#%E5%8A%A0%E5%85%A5%E6%88%91%E4%BB%AC" aria-hidden="true"><span class="octicon octicon-link"></span></a>加入我们</h2>
 
 <p>oojs还在发展中, 我们尽量不在核心的oojs.js中加入过多的功能, 保持核心精简. 同时通过oojs团队成员的努力, 让oojs适用于更多的场景. </p>
 
@@ -570,10 +565,16 @@ cnpm install uglify-js
 <code>wangbin</code>:<a href="mailto:feeyarcat@gmail.com">feeyarcat@gmail.com</a><br>
 </li>
 </ul>
-      </section>
 
-    </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/zhangziqiu/oojs">oojs</a> is maintained by <a href="https://github.com/zhangziqiu">zhangziqiu</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
   </body>
 </html>
+
