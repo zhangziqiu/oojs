@@ -3,8 +3,8 @@
         name: "oojs",
         namespace: "",
         classes: {},
-        $oojs: function(config) {
-            config = config || {};
+        $oojs: function() {
+            var config = {};
             if (typeof window !== "undefined" && typeof document !== "undefined") {
                 this.runtime = "browser";
                 config.global = window;
@@ -54,7 +54,8 @@
                     }
                 }
                 return;
-            } else if (!path) {
+            }
+            if (!path) {
                 path = namespace;
             } else {
                 var namespaceArray = namespace.split(".");
@@ -132,90 +133,6 @@
                 return thisMethod.apply(thisObj, tempArgs.concat(thisArgs));
             };
         },
-        config: function(config) {
-            for (var key in obj) {
-                if (key && obj.hasOwnProperty(key)) {
-                    if (key === "path" || key === "basePath") {
-                        this.setPath(obj[key]);
-                    }
-                }
-            }
-        },
-        create: function(classObj, params) {
-            var args = Array.prototype.slice.call(arguments, 0);
-            args.shift();
-            if (typeof classObj === "string") {
-                classObj = this.using(classObj);
-            }
-            if (!classObj || !classObj.name) {
-                throw new Error("oojs.create need a class object with a name property");
-            }
-            var constructerName = "__" + classObj.name || "init";
-            var tempClassObj = function() {};
-            tempClassObj.prototype = classObj;
-            var result = new tempClassObj();
-            for (var classPropertyName in classObj) {
-                var temp = classObj[classPropertyName];
-                if (temp && classObj.hasOwnProperty(classPropertyName) && typeof temp === "object") {
-                    result[classPropertyName] = this.fastClone(temp);
-                }
-            }
-            result[constructerName] = result[constructerName] || function() {};
-            result[constructerName].apply(result, args);
-            result.instances = null;
-            return result;
-        },
-        define: function(classObj) {
-            var name = classObj.name;
-            var staticConstructorName = "$" + name;
-            classObj.namespace = classObj.namespace || "";
-            classObj.dispose = classObj.dispose || function() {};
-            classObj["__" + name] = classObj[name] || function() {};
-            var isRegisted = false;
-            var isPartClass = false;
-            var preNamespaces = classObj.namespace.split(".");
-            var count = preNamespaces.length;
-            var currClassObj = this.classes;
-            var firstName, tempName;
-            for (var i = 0; i < count; i++) {
-                tempName = preNamespaces[i];
-                if (tempName) {
-                    currClassObj[tempName] = currClassObj[tempName] || {};
-                    currClassObj = currClassObj[tempName];
-                }
-            }
-            currClassObj[name] = currClassObj[name] || {};
-            if (!currClassObj[name].name || !currClassObj[name]._registed) {
-                classObj._registed = true;
-                currClassObj[name] = classObj;
-            } else if (currClassObj[name]._registed) {
-                isRegisted = true;
-                for (var key in classObj) {
-                    if (key && classObj.hasOwnProperty(key) && typeof currClassObj[name][key] === "undefined") {
-                        isPartClass = true;
-                        currClassObj[name][key] = classObj[key];
-                    }
-                }
-            }
-            classObj = currClassObj[name];
-            if (!isRegisted || isPartClass) {
-                var unloadClassArray = this.loadDeps(classObj);
-                if (unloadClassArray.length > 0) {
-                    this.loader = this.loader || this.using("oojs.loader");
-                    if (this.runtime === "browser" && this.loader) {
-                        this.loader.loadDepsBrowser(classObj);
-                    } else {
-                        throw new Error('class "' + classObj.name + '"' + " loadDeps error:" + unloadClassArray.join(","));
-                    }
-                } else {
-                    classObj[staticConstructorName] && classObj[staticConstructorName]();
-                }
-            }
-            if (this.runtime === "node" && arguments.callee.caller.arguments[2]) {
-                arguments.callee.caller.arguments[2].exports = classObj;
-            }
-            return this;
-        },
         find: function(name) {
             var result;
             var nameArray = name.split(".");
@@ -230,6 +147,48 @@
             }
             return result;
         },
+        reload: function(name) {
+            var result = this.find(name);
+            if (result) {
+                result._registed = false;
+                if (this.runtime === "node") {
+                    var classPath = this.getClassPath(name);
+                    delete require.cache[require.resolve(classPath)];
+                    result = require(classPath);
+                } else {
+                    this.define(result);
+                }
+            } else {
+                result = this.using(name);
+            }
+            return result;
+        },
+        create: function(classObj, params) {
+            var args = Array.prototype.slice.call(arguments, 0);
+            args.shift();
+            if (typeof classObj === "string") {
+                classObj = this.using(classObj);
+            }
+            if (!classObj || !classObj.name) {
+                throw new Error("oojs.create need a class object with a name property");
+            }
+            var constructerName = "__" + classObj.name || "init";
+            var classFunction = function() {};
+            classFunction.prototype = classObj;
+            var result = new classFunction();
+            for (var key in classObj) {
+                if (key && classObj.hasOwnProperty(key)) {
+                    var item = classObj[key];
+                    if (typeof item === "object") {
+                        result[key] = this.fastClone(item);
+                    }
+                }
+            }
+            if (result[constructerName]) {
+                result[constructerName].apply(result, args);
+            }
+            return result;
+        },
         using: function(name) {
             var result = this.find(name);
             if (!result) {
@@ -240,19 +199,59 @@
             }
             return result;
         },
-        reload: function(name) {
-            var result = this.find(name);
-            if (result) {
-                result._registed = false;
-                if (this.runtime === "node") {
-                    var classPath = this.getClassPath(name);
-                    delete require.cache[require.resolve(classPath)];
-                    result = require(classPath);
+        define: function(classObj) {
+            var name = classObj.name;
+            var staticConstructorName = "$" + name;
+            classObj.namespace = classObj.namespace || "";
+            classObj.dispose = classObj.dispose || function() {};
+            classObj["__" + name] = classObj[name] || function() {};
+            classObj.__static_constructor = classObj[staticConstructorName] || function() {};
+            var isRegisted = false;
+            var isPartClass = false;
+            var preNamespaces = classObj.namespace.split(".");
+            var count = preNamespaces.length;
+            var currClassObj = this.classes;
+            var tempName;
+            for (var i = 0; i < count; i++) {
+                tempName = preNamespaces[i];
+                if (tempName) {
+                    currClassObj[tempName] = currClassObj[tempName] || {};
+                    currClassObj = currClassObj[tempName];
                 }
-            } else {
-                result = this.using(name);
             }
-            return result;
+            currClassObj[name] = currClassObj[name] || {};
+            if (!currClassObj[name].name || !currClassObj[name]._registed) {
+                classObj._registed = true;
+                currClassObj[name] = classObj;
+            } else {
+                if (currClassObj[name]._registed) {
+                    isRegisted = true;
+                    for (var key in classObj) {
+                        if (key && classObj.hasOwnProperty(key) && typeof currClassObj[name][key] === "undefined") {
+                            isPartClass = true;
+                            currClassObj[name][key] = classObj[key];
+                        }
+                    }
+                }
+            }
+            classObj = currClassObj[name];
+            if (!isRegisted || isPartClass) {
+                var unloadClassArray = this.loadDeps(classObj);
+                if (unloadClassArray.length > 0) {
+                    this.loader = this.loader || this.using("oojs.loader");
+                    if (this.runtime === "browser" && this.loader) {
+                        this.loader.loadDepsBrowser(classObj, unloadClassArray);
+                    } else {
+                        throw new Error('class "' + classObj.name + '"' + " loadDeps error:" + unloadClassArray.join(","));
+                    }
+                } else {
+                    classObj[staticConstructorName] && classObj[staticConstructorName]();
+                }
+            }
+            if (this.runtime === "node" && arguments.callee.caller.arguments[2]) {
+                arguments.callee.caller.arguments[2].exports = classObj;
+            }
+            return this;
         }
     };
     oojs.define(oojs);

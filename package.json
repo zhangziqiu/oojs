@@ -1,6 +1,6 @@
 {
     "name": "node-oojs",
-    "description": "JavaScript Object Oriented Programming",
+    "description": "Object Oriented JavaScript",
     "homepage": "https://github.com/zhangziqiu/oojs",
     "main": "./bin/oojs.js",
     "version": "1.2.6",
@@ -16,14 +16,5 @@
         "type": "git",
         "url": "https://github.com/zhangziqiu/oojs.git"
     },
-    "dependencies": {},
-    "build": {
-        "ootpl": {
-            "template": "./build/ootpl.js",
-            "sourceFile": ["./bin/ootpl.source.js"],
-            "formatFile": ["./bin/ootpl.format.js"],
-            "compressFile": ["./bin/ootpl.js"],
-            "gzipFile": ["./bin/ootpl.js.gz"]
-        }
-    }
+    "dependencies": {}
 }

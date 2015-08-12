@@ -3,8 +3,8 @@
         name: "oojs",
         namespace: "",
         classes: {},
-        $oojs: function(config) {
-            config = config || {};
+        $oojs: function() {
+            var config = {};
             if (typeof window !== "undefined" && typeof document !== "undefined") {
                 this.runtime = "browser";
                 config.global = window;
@@ -54,7 +54,8 @@
                     }
                 }
                 return;
-            } else if (!path) {
+            }
+            if (!path) {
                 path = namespace;
             } else {
                 var namespaceArray = namespace.split(".");
@@ -132,90 +133,6 @@
                 return thisMethod.apply(thisObj, tempArgs.concat(thisArgs));
             };
         },
-        config: function(config) {
-            for (var key in obj) {
-                if (key && obj.hasOwnProperty(key)) {
-                    if (key === "path" || key === "basePath") {
-                        this.setPath(obj[key]);
-                    }
-                }
-            }
-        },
-        create: function(classObj, params) {
-            var args = Array.prototype.slice.call(arguments, 0);
-            args.shift();
-            if (typeof classObj === "string") {
-                classObj = this.using(classObj);
-            }
-            if (!classObj || !classObj.name) {
-                throw new Error("oojs.create need a class object with a name property");
-            }
-            var constructerName = "__" + classObj.name || "init";
-            var tempClassObj = function() {};
-            tempClassObj.prototype = classObj;
-            var result = new tempClassObj();
-            for (var classPropertyName in classObj) {
-                var temp = classObj[classPropertyName];
-                if (temp && classObj.hasOwnProperty(classPropertyName) && typeof temp === "object") {
-                    result[classPropertyName] = this.fastClone(temp);
-                }
-            }
-            result[constructerName] = result[constructerName] || function() {};
-            result[constructerName].apply(result, args);
-            result.instances = null;
-            return result;
-        },
-        define: function(classObj) {
-            var name = classObj.name;
-            var staticConstructorName = "$" + name;
-            classObj.namespace = classObj.namespace || "";
-            classObj.dispose = classObj.dispose || function() {};
-            classObj["__" + name] = classObj[name] || function() {};
-            var isRegisted = false;
-            var isPartClass = false;
-            var preNamespaces = classObj.namespace.split(".");
-            var count = preNamespaces.length;
-            var currClassObj = this.classes;
-            var firstName, tempName;
-            for (var i = 0; i < count; i++) {
-                tempName = preNamespaces[i];
-                if (tempName) {
-                    currClassObj[tempName] = currClassObj[tempName] || {};
-                    currClassObj = currClassObj[tempName];
-                }
-            }
-            currClassObj[name] = currClassObj[name] || {};
-            if (!currClassObj[name].name || !currClassObj[name]._registed) {
-                classObj._registed = true;
-                currClassObj[name] = classObj;
-            } else if (currClassObj[name]._registed) {
-                isRegisted = true;
-                for (var key in classObj) {
-                    if (key && classObj.hasOwnProperty(key) && typeof currClassObj[name][key] === "undefined") {
-                        isPartClass = true;
-                        currClassObj[name][key] = classObj[key];
-                    }
-                }
-            }
-            classObj = currClassObj[name];
-            if (!isRegisted || isPartClass) {
-                var unloadClassArray = this.loadDeps(classObj);
-                if (unloadClassArray.length > 0) {
-                    this.loader = this.loader || this.using("oojs.loader");
-                    if (this.runtime === "browser" && this.loader) {
-                        this.loader.loadDepsBrowser(classObj);
-                    } else {
-                        throw new Error('class "' + classObj.name + '"' + " loadDeps error:" + unloadClassArray.join(","));
-                    }
-                } else {
-                    classObj[staticConstructorName] && classObj[staticConstructorName]();
-                }
-            }
-            if (this.runtime === "node" && arguments.callee.caller.arguments[2]) {
-                arguments.callee.caller.arguments[2].exports = classObj;
-            }
-            return this;
-        },
         find: function(name) {
             var result;
             var nameArray = name.split(".");
@@ -230,6 +147,48 @@
             }
             return result;
         },
+        reload: function(name) {
+            var result = this.find(name);
+            if (result) {
+                result._registed = false;
+                if (this.runtime === "node") {
+                    var classPath = this.getClassPath(name);
+                    delete require.cache[require.resolve(classPath)];
+                    result = require(classPath);
+                } else {
+                    this.define(result);
+                }
+            } else {
+                result = this.using(name);
+            }
+            return result;
+        },
+        create: function(classObj, params) {
+            var args = Array.prototype.slice.call(arguments, 0);
+            args.shift();
+            if (typeof classObj === "string") {
+                classObj = this.using(classObj);
+            }
+            if (!classObj || !classObj.name) {
+                throw new Error("oojs.create need a class object with a name property");
+            }
+            var constructerName = "__" + classObj.name || "init";
+            var classFunction = function() {};
+            classFunction.prototype = classObj;
+            var result = new classFunction();
+            for (var key in classObj) {
+                if (key && classObj.hasOwnProperty(key)) {
+                    var item = classObj[key];
+                    if (typeof item === "object") {
+                        result[key] = this.fastClone(item);
+                    }
+                }
+            }
+            if (result[constructerName]) {
+                result[constructerName].apply(result, args);
+            }
+            return result;
+        },
         using: function(name) {
             var result = this.find(name);
             if (!result) {
@@ -240,19 +199,59 @@
             }
             return result;
         },
-        reload: function(name) {
-            var result = this.find(name);
-            if (result) {
-                result._registed = false;
-                if (this.runtime === "node") {
-                    var classPath = this.getClassPath(name);
-                    delete require.cache[require.resolve(classPath)];
-                    result = require(classPath);
+        define: function(classObj) {
+            var name = classObj.name;
+            var staticConstructorName = "$" + name;
+            classObj.namespace = classObj.namespace || "";
+            classObj.dispose = classObj.dispose || function() {};
+            classObj["__" + name] = classObj[name] || function() {};
+            classObj.__static_constructor = classObj[staticConstructorName] || function() {};
+            var isRegisted = false;
+            var isPartClass = false;
+            var preNamespaces = classObj.namespace.split(".");
+            var count = preNamespaces.length;
+            var currClassObj = this.classes;
+            var tempName;
+            for (var i = 0; i < count; i++) {
+                tempName = preNamespaces[i];
+                if (tempName) {
+                    currClassObj[tempName] = currClassObj[tempName] || {};
+                    currClassObj = currClassObj[tempName];
                 }
-            } else {
-                result = this.using(name);
             }
-            return result;
+            currClassObj[name] = currClassObj[name] || {};
+            if (!currClassObj[name].name || !currClassObj[name]._registed) {
+                classObj._registed = true;
+                currClassObj[name] = classObj;
+            } else {
+                if (currClassObj[name]._registed) {
+                    isRegisted = true;
+                    for (var key in classObj) {
+                        if (key && classObj.hasOwnProperty(key) && typeof currClassObj[name][key] === "undefined") {
+                            isPartClass = true;
+                            currClassObj[name][key] = classObj[key];
+                        }
+                    }
+                }
+            }
+            classObj = currClassObj[name];
+            if (!isRegisted || isPartClass) {
+                var unloadClassArray = this.loadDeps(classObj);
+                if (unloadClassArray.length > 0) {
+                    this.loader = this.loader || this.using("oojs.loader");
+                    if (this.runtime === "browser" && this.loader) {
+                        this.loader.loadDepsBrowser(classObj, unloadClassArray);
+                    } else {
+                        throw new Error('class "' + classObj.name + '"' + " loadDeps error:" + unloadClassArray.join(","));
+                    }
+                } else {
+                    classObj[staticConstructorName] && classObj[staticConstructorName]();
+                }
+            }
+            if (this.runtime === "node" && arguments.callee.caller.arguments[2]) {
+                arguments.callee.caller.arguments[2].exports = classObj;
+            }
+            return this;
         }
     };
     oojs.define(oojs);
@@ -263,13 +262,22 @@ oojs.define({
     namespace: "oojs",
     eventList: null,
     groupList: null,
-    eventGroupIndexer: null,
-    eventGroupIndexer: null,
     $event: function() {},
     event: function() {
         this.eventList = {};
         this.groupList = {};
         this.eventGroupIndexer = {};
+    },
+    createCallback: function(callback, needTimes, emitTimes) {
+        callback = typeof callback !== "undefined" ? callback : function() {};
+        needTimes = typeof needTimes !== "undefined" ? needTimes : 1;
+        emitTimes = typeof emitTimes !== "undefined" ? emitTimes : 0;
+        return {
+            callback: callback,
+            data: null,
+            needTimes: needTimes,
+            emitTimes: emitTimes
+        };
     },
     createEvent: function(eventName) {
         var result = {
@@ -282,22 +290,35 @@ oojs.define({
         };
         return result;
     },
+    createGroup: function(groupName) {
+        var result = {
+            name: groupName,
+            callbacks: [],
+            callbackData: [],
+            emitData: [],
+            status: false,
+            events: {},
+            previousGroups: {},
+            afterGroups: {}
+        };
+        return result;
+    },
     bind: function(eventName, times, callback) {
         if (arguments.length === 2) {
             callback = times;
             times = 1;
         }
-        times = typeof times === "undefined" ? 1 : times;
+        times = typeof times !== "number" ? 1 : times;
         var ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
-        if (ev.status) {
-            callback(ev.emitData);
-        } else {
-            (ev.callbacks = ev.callbacks || []).push({
-                callback: callback,
-                needTimes: times,
-                emitTimes: 0
-            });
-            ev.status = false;
+        callback = callback instanceof Array ? callback : [ callback ];
+        for (var i = 0, count = callback.length; i < count; i++) {
+            ev.callbacks.push(this.createCallback(callback[i], times));
+        }
+        if (ev.status && ev.emitData.length) {
+            for (var i = 0, count = ev.emitData.length; i < count; i++) {
+                this.emit(ev.name, ev.emitData[i]);
+            }
+            ev.emitData = [];
         }
         return this;
     },
@@ -333,96 +354,154 @@ oojs.define({
     },
     emit: function(eventName, data) {
         var ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
-        if (ev.callbacks && ev.callbacks.length) {
-            var callbackCount = ev.callbacks.length;
-            ev.callbackData = [];
-            for (var i = 0; i < callbackCount; i++) {
-                var callbackItem = ev.callbacks[i];
-                var callbackFunction = callbackItem.callback;
-                var needRun = false;
-                if (callbackItem.needTimes === -1) {
-                    needRun = true;
-                } else if (callbackItem.needTimes > 0 && callbackItem.emitTimes < callbackItem.needTimes) {
-                    needRun = true;
-                }
-                callbackItem.emitTimes++;
-                if (needRun && callbackFunction) {
-                    callbackItem.data = callbackFunction(data);
+        ev.status = true;
+        if (!ev.callbacks || !ev.callbacks.length) {
+            ev.emitData.push(data);
+        } else {
+            if (ev.callbacks && ev.callbacks.length) {
+                for (var i = 0, count = ev.callbacks.length; i < count; i++) {
+                    var callbackItem = ev.callbacks[i];
+                    var callbackFunction = callbackItem.callback;
+                    var needRun = false;
+                    if (callbackItem.needTimes === -1) {
+                        needRun = true;
+                    } else {
+                        if (callbackItem.needTimes > 0 && callbackItem.emitTimes < callbackItem.needTimes) {
+                            needRun = true;
+                        }
+                    }
+                    callbackItem.emitTimes++;
+                    if (needRun && callbackFunction) {
+                        callbackItem.data = callbackFunction(data);
+                    }
                 }
             }
         }
-        ev.status = true;
-        ev.emitData = data || {};
-        var groups = ev.groups || [];
-        for (var i = 0, count = groups.length; i < count; i++) {
-            var groupName = groups[i];
-            if (groupName) {
+        for (var groupName in ev.groups) {
+            if (groupName && ev.groups.hasOwnProperty(groupName) && ev.groups[groupName]) {
                 this.groupEmit(groupName);
             }
         }
+        return this;
     },
     group: function(groupName, eventNames, callback) {
-        this.groupList[groupName] = this.groupList[groupName] || {};
-        var group = this.groupList[groupName];
-        var events = group.events = group.events || {};
+        var group = this.groupList[groupName] = this.groupList[groupName] || this.createGroup(groupName);
         if (callback) {
-            (group.callbacks = group.callbacks || []).push(callback);
+            callback = callback instanceof Array ? callback : [ callback ];
+            for (var i = 0, count = callback.length; i < count; i++) {
+                group.callbacks.push(this.createCallback(callback[i], 1));
+            }
         }
-        var eventName, eventNames = eventNames || [];
+        var eventName;
+        eventNames = typeof eventNames === "string" ? [ eventNames ] : eventNames;
         for (var i = 0, count = eventNames.length; i < count; i++) {
             eventName = eventNames[i];
-            var ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
-            ev.groups[groupName] = group;
-            group.events[eventName] = 1;
+            if (!group.events[eventName]) {
+                group.status = false;
+                var ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
+                ev.groups[groupName] = 1;
+                group.events[eventName] = 1;
+            }
         }
-        this.groupEmit(groupName);
+        if (eventNames.length > 0) {
+            this.groupEmit(groupName);
+        }
         return this;
     },
     groupEmit: function(groupName) {
-        var group = this.groupList[groupName];
-        var events = group.events = group.events || {};
-        var groupFinished = true;
-        var callbackData = {};
-        var eventName, ev;
-        for (eventName in events) {
-            if (eventName && events.hasOwnProperty(eventName)) {
-                ev = this.eventList[eventName];
-                if (!ev || !ev.status) {
-                    groupFinished = false;
-                    callbackData = null;
-                    break;
+        var group = this.groupList[groupName] = this.groupList[groupName] || this.createGroup(groupName);
+        var afterGroups = group.afterGroups;
+        var afterGroupFinished = true;
+        for (var afterGroupName in afterGroups) {
+            if (afterGroupName && afterGroups.hasOwnProperty(afterGroupName)) {
+                if (this.groupList[afterGroupName]) {
+                    if (!this.groupList[afterGroupName].status) {
+                        afterGroupFinished = false;
+                    }
                 } else {
-                    callbackData[eventName] = ev.callbackData;
+                    this.groupList[afterGroupName] = this.createGroup(afterGroupName);
+                    afterGroupFinished = false;
                 }
             }
         }
-        eventName = null;
-        if (groupFinished) {
-            group.callbacks = group.callbacks || [];
-            var callbacks = group.callbacks;
-            var count = callbacks.length || 0;
-            var callback;
-            for (var i = 0; i < count; i++) {
-                callback = group.callbacks[i];
-                if (callback) {
-                    callback(callbackData);
-                    group.callbacks[i] = null;
+        if (!afterGroupFinished) {
+            return this;
+        }
+        var events = group.events;
+        var eventFinished = true;
+        var ev;
+        for (var eventName in events) {
+            if (eventName && events.hasOwnProperty(eventName) && events[eventName]) {
+                ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
+                if (!ev.status) {
+                    eventFinished = false;
+                    break;
                 }
             }
-            callback = null;
-            group.callbacks = null;
-            var afters = group.afters = group.afters || [];
-            var count = afters.length || 0;
-            var afterCallback;
-            for (var i = 0; i < count; i++) {
-                afterCallback = afters[i];
-                if (afterCallback) {
-                    afterCallback(callbackData);
-                    afters[i] = null;
+        }
+        if (eventFinished) {
+            group.status = true;
+            var eventCallbackData = {};
+            for (var eventName in events) {
+                if (eventName && events.hasOwnProperty(eventName) && events[eventName]) {
+                    var callbacks = this.eventList[eventName].callbacks;
+                    eventCallbackData[eventName] = [];
+                    for (var i = 0, count = callbacks.length; i < count; i++) {
+                        eventCallbackData[eventName].push(callbacks[i].data);
+                    }
+                    if (eventCallbackData[eventName].length === 1) {
+                        eventCallbackData[eventName] = eventCallbackData[eventName][0];
+                    }
                 }
             }
-            afterCallback = null;
-            group.afters = null;
+            if (group.callbacks && group.callbacks.length) {
+                for (var i = 0, count = group.callbacks.length; i < count; i++) {
+                    var callbackItem = group.callbacks[i];
+                    var callbackFunction = callbackItem.callback;
+                    var needRun = false;
+                    if (callbackItem.needTimes === -1) {
+                        needRun = true;
+                    } else {
+                        if (callbackItem.needTimes > 0 && callbackItem.emitTimes < callbackItem.needTimes) {
+                            needRun = true;
+                        }
+                    }
+                    callbackItem.emitTimes++;
+                    if (needRun && callbackFunction) {
+                        callbackItem.data = callbackFunction(eventCallbackData);
+                    }
+                }
+            }
+            var previousGroups = group.previousGroups;
+            for (var previousGroupName in previousGroups) {
+                if (previousGroupName && previousGroups.hasOwnProperty(previousGroupName)) {
+                    this.groupEmit(previousGroupName);
+                }
+            }
+        }
+        return this;
+    },
+    queue: function(previousGroupName, nextGroupName) {
+        var args = Array.prototype.slice.apply(arguments);
+        var previousGroups;
+        var nextGroups;
+        for (var i = 1, count = args.length; i < count; i++) {
+            previousGroups = args[i - 1];
+            nextGroups = args[i];
+            previousGroups = previousGroups instanceof Array ? previousGroups : [ previousGroups ];
+            nextGroups = nextGroups instanceof Array ? nextGroups : [ nextGroups ];
+            for (var j = 0, jcount = previousGroups.length; j < jcount; j++) {
+                var previousGroupName = previousGroups[j];
+                this.groupList[previousGroupName] = this.groupList[previousGroupName] || this.createGroup(previousGroupName);
+                var previousGroup = this.groupList[previousGroupName];
+                for (var k = 0, kcount = nextGroups.length; k < kcount; k++) {
+                    var nextGroupName = nextGroups[k];
+                    this.groupList[nextGroupName] = this.groupList[nextGroupName] || this.createGroup(nextGroupName);
+                    var nextGroup = this.groupList[nextGroupName];
+                    previousGroup.afterGroups[nextGroupName] = 1;
+                    nextGroup.previousGroups[previousGroupName] = 1;
+                }
+            }
         }
     },
     afterGroup: function(groupName, callback) {
@@ -441,14 +520,6 @@ oojs.define({
     $loader: function() {
         this.ev = oojs.create(this.event);
     },
-    isNullObj: function(obj) {
-        for (var i in obj) {
-            if (obj.hasOwnProperty(i)) {
-                return false;
-            }
-        }
-        return true;
-    },
     loadScript: function(url, version, callback) {
         if (typeof version === "function") {
             callback = version;
@@ -459,9 +530,6 @@ oojs.define({
             url += "?v=" + version;
         }
         callback = callback || function() {};
-        this.ev.bind(url, oojs.proxy(this, function(data, callback) {
-            callback && callback();
-        }, callback));
         this.loading = this.loading || {};
         if (this.loading[url]) {
             return;
@@ -471,60 +539,46 @@ oojs.define({
         loader.type = "text/javascript";
         loader.async = true;
         loader.src = url;
-        loader.onload = loader.onerror = loader.onreadystatechange = oojs.proxy(this, function(e, url, loader) {
-            if (typeof e === "string") {
-                url = e;
-                loader = url;
-            }
+        loader.onload = loader.onerror = loader.onreadystatechange = function(e) {
             if (/loaded|complete|undefined/.test(loader.readyState)) {
                 loader.onload = loader.onerror = loader.onreadystatechange = null;
                 loader = undefined;
-                this.ev.emit(url, 1);
+                callback();
             }
-        }, url, loader);
+        };
         var s = document.getElementsByTagName("script")[0];
         s.parentNode.insertBefore(loader, s);
         return this;
     },
-    loadDepsBrowser: function(classObj) {
-        var deps = classObj.deps;
-        var staticConstructorName = "$" + classObj.name;
-        if (!this.isNullObj(deps)) {
-            for (var key in deps) {
-                if (key && deps.hasOwnProperty(key)) {
-                    var classFullName = deps[key];
-                    var loadedClass = oojs.using(classFullName);
-                    if (loadedClass) {
-                        classObj[key] = loadedClass;
-                        continue;
-                    }
-                    this.ev.bind(classFullName, function(data) {
-                        var result = oojs.using(data.classFullName);
-                        if (!result) {
-                            throw new Error(data.classFullName + " load error in url: " + data.url);
-                        }
-                        return result;
-                    });
-                    this.ev.group("loadDeps", [ classFullName ], oojs.proxy(this, function(data, key, classFullName, classObj) {
-                        classObj[key] = data[classFullName][0];
-                    }, key, classFullName, classObj));
-                    this.ev.afterGroup("loadDeps", oojs.proxy(this, function(data, classObj) {
-                        var staticConstructorName = "$" + classObj.name;
-                        classObj[staticConstructorName] && classObj[staticConstructorName]();
-                    }, classObj));
-                    var url = oojs.getClassPath(classFullName);
-                    var jsCallBack = oojs.proxy(this, function(classFullName, url) {
-                        this.ev.emit(classFullName, {
-                            classFullName: classFullName,
-                            url: url
-                        });
-                    }, classFullName, url);
-                    this.loadScript(url, jsCallBack);
-                }
-            }
-        } else {
-            classObj[staticConstructorName] && classObj[staticConstructorName]();
+    loadDepsBrowser: function(classObj, unloadClassArray) {
+        var parentFullClassName = classObj.namespace ? classObj.namespace + "." + classObj.name : classObj.name;
+        if (!this.ev.groupList[parentFullClassName]) {
+            this.ev.group(parentFullClassName, [], function() {
+                oojs.reload(parentFullClassName);
+            });
         }
-        return oojs;
+        for (var i = 0, count = unloadClassArray.length; i < count; i++) {
+            var classFullName = unloadClassArray[i];
+            if (!this.ev.eventList[classFullName]) {
+                this.ev.bind(classFullName, function() {
+                    return true;
+                });
+            }
+            this.ev.group(parentFullClassName, classFullName);
+            if (!this.ev.groupList[classFullName]) {
+                this.ev.group(classFullName, [], function(data, className) {
+                    oojs.reload(className);
+                }.proxy(this, classFullName));
+                this.ev.groupList[classFullName].status = true;
+            }
+            this.ev.queue(parentFullClassName, classFullName);
+            var url = oojs.getClassPath(classFullName);
+            var jsCallBack = oojs.proxy(this, function(classFullName) {
+                console.log("event:" + classFullName);
+                this.ev.emit(classFullName, classFullName);
+            }, classFullName);
+            this.loadScript(url, jsCallBack);
+        }
+        return this;
     }
 });

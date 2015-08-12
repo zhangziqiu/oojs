@@ -1,35 +1,35 @@
 <!DOCTYPE html>
 <html>
-    <head>
-		<meta charset="UTF-8">
-	</head>
-    <body>
-        <!-- ÒıÈëoojs, ¼ÙÉè½«oojs.jsÏÂÔØµ½ÁËsrcÄ¿Â¼ÖĞ -->
-        <script type="text/javascript" src="/src/oojs.js"></script>
-		<script type="text/javascript" src="/src/oojs/event.js"></script>
-        <script>
-            //ÏÂÃæÊÇmain.jsµÄÄÚÈİ, ¿ÉÒÔ½«mainÖ±½ÓĞ´ÔÚÒ³ÃæÀï
-            oojs.define({
-                name: 'main',
-                $main: function () {
-                    var ev = oojs.create(oojs.event);
-					ev.bind('test', function(data){
-						console.log('ev-test-1:' + data);
-					});
-					ev.bind('test', -1, function(data){
-						console.log('ev-test-loop:' + data);
-					});
-					ev.bind('test', 2, function(data){
-						console.log('ev-test-2:' + data);
-					});
-					
-					ev.emit('test', 'emit-data-1');
-					ev.emit('test', 'emit-data-2');
-					ev.emit('test', 'emit-data-3');
-					ev.emit('test', 'emit-data-4');
-                }
-            });
-        </script>
-    </body>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- ï¿½ï¿½ï¿½ï¿½oojs, ï¿½ï¿½ï¿½è½«oojs.jsï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½srcÄ¿Â¼ï¿½ï¿½ -->
+    <script type="text/javascript" src="/src/oojs.js"></script>
+    <script type="text/javascript" src="/src/oojs/event.js"></script>
+    <script>
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½main.jsï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½Ô½ï¿½mainÖ±ï¿½ï¿½Ğ´ï¿½ï¿½Ò³ï¿½ï¿½ï¿½ï¿½
+        oojs.define({
+            name: 'main',
+            $main: function () {
+                var ev = oojs.create(oojs.event);
+                ev.bind('test', function (data) {
+                    console.log('ev-test-1:' + data);
+                });
+                ev.bind('test', -1, function (data) {
+                    console.log('ev-test-loop:' + data);
+                });
+                ev.bind('test', 2, function (data) {
+                    console.log('ev-test-2:' + data);
+                });
 
+                ev.emit('test', 'emit-data-1');
+                ev.emit('test', 'emit-data-2');
+                ev.emit('test', 'emit-data-3');
+                ev.emit('test', 'emit-data-4');
+            }
+
+        });
+    </script>
+</body>
 </html>

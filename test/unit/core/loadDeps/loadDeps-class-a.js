@@ -3,11 +3,13 @@ oojs.define({
     namespace: 'oojs.core.test',
     deps: {
         b: 'oojs.core.test.b'
+
     },
-    $a: function() {
-        console.log("b:");
+    $a: function () {
+        console.log('b:');
         console.log(this.b);
-        console.log("b.c:");
+        console.log('b.c:');
         console.log(this.b.c);
     }
+
 });

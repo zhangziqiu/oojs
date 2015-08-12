@@ -1,31 +1,33 @@
 <!DOCTYPE html>
 <html>
-    <head>
-		<meta charset="UTF-8">
-	</head>
-    <body>
-        <!-- ÒýÈëoojs, ¼ÙÉè½«oojs.jsÏÂÔØµ½ÁËsrcÄ¿Â¼ÖÐ -->
-        <script type="text/javascript" src="/bin/source/oojs.js"></script>
-        <!-- ÉèÖÃÀàÎÄ¼þ¸ùÄ¿Â¼ -->
-        <script>
-            oojs.setPath('/test/demo/');
-        </script>
-        <script>
-            //ÏÂÃæÊÇmain.jsµÄÄÚÈÝ, ¿ÉÒÔ½«mainÖ±½ÓÐ´ÔÚÒ³ÃæÀï
-            oojs.define({
-                name: 'main',
-                deps: {
-                    template: 'utility.template',
-					template2: 'utility.template'
-                },
-                $main: function () {
-                    var result = this.template.render('My name is {name}', {
-                        name: 'ZZQ'
-                    });
-                    console.log(result);
-                }
-            });
-        </script>
-    </body>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- ï¿½ï¿½ï¿½ï¿½oojs, ï¿½ï¿½ï¿½è½«oojs.jsï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½srcÄ¿Â¼ï¿½ï¿½ -->
+    <script type="text/javascript" src="/bin/source/oojs.js"></script>
+    <!-- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½Ä¿Â¼ -->
+    <script>
+        oojs.setPath('/test/demo/');
+    </script>
+    <script>
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½main.jsï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½Ô½ï¿½mainÖ±ï¿½ï¿½Ð´ï¿½ï¿½Ò³ï¿½ï¿½ï¿½ï¿½
+        oojs.define({
+            name: 'main',
+            deps: {
+                template: 'utility.template',
+                template2: 'utility.template'
 
+            },
+            $main: function () {
+                var result = this.template.render('My name is {name}', {
+                    name: 'ZZQ'
+
+                });
+                console.log(result);
+            }
+
+        });
+    </script>
+</body>
 </html>

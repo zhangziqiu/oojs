@@ -1,16 +1,19 @@
 oojs.define({
+
     /**
      * 类加载器. 使用oojs.event实现. 
      * 当类A以类B, 类B依赖类C时, 会递归加载所有的依赖类, 当所有的依赖类都加载完毕后, 执行类A的静态构造函数.
      */
-    name: "loader",
-    namespace: "oojs",
-    deps:{
+    name: 'loader',
+    namespace: 'oojs',
+    deps: {
         event: 'oojs.event'
+
     },
-    $loader:function(){
-        this.ev = oojs.create( this.event );
+    $loader: function () {
+        this.ev = oojs.create(this.event);
     },
+
     /**
      * 异步加载js文件
      * @public
@@ -20,28 +23,28 @@ oojs.define({
      * @return {object} oojs对象引用
      */
     loadScript: function (url, version, callback) {
-        if (typeof version === "function") {
+        if (typeof version === 'function') {
             callback = version;
             version = '1.0.0';
         }
         version = version || '1.0.0';
 
         if (version) {
-            url += "?v=" + version;
+            url += '?v=' + version;
         }
 
         callback = callback || function () {};
 
-		//loading对象记录已经加载过的日志, 保证一个地址不会被加载多次
+        // loading对象记录已经加载过的日志, 保证一个地址不会被加载多次
         this.loading = this.loading || {};
         if (this.loading[url]) {
             return;
         }
         this.loading[url] = 1;
 
-        //加载脚本
-        var loader = document.createElement("script");
-        loader.type = "text/javascript";
+        // 加载脚本
+        var loader = document.createElement('script');
+        loader.type = 'text/javascript';
         loader.async = true;
 
         loader.src = url;
@@ -52,10 +55,11 @@ oojs.define({
                 callback();
             }
         };
-        var s = document.getElementsByTagName("script")[0];
+        var s = document.getElementsByTagName('script')[0];
         s.parentNode.insertBefore(loader, s);
         return this;
     },
+
     /**
      * 浏览器加载类依赖
      * @public
@@ -63,40 +67,40 @@ oojs.define({
      * @return {object} oojs对象引用
      */
     loadDepsBrowser: function (classObj, unloadClassArray) {
-        //创建入口类事件组
-        var parentFullClassName = classObj.namespace ?  classObj.namespace + "." + classObj.name : classObj.name;
+        // 创建入口类事件组
+        var parentFullClassName = classObj.namespace ? classObj.namespace + '.' + classObj.name : classObj.name;
 
-        if( !this.ev.groupList[parentFullClassName]  ){
-            this.ev.group(parentFullClassName, [], function(){
+        if (!this.ev.groupList[parentFullClassName]) {
+            this.ev.group(parentFullClassName, [], function () {
                 oojs.reload(parentFullClassName);
             });
         }
 
-        //处理依赖
-        for(var i= 0, count=unloadClassArray.length; i<count; i++){
+        // 处理依赖
+        for (var i = 0, count = unloadClassArray.length; i < count; i++) {
             var classFullName = unloadClassArray[i];
-            //绑定事件
-            if(!this.ev.eventList[classFullName]){
+            // 绑定事件
+            if (!this.ev.eventList[classFullName]) {
                 this.ev.bind(classFullName, function () {
                     return true;
                 });
             }
 
-            //添加到父类分组中
+            // 添加到父类分组中
             this.ev.group(parentFullClassName, classFullName);
 
-            //为每一个依赖类创建一个group
-            if( !this.ev.groupList[classFullName] ){
-                this.ev.group(classFullName, [], function(data, className){
+            // 为每一个依赖类创建一个group
+            if (!this.ev.groupList[classFullName]) {
+                this.ev.group(classFullName, [], function (data, className) {
                     oojs.reload(className);
                 }.proxy(this, classFullName));
-                this.ev.groupList[classFullName].status=true;
+                this.ev.groupList[classFullName].status = true;
             }
 
-            //创建队列
+            // 创建队列
             this.ev.queue(parentFullClassName, classFullName);
 
-            //加载脚本
+            // 加载脚本
             var url = oojs.getClassPath(classFullName);
             var jsCallBack = oojs.proxy(this, function (classFullName) {
                 console.log('event:' + classFullName);
@@ -107,4 +111,5 @@ oojs.define({
         }
         return this;
     }
+
 });

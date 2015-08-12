@@ -1,44 +1,53 @@
 <!DOCTYPE html>
 <html>
-
 <head>
+    <meta charset="utf-8"/>
 </head>
-
 <body>
-    <div id="divLog">[output]<br/></div>
-    <script src="../../../../src/core.js"></script>
+    <div id="divLog">
+        [output]
+        <br>
+    </div>
+    <script src="../../../../src/oojs.js"></script>
     <script type="text/javascript">
-        define({
-            name:"n1",
-            namespace:"A.B",
-            testString: "b"
-        });  
-        
-        define({
-            name:"n2",
-            namespace:"A.C",
-            testString: "b"
-        });  
+        oojs.define({
+            name: 'n1',
+            namespace: 'A.B',
+            testString: 'b'
 
-        var log = document.getElementById('divLog'); 
-        oojs.config({path:'http://www.base.com/'});        
-        log.innerHTML += oojs.getClassPath('A.B.n1') + "<br/>"; 
-        
-        oojs.config({path:{'A':'http://www.a.com/'}});        
-        log.innerHTML += oojs.getClassPath('A.B.n1') + "<br/>"; 
-        
-        oojs.config({path:{'A.B':'http://www.ab.com/'}});        
-        log.innerHTML += oojs.getClassPath('A.B.n1') + "<br/>"; 
-        
-        oojs.config({path:{'A':'http://www.a.com/'}});        
-        log.innerHTML += oojs.getClassPath('A.B.n1') + "<br/>"; 
-        
-        log.innerHTML += oojs.getClassPath('A.C.n2') + "<br/>"; 
-        
-        oojs.config
-        
+        });
+
+        oojs.define({
+            name: 'n2',
+            namespace: 'A.C',
+            testString: 'b'
+
+        });
+
+        var log = document.getElementById('divLog');
+        log.innerHTML += 'set root path to http://www.base.com/ <br/>';
+        oojs.setPath('http://www.base.com/');
+        log.innerHTML += 'oojs.getClassPath(\'A.B.n1\'):';
+        log.innerHTML += oojs.getClassPath('A.B.n1') + '<br/>';
+        log.innerHTML += 'set path:';
+
+        oojs.setPath({
+            'A': 'http://www.a.com/'
+        });
+        log.innerHTML += oojs.getClassPath('A.B') + '<br/>';
+
+        oojs.setPath({
+            'A.B': 'http://www.ab.com/'
+        });
+        log.innerHTML += oojs.getClassPath('A.B') + '<br/>';
+
+        oojs.setPath({
+            'A': 'http://www.a.com/'
+        });
+        log.innerHTML += oojs.getClassPath('A.B.n1') + '<br/>';
+
+        log.innerHTML += oojs.getClassPath('A.C.n2') + '<br/>';
+
     </script>
-
 </body>
-
 </html>

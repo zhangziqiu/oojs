@@ -1,67 +1,65 @@
 <!DOCTYPE html>
 <html>
-    
-    <head>
-		<meta charset="UTF-8" />
-        <script type="text/javascript" src="../../../src/oojs.js"></script>
-        <script type="text/javascript" src="../../../src/oojs/event.js"></script>
-    </head>
-    
-    <body>
-        <script type="text/javascript">
-			var ev = oojs.create(oojs.event);
-			ev.bind('ev1', function(data){
-				console.log( data );
-				return data;
-			});
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="../../../src/oojs.js"></script>
+    <script type="text/javascript" src="../../../src/oojs/event.js"></script>
+</head>
+<body>
+    <script type="text/javascript">
+        var ev = oojs.create(oojs.event);
+        ev.bind('ev1', function (data) {
+            console.log(data);
+            return data;
+        });
 
-			ev.bind('ev2', function(data){
-				console.log( data );
-				return data;
-			});
+        ev.bind('ev2', function (data) {
+            console.log(data);
+            return data;
+        });
 
-			ev.bind('ev3', function(data){
-				console.log( data );
-				return data;
-			});
+        ev.bind('ev3', function (data) {
+            console.log(data);
+            return data;
+        });
 
-			ev.bind('ev4', function(data){
-				console.log( data );
-				return data;
-			});
+        ev.bind('ev4', function (data) {
+            console.log(data);
+            return data;
+        });
 
+        ev.bind('ev5', function (data) {
+            console.log(data);
+            return data;
+        });
 
-			ev.bind('ev5', function(data){
-				console.log( data );
-				return data;
-			});
+        ev.group('groupA', 'ev1', function (data) {
+            console.log('groupA:');
+            console.log(data);
+        });
 
+        ev.group('groupC', [
+            'ev4',
+            'ev5'
+        ], function (data) {
+            console.log('groupC:');
+            console.log(data);
+        });
 
-			ev.group('groupA', 'ev1', function(data){
-				console.log( 'groupA:' );
-				console.log( data );
-			});
+        ev.group('groupB', [
+            'ev2',
+            'ev3'
+        ], function (data) {
+            console.log('groupB:');
+            console.log(data);
+        });
 
-			ev.group('groupC', ['ev4','ev5'], function(data){
-				console.log( 'groupC:' );
-				console.log( data );
-			});
-
-
-			ev.group('groupB', ['ev2','ev3'], function(data){
-				console.log( 'groupB:' );
-				console.log( data );
-			});
-
-
-			ev.queue('groupA', 'groupB', 'groupC');
-			ev.emit('ev4', 'ev4-data');
-			ev.emit('ev5', 'ev5-data');
-			ev.emit('ev1', 'ev1-data');
-			ev.emit('ev3', 'ev3-data');
-			ev.emit('ev2', 'ev2-data');
-
-        </script>
-    </body>
-
+        ev.queue('groupA', 'groupB', 'groupC');
+        ev.emit('ev4', 'ev4-data');
+        ev.emit('ev5', 'ev5-data');
+        ev.emit('ev1', 'ev1-data');
+        ev.emit('ev3', 'ev3-data');
+        ev.emit('ev2', 'ev2-data');
+    </script>
+</body>
 </html>

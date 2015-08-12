@@ -1,28 +1,25 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 </head>
-
 <body>
     <script src="../../../../src/oojs.js"></script>
     <script type="text/javascript">
         oojs.define({
-            name:"a",
-            testString: "a"
+            name: 'a',
+            testString: 'a'
+
         });
         console.log(oojs.using('a').testString);
     </script>
-    
     <script src="../../../../src/oojs.js?a=1"></script>
     <script type="text/javascript">
         oojs.define({
-            name:"a",
-            testString: "b"
+            name: 'a',
+            testString: 'b'
+
         });
         console.log(oojs.using('a').testString);
     </script>
-
 </body>
-
 </html>
