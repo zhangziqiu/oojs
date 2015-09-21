@@ -78,7 +78,8 @@ oojs.define({
     /**
      * 静态构造函数
      */
-    $event: function () {},
+    $event: function () {
+    },
 
     /**
      * 动态构造函数
@@ -99,7 +100,8 @@ oojs.define({
         }
      */
     createCallback: function (callback, needTimes, emitTimes) {
-        callback = typeof callback !== 'undefined' ? callback : function () {};
+        callback = typeof callback !== 'undefined' ? callback : function () {
+        };
         needTimes = typeof needTimes !== 'undefined' ? needTimes : 1;
         emitTimes = typeof emitTimes !== 'undefined' ? emitTimes : 0;
 
@@ -149,26 +151,16 @@ oojs.define({
     /**
      * 为事件添加事件处理函数
      * @param {string} eventName 事件名
+     * @param {Function} callback 事件处理函数
      * @param {number} times 可以不传递, 事件处理函数执行几次, 默认为1次, 循环执行传递-1
-     * @param {Function} callback 事件处理函数, 可传递数组
      */
-    bind: function (eventName, times, callback) {
-        // 函数重载处理. 如果传递2个参数, 表示 times=1
-        if (arguments.length === 2) {
-            callback = times;
-            times = 1;
-        }
+    bind: function (eventName, callback, times) {
         // 设置times默认值. 如果传递的times不正确, 则设置为默认值1
         times = typeof times !== 'number' ? 1 : times;
 
         // 如果event对象不存在,则创建新的event对象
         var ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
-        callback = callback instanceof Array ? callback : [
-            callback
-        ];
-        for (var i = 0, count = callback.length; i < count; i++) {
-            ev.callbacks.push(this.createCallback(callback[i], times));
-        }
+        ev.callbacks.push(this.createCallback(callback, times));
 
         // 如果事件已经触发过, 则立刻执行
         if (ev.status && ev.emitData.length) {
@@ -193,13 +185,13 @@ oojs.define({
                 for (var i = 0, count = ev.callbacks.length; i < count; i++) {
                     if (callback) {
                         if (callback === ev.callbacks[i].callback) {
-                            ev.callbacks[i] = null;
+                            ev.callbacks[i] = [];
                             break;
                         }
 
                     }
                     else {
-                        ev.callbacks[i] = null;
+                        ev.callbacks[i] = [];
                         continue;
                     }
 
