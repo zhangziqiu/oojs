@@ -1,0 +1,6 @@
+oojs.define({
+    name:'test1',
+	a:1,
+	b:2,
+	c:3
+});

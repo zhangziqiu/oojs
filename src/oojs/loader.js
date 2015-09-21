@@ -1,7 +1,7 @@
 oojs.define({
 
     /**
-     * 类加载器. 使用oojs.event实现. 
+     * 类加载器. 使用oojs.event实现.
      * 当类A以类B, 类B依赖类C时, 会递归加载所有的依赖类, 当所有的依赖类都加载完毕后, 执行类A的静态构造函数.
      */
     name: 'loader',
@@ -33,7 +33,8 @@ oojs.define({
             url += '?v=' + version;
         }
 
-        callback = callback || function () {};
+        callback = callback || function () {
+            };
 
         // loading对象记录已经加载过的日志, 保证一个地址不会被加载多次
         this.loading = this.loading || {};
@@ -68,7 +69,7 @@ oojs.define({
      */
     loadDepsBrowser: function (classObj, unloadClassArray) {
         // 创建入口类事件组
-        var parentFullClassName = classObj.namespace ? classObj.namespace + '.' + classObj.name : classObj.name;
+        var parentFullClassName = classObj.__full;
 
         if (!this.ev.groupList[parentFullClassName]) {
             this.ev.group(parentFullClassName, [], function () {
@@ -103,7 +104,6 @@ oojs.define({
             // 加载脚本
             var url = oojs.getClassPath(classFullName);
             var jsCallBack = oojs.proxy(this, function (classFullName) {
-                console.log('event:' + classFullName);
                 this.ev.emit(classFullName, classFullName);
             }, classFullName);
             this.loadScript(url, jsCallBack);

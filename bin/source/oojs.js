@@ -11,6 +11,8 @@
         namespace: "",
         // 类对象都注册到oojs.classes属性上
         classes: {},
+        // 空函数
+        noop: function() {},
         /**
          * 静态构造函数
          */
@@ -69,7 +71,7 @@
                     }
                 }
             }
-            return node._path;
+            return node.pathValue;
         },
         /**
          * 设置命名空间的目录:
@@ -100,7 +102,7 @@
                 for (var i = 0, count = namespaceArray.length; i < count; i++) {
                     var currentName = namespaceArray[i].toLowerCase();
                     node[currentName] = node[currentName] || {
-                        _path: node._path
+                        pathValue: node.pathValue
                     };
                     node = node[currentName];
                 }
@@ -109,7 +111,8 @@
             if (path && path.lastIndexOf("\\") !== path.length - 1 && path.lastIndexOf("/") !== path.length - 1) {
                 path = path + "/";
             }
-            node._path = path;
+            node.pathValue = path;
+            this.pathCache = {};
         },
         /**
          * 获取类的资源文件相对路径
@@ -132,17 +135,18 @@
          */
         loadDeps: function(classObj, recording) {
             recording = recording || {};
-            var deps = classObj.deps;
-            var unloadClassArray = [];
+            var deps = classObj.__deps;
+            var namespace = classObj.__namespace;
+            var unloadClass = [];
             for (var key in deps) {
-                if (key && deps.hasOwnProperty(key) && deps[key]) {
+                if (deps.hasOwnProperty(key) && deps[key]) {
                     var classFullName;
                     // 如果key对应的是一个非string, 比如一个object, 则表示已经加载完依赖
                     if (typeof deps[key] !== "string") {
                         classObj[key] = deps[key];
-                        if (classObj[key] && classObj[key].name) {
-                            classObj[key].namespace = classObj[key].namespace || "";
-                            classFullName = classObj[key].namespace + classObj[key].name;
+                        // 是oojs类，则可以获取到全限定性名
+                        if (classObj[key] && classObj[key].__name) {
+                            classFullName = classObj[key].__full;
                         }
                     } else {
                         // 如果key是string, 表示传递的是oojs的命名空间
@@ -166,29 +170,71 @@
                             }
                         }
                         if (!classObj[key]) {
-                            unloadClassArray.push(classFullName);
+                            unloadClass.push(classFullName);
                         }
                     } else {
-                        if (classObj[key].deps) {
-                            unloadClassArray = unloadClassArray.concat(this.loadDeps(classObj[key], recording));
+                        if (classObj[key].__deps) {
+                            unloadClass = unloadClass.concat(this.loadDeps(classObj[key], recording));
                         }
                     }
                 }
             }
-            return unloadClassArray;
+            return unloadClass;
         },
         /**
          * 快速克隆方法
          * @public
-         * @method fastClone
          * @param {Object} source 带克隆的对象. 使用此方法克隆出来的对象, 如果source对象被修改, 则所有克隆对象也会被修改
          * @return {Object} 克隆出来的对象.
          */
         fastClone: function(source) {
-            var temp = function() {};
-            temp.prototype = source;
-            var result = new temp();
+            var Temp = function() {};
+            Temp.prototype = source;
+            var result = new Temp();
             return result;
+        },
+        /**
+         * 深度递归克隆
+         * @public
+         * @param {Object} source 带克隆的对象.
+         * @param {number} depth 递归的深度.超过此深度将不会继续递归。
+         * @return {*} 克隆出来的对象.
+         */
+        deepClone: function(source, depth) {
+            if (typeof depth !== "number") {
+                depth = 10;
+            }
+            var to;
+            var nextDepth = depth - 1;
+            if (depth > 0) {
+                if (source instanceof Date) {
+                    // 处理Date类型ate类型
+                    to = new Date();
+                    to.setTime(source.getTime());
+                } else if (source instanceof Array) {
+                    // 处理Array类型
+                    to = [];
+                    for (var i = 0, count = source.length; i < count; i++) {
+                        to[i] = this.deepClone(source[i], nextDepth);
+                    }
+                } else if (typeof source === "object") {
+                    // 处理其他引用类型
+                    to = {};
+                    for (var key in source) {
+                        if (source.hasOwnProperty(key)) {
+                            var item = source[key];
+                            to[key] = this.deepClone(item, nextDepth);
+                        }
+                    }
+                } else {
+                    // 处理值类型
+                    to = source;
+                }
+            } else {
+                // 超过最大深度，不进行copy直接返回。
+                to = source;
+            }
+            return to;
         },
         /**
          * 代理类函数, 用于修改函数中的this. 使用proxy函数后返回一个函数, 里面的this指针会被修改为context参数传递过来的对象.
@@ -235,7 +281,7 @@
         reload: function(name) {
             var result = this.find(name);
             if (result) {
-                result._registed = false;
+                result.__registed = false;
                 if (this.runtime === "node") {
                     var classPath = this.getClassPath(name);
                     delete require.cache[require.resolve(classPath)];
@@ -252,39 +298,20 @@
          * 创建一个类实例.  var a = oojs.create(classA, 'a');
          * @public
          * @param {Object|string} classObj 类对象或者类的全限定性名, 比如'a.b.c'
-         * @param {...*} params 动态构造函数的参数.
+         * @param {*} p1 动态构造函数的参数.可以不传递
+         * @param {*} p2 动态构造函数的参数.可以不传递
+         * @param {*} p3 动态构造函数的参数.可以不传递
+         * @param {*} p4 动态构造函数的参数.可以不传递
+         * @param {*} p5 动态构造函数的参数.可以不传递
          * @return {Object} 类实例
          */
-        create: function(classObj, params) {
-            var args = Array.prototype.slice.call(arguments, 0);
-            args.shift();
+        create: function(classObj, p1, p2, p3, p4, p5) {
             // classObj如果是字符串, 则尝试使用using加载类.
             if (typeof classObj === "string") {
                 classObj = this.using(classObj);
             }
-            if (!classObj || !classObj.name) {
-                throw new Error("oojs.create need a class object with a name property");
-            }
-            // 构造函数名
-            var constructerName = "__" + classObj.name || "init";
-            // function也是引用类型, 所以这里必须使用新创建的空函数.
-            var classFunction = function() {};
-            classFunction.prototype = classObj;
-            var result = new classFunction();
-            // 如果类的某一个属性是对象,则需要克隆
-            for (var key in classObj) {
-                if (key && classObj.hasOwnProperty(key)) {
-                    var item = classObj[key];
-                    if (typeof item === "object") {
-                        // 经测试, fastClone方法对于Array类型也适用
-                        result[key] = this.fastClone(item);
-                    }
-                }
-            }
-            // 复制完属性后, 再执行构造函数. 防止构造函数中修改原型类.
-            if (result[constructerName]) {
-                result[constructerName].apply(result, args);
-            }
+            // 创建新的类实例, 创建的时候会执行构造函数。
+            var result = new classObj.__constructor(p1, p2, p3, p4, p5);
             return result;
         },
         /**
@@ -312,67 +339,108 @@
          * @return {Object} oojs引用
          */
         define: function(classObj) {
-            var name = classObj.name;
-            var staticConstructorName = "$" + name;
-            classObj.namespace = classObj.namespace || "";
-            classObj.dispose = classObj.dispose || function() {};
-            // 将动态构造函数改名为"__类名"的形式, 防止程序编程时导致的变量名冲突
-            classObj["__" + name] = classObj[name] || function() {};
-            // 将静态构造函数同样可以通过"__static_constructor"函数调用
-            classObj.__static_constructor = classObj[staticConstructorName] || function() {};
+            // 类名
+            var name = classObj.name || "__tempName";
+            // 命名空间
+            var namespace = classObj.namespace || "";
+            // oojs框架属性内部都是用"__"开头存储，避免在运行时与用户设置的属性名冲突
+            classObj.__name = name;
+            classObj.__namespace = namespace;
+            classObj.__full = namespace.length > 1 ? namespace + "." + name : name;
+            classObj.__deps = classObj.deps;
+            classObj.__oojs = this;
+            // 动态构造函数
+            classObj.__constructor = function(p1, p2, p3, p4, p5) {
+                // 对需要深度克隆的属性进行克隆
+                if (this.__clones && this.__clones.length > 0) {
+                    for (var i = 0, count = this.__clones.length; i < count; i++) {
+                        var key = this.__clones[i];
+                        this[key] = this.__oojs.deepClone(this[key]);
+                    }
+                }
+                this.__constructorSource(p1, p2, p3, p4, p5);
+            };
+            // 原始定义的动态构造函数
+            classObj.__constructorSource = classObj[name] || this.noop;
+            // 原始定义的静态构造函数
+            classObj.__staticSource = classObj["$" + name] || this.noop;
+            // __staticUpdate 用于当类定义变化时,比如静态构造函数中修改了类定义时,进行动态构造函数更新
+            classObj.__staticUpdate = function() {
+                // 对类定义进行一次扫描，判断哪些属性需要在创建实例时进行克隆；
+                var needCloneKeyArray = [];
+                for (var key in this) {
+                    if (this.hasOwnProperty(key)) {
+                        var item = this[key];
+                        if (typeof item === "object" && item !== null && key !== "deps" && key.indexOf("__") !== 0 && (!classObj.__deps || !classObj.__deps[key])) {
+                            needCloneKeyArray.push(key);
+                        }
+                    }
+                }
+                // __clones 存放所有需要克隆的属性名
+                this.__clones = needCloneKeyArray;
+                this.__constructor.prototype = this;
+            };
+            // 静态构造函数
+            classObj.__static = function() {
+                this.__staticSource();
+                this.__staticUpdate();
+            };
             var isRegisted = false;
             // 是否已经被注册过
             var isPartClass = false;
-            // 是否是分部类, 默认不是分部类
+            // 是否是分部类
             // 初始化前置命名空间
-            var preNamespaces = classObj.namespace.split(".");
+            var preNamespaces = namespace.split(".");
             var count = preNamespaces.length;
-            var currClassObj = this.classes;
+            var currentClassObj = this.classes;
             var tempName;
             for (var i = 0; i < count; i++) {
                 tempName = preNamespaces[i];
                 if (tempName) {
-                    currClassObj[tempName] = currClassObj[tempName] || {};
-                    currClassObj = currClassObj[tempName];
+                    currentClassObj[tempName] = currentClassObj[tempName] || {};
+                    currentClassObj = currentClassObj[tempName];
                 }
             }
-            // 此时 currClassObj 是当前待注册类所属的命名空间对象. 通过 currClassObj[name] 则获取到当前类对象.
-            currClassObj[name] = currClassObj[name] || {};
+            // currentNamespace 存储当前类所在的命名空间， currentClassObj存储类对象自身的引用。
+            // 当修改类的属性是，可以直接通过 currentClassObj 操作。 当时如果整体替换类定义时，
+            // 需要通过 currentNamespace[name] 修改。
+            currentClassObj[name] = currentClassObj[name] || {};
+            var currentNamespace = currentClassObj;
+            currentClassObj = currentClassObj[name];
             // 新注册类
-            if (!currClassObj[name].name || !currClassObj[name]._registed) {
-                classObj._registed = true;
-                currClassObj[name] = classObj;
+            if (!currentClassObj.__name || !currentClassObj.__registed) {
+                classObj.__registed = true;
+                currentNamespace[name] = classObj;
             } else {
-                if (currClassObj[name]._registed) {
+                if (currentClassObj.__registed) {
                     isRegisted = true;
                     for (var key in classObj) {
-                        if (key && classObj.hasOwnProperty(key) && typeof currClassObj[name][key] === "undefined") {
+                        if (key && classObj.hasOwnProperty(key) && (typeof currentClassObj[key] === "undefined" || currentClassObj[key] === this.noop)) {
                             isPartClass = true;
-                            currClassObj[name][key] = classObj[key];
+                            currentClassObj[key] = classObj[key];
                         }
                     }
                 }
             }
-            // 此时通过 currClassObj[name] 获取到的是类的完整定义, classObj只包括类的部分定义.
-            // 所以修改 classObj 的引用, 让其指向 currClassObj[name]
-            classObj = currClassObj[name];
+            classObj = currentNamespace[name];
             // 如果是第一次注册类或者是分部类, 则需要加载依赖项
             if (!isRegisted || isPartClass) {
                 // 加载依赖
-                var unloadClassArray = this.loadDeps(classObj);
+                var unloadClass = this.loadDeps(classObj);
                 // 发现未加载的依赖类
-                if (unloadClassArray.length > 0) {
+                if (unloadClass.length > 0) {
                     this.loader = this.loader || this.using("oojs.loader");
                     if (this.runtime === "browser" && this.loader) {
-                        // 浏览器模式下, 如果发现存在未加载的依赖项, 并且安装了 oojs.loader, 则不立刻调用静态函数, 需要先加载依赖类.
-                        this.loader.loadDepsBrowser(classObj, unloadClassArray);
+                        // 浏览器模式下, 如果发现存在未加载的依赖项, 并且安装了 oojs.loader,
+                        // 则不立刻调用静态函数, 需要先加载依赖类.
+                        this.loader.loadDepsBrowser(classObj, unloadClass);
                     } else {
                         // 发现未加载的依赖类, 抛出异常
-                        throw new Error('class "' + classObj.name + '"' + " loadDeps error:" + unloadClassArray.join(","));
+                        throw new Error('class "' + classObj.name + '"' + " loadDeps error:" + unloadClass.join(","));
                     }
                 } else {
                     // 依赖类全部加载完毕, 运行静态构造函数
-                    classObj[staticConstructorName] && classObj[staticConstructorName]();
+                    classObj.__static();
                 }
             }
             // 兼容node的require命令, 因为闭包问题导致oojs.define中的module始终指向oojs.js文件的module.使用eval和Function无法解决.
@@ -380,7 +448,7 @@
             if (this.runtime === "node" && arguments.callee.caller.arguments[2]) {
                 arguments.callee.caller.arguments[2].exports = classObj;
             }
-            return this;
+            return classObj;
         }
     };
     // 自解析
@@ -525,23 +593,15 @@ oojs.define({
     /**
      * 为事件添加事件处理函数
      * @param {string} eventName 事件名
+     * @param {Function} callback 事件处理函数
      * @param {number} times 可以不传递, 事件处理函数执行几次, 默认为1次, 循环执行传递-1
-     * @param {Function} callback 事件处理函数, 可传递数组
      */
-    bind: function(eventName, times, callback) {
-        // 函数重载处理. 如果传递2个参数, 表示 times=1
-        if (arguments.length === 2) {
-            callback = times;
-            times = 1;
-        }
+    bind: function(eventName, callback, times) {
         // 设置times默认值. 如果传递的times不正确, 则设置为默认值1
         times = typeof times !== "number" ? 1 : times;
         // 如果event对象不存在,则创建新的event对象
         var ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
-        callback = callback instanceof Array ? callback : [ callback ];
-        for (var i = 0, count = callback.length; i < count; i++) {
-            ev.callbacks.push(this.createCallback(callback[i], times));
-        }
+        ev.callbacks.push(this.createCallback(callback, times));
         // 如果事件已经触发过, 则立刻执行
         if (ev.status && ev.emitData.length) {
             for (var i = 0, count = ev.emitData.length; i < count; i++) {
@@ -564,11 +624,11 @@ oojs.define({
                 for (var i = 0, count = ev.callbacks.length; i < count; i++) {
                     if (callback) {
                         if (callback === ev.callbacks[i].callback) {
-                            ev.callbacks[i] = null;
+                            ev.callbacks[i] = [];
                             break;
                         }
                     } else {
-                        ev.callbacks[i] = null;
+                        ev.callbacks[i] = [];
                         continue;
                     }
                 }
@@ -808,9 +868,264 @@ oojs.define({
     }
 });
 
+/**
+ * @file promise��, ֧�ֱ�׼��promiseģʽ
+ * @author zhangziqiu@qq.com
+ */
+oojs.define({
+    name: "promise",
+    namespace: "oojs",
+    deps: {
+        event: "oojs.event"
+    },
+    /**
+     * ���캯��
+     * @param {Function} func ����ǩ��Ϊ func(resolve, reject)
+     */
+    promise: function(func) {
+        this.ev = oojs.create(this.event);
+        if (func) {
+            try {
+                func(oojs.proxy(this, this._resolve), oojs.proxy(this, this._reject));
+            } catch (ex) {
+                this._reject(ex);
+            }
+        }
+    },
+    // promise״̬, ȡֵ����: fulfilled��rejected��pending
+    status: "pending",
+    // onFulfilled ���� onRejected �������ص�����.
+    data: null,
+    // oojs.eventʵ��. ʹ��then����ʱ, ��Ϊevent����ע��OnFullfilled��OnRejected�¼�.
+    ev: null,
+    /**
+     * OnFullfilled��OnRejected��Ĭ��ֵ,ֱ�ӷ��ش����Ĳ���
+     * @param {*} data ���ݵĲ���
+     * @return {*} ֱ�ӷ��ش�����data����
+     */
+    defaultFunc: function(data) {
+        return data;
+    },
+    /**
+     * ����״̬Ϊ fullfilled
+     * @public
+     * @param {*} data ���ݵĲ���
+     */
+    _resolve: function(data) {
+        // ���ص���һ��thenable����
+        if (data && typeof data.then === "function") {
+            var insidePromise = data;
+            var onFullfulled = oojs.proxy(this, function(data) {
+                this._resolve(data);
+            });
+            var onRejected = oojs.proxy(this, function(data) {
+                this._reject(data);
+            });
+            insidePromise.then(onFullfulled, onRejected);
+        } else {
+            // �޸�״̬
+            this.status = "fulfilled";
+            // ��������
+            this.data = data;
+            // ������һ��then�����󶨵ĺ���
+            if (this.ev.eventList && this.ev.eventList["onRejected"]) {
+                try {
+                    //����then�а󶨵�onFulfilled���������쳣, ������reject����
+                    this.ev.emit("onFulfilled", data);
+                } catch (ex) {
+                    this._reject(ex);
+                }
+            }
+        }
+    },
+    /**
+     * ����һ��״̬Ϊ fulfilled �� promise������
+     * @public
+     * @param {*} data ���ݵĲ���
+     * @return {Object} promise����
+     */
+    resolve: function(data) {
+        var promise = oojs.create(this);
+        promise._resolve(data);
+        return promise;
+    },
+    /**
+     * ����״̬Ϊ rejected
+     * @public
+     * @param {*} data ���ݵĲ���
+     */
+    _reject: function(data) {
+        this.status = "rejected";
+        this.data = data;
+        if (this.ev.eventList && this.ev.eventList["onRejected"]) {
+            this.ev.emit("onRejected", data);
+        }
+        return data;
+    },
+    /**
+     * ����һ��״̬Ϊ rejected �� promise������
+     * @public
+     * @param {*} data ���ݵĲ���
+     * @return {Object} promise����
+     */
+    reject: function(data) {
+        var promise = oojs.create(this);
+        promise._reject(data);
+        return promise;
+    },
+    /**
+     * ��node�еĻص�������ʽ,��callbackΪ����һ����ʽ�����ĺ���, ����promise��ʽ�ĺ���.
+     * ���罫node�Դ�ģ��fs��readFile����, ����promise��ʽ�ĺ���:
+     *      var readFilePromise = promise.promisify(fs.readFile);
+     *      readFilePromise('test.txt').then(function(data){...});
+     * @public
+     * @param {Function} func node�ص���ʽ�ĺ���
+     * @param {Object} thisObj ��������ʱ��this����,���Բ�����.
+     * @return {Function}
+     */
+    promisify: function(func, thisObj) {
+        var result = function() {
+            var promise = oojs.create("oojs.promise");
+            var args = Array.prototype.slice.apply(arguments);
+            var callback = function(err) {
+                if (err) {
+                    this._reject(err);
+                } else {
+                    var returnDataArray = Array.prototype.slice.call(arguments, 1);
+                    if (returnDataArray.length <= 1) {
+                        returnDataArray = returnDataArray[0];
+                    }
+                    this._resolve(returnDataArray);
+                }
+            };
+            args.push(oojs.proxy(promise, callback));
+            func.apply(thisObj, args);
+            return promise;
+        };
+        return result;
+    },
+    /**
+     * ������һ���ɹ���onFulfilled����ʧ�ܣ�onRejected��ʱ�Ĵ������������µ�promise����������ʽ���á�
+     * @public
+     * @param {Function} onFulfilled �ɹ�ʱ���õĺ���
+     * @param {Function} onRejected ʧ��ʱ���õĺ���
+     * @return {Object} promise����
+     */
+    then: function(onFulfilled, onRejected) {
+        onFulfilled = onFulfilled || this.defaultFunc;
+        onRejected = onRejected || this.defaultFunc;
+        // ����һ���µ�promise������
+        var promise = oojs.create("oojs.promise");
+        var promiseResolveCallback = oojs.proxy(promise, function(data) {
+            this._resolve(data["onFulfilled"]);
+        });
+        var promiseRejectCallback = oojs.proxy(promise, function(data) {
+            this._reject(data["onRejected"]);
+        });
+        this.ev.bind("onFulfilled", onFulfilled);
+        this.ev.group("onFulfilledGroup", "onFulfilled", promiseResolveCallback);
+        this.ev.bind("onRejected", onRejected);
+        this.ev.group("onRejectedGroup", "onRejected", promiseRejectCallback);
+        // ���⵱ǰ��promise�Ƿ��Ѿ�ִ������
+        if (this.status === "fulfilled") {
+            setTimeout(oojs.proxy(this, function() {
+                this._resolve(this.data);
+            }), 0);
+        } else if (this.status === "rejected") {
+            setTimeout(oojs.proxy(this, function() {
+                this._reject(this.data);
+            }), 0);
+        }
+        //�����´�����promise
+        return promise;
+    },
+    /**
+     * ����ʧ��ʱ�Ĵ����� onRejected, �����µ�promise����������ʽ���á�
+     * ��ͬ��: then(null, onRejected)
+     * @public
+     * @param {Function} onRejected ʧ��ʱ���õĺ���
+     * @return {oojs.promise} promise����
+     */
+    "catch": function(onRejected) {
+        this.then(null, onRejected);
+    },
+    /**
+     * ����promise�������飬�����е�����promise����������ʱ�������÷��ص�promiseΪonFullFilled
+     * @public
+     * @param {Array} promiseArray promise��������
+     * @return {oojs.promise} promise����
+     */
+    all: function(promiseArray) {
+        var promise = oojs.create(this);
+        var ev = oojs.create("oojs.event");
+        ev.bind("error", oojs.proxy(promise, function(error) {
+            this._reject(error);
+        }));
+        var eventGroup = [];
+        for (var i = 0, count = promiseArray.length; i < count; i++) {
+            var tempEventName = "event-" + (i + 1);
+            eventGroup.push(tempEventName);
+            var tempPromise = promiseArray[i];
+            tempPromise.__eventName = tempEventName;
+            tempPromise.allEvent = ev;
+            ev.bind(tempEventName, function(data) {
+                return data;
+            });
+            var tempPromiseOnFullfilled = function(data) {
+                this.allEvent.emit(this.__eventName, data);
+            }.proxy(tempPromise);
+            var tempPromiseOnRejected = function(error) {
+                this.allEvent.emit("error", error);
+                this.allEvent.unbind();
+            }.proxy(tempPromise);
+            tempPromise.then(tempPromiseOnFullfilled, tempPromiseOnRejected);
+        }
+        ev.group("all", eventGroup, function(data) {
+            var promiseData = [];
+            for (var key in data) {
+                promiseData.push(data[key]);
+            }
+            this._resolve(promiseData);
+        }.proxy(promise));
+        return promise;
+    },
+    /**
+     * ����promise�������飬�����е�����promise����ֻҪ��һ������ʱ�������÷��ص�promiseΪonFullFilled
+     * @public
+     * @param {Array} promiseArray promise��������
+     * @return {oojs.promise} promise����
+     */
+    race: function(promiseArray) {
+        var promise = oojs.create(this);
+        var ev = oojs.create("oojs.event");
+        ev.bind("success", oojs.proxy(promise, function(data) {
+            this._resolve(data);
+        }));
+        ev.bind("error", oojs.proxy(promise, function(error) {
+            this._reject(error);
+        }));
+        var eventGroup = [];
+        for (var i = 0, count = promiseArray.length; i < count; i++) {
+            var tempEventName = "event-" + (i + 1);
+            eventGroup.push(tempEventName);
+            var tempPromise = promiseArray[i];
+            var tempPromiseOnFullfilled = function(data) {
+                this.emit("success", data);
+                this.unbind();
+            }.proxy(ev);
+            var tempPromiseOnRejected = function(error) {
+                this.emit("error", error);
+                this.unbind();
+            }.proxy(ev);
+            tempPromise.then(tempPromiseOnFullfilled, tempPromiseOnRejected);
+        }
+        return promise;
+    }
+});
+
 oojs.define({
     /**
-     * 类加载器. 使用oojs.event实现. 
+     * 类加载器. 使用oojs.event实现.
      * 当类A以类B, 类B依赖类C时, 会递归加载所有的依赖类, 当所有的依赖类都加载完毕后, 执行类A的静态构造函数.
      */
     name: "loader",
@@ -869,7 +1184,7 @@ oojs.define({
      */
     loadDepsBrowser: function(classObj, unloadClassArray) {
         // 创建入口类事件组
-        var parentFullClassName = classObj.namespace ? classObj.namespace + "." + classObj.name : classObj.name;
+        var parentFullClassName = classObj.__full;
         if (!this.ev.groupList[parentFullClassName]) {
             this.ev.group(parentFullClassName, [], function() {
                 oojs.reload(parentFullClassName);
@@ -898,7 +1213,6 @@ oojs.define({
             // 加载脚本
             var url = oojs.getClassPath(classFullName);
             var jsCallBack = oojs.proxy(this, function(classFullName) {
-                console.log("event:" + classFullName);
                 this.ev.emit(classFullName, classFullName);
             }, classFullName);
             this.loadScript(url, jsCallBack);

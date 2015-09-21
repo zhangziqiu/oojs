@@ -3,6 +3,7 @@
         name: "oojs",
         namespace: "",
         classes: {},
+        noop: function() {},
         $oojs: function() {
             var config = {};
             if (typeof window !== "undefined" && typeof document !== "undefined") {
@@ -43,7 +44,7 @@
                     }
                 }
             }
-            return node._path;
+            return node.pathValue;
         },
         setPath: function(namespace, path) {
             var node = this.path;
@@ -62,7 +63,7 @@
                 for (var i = 0, count = namespaceArray.length; i < count; i++) {
                     var currentName = namespaceArray[i].toLowerCase();
                     node[currentName] = node[currentName] || {
-                        _path: node._path
+                        pathValue: node.pathValue
                     };
                     node = node[currentName];
                 }
@@ -70,7 +71,8 @@
             if (path && path.lastIndexOf("\\") !== path.length - 1 && path.lastIndexOf("/") !== path.length - 1) {
                 path = path + "/";
             }
-            node._path = path;
+            node.pathValue = path;
+            this.pathCache = {};
         },
         getClassPath: function(name) {
             if (!this.pathCache[name]) {
@@ -80,16 +82,16 @@
         },
         loadDeps: function(classObj, recording) {
             recording = recording || {};
-            var deps = classObj.deps;
-            var unloadClassArray = [];
+            var deps = classObj.__deps;
+            var namespace = classObj.__namespace;
+            var unloadClass = [];
             for (var key in deps) {
-                if (key && deps.hasOwnProperty(key) && deps[key]) {
+                if (deps.hasOwnProperty(key) && deps[key]) {
                     var classFullName;
                     if (typeof deps[key] !== "string") {
                         classObj[key] = deps[key];
-                        if (classObj[key] && classObj[key].name) {
-                            classObj[key].namespace = classObj[key].namespace || "";
-                            classFullName = classObj[key].namespace + classObj[key].name;
+                        if (classObj[key] && classObj[key].__name) {
+                            classFullName = classObj[key].__full;
                         }
                     } else {
                         classFullName = deps[key];
@@ -107,22 +109,53 @@
                             }
                         }
                         if (!classObj[key]) {
-                            unloadClassArray.push(classFullName);
+                            unloadClass.push(classFullName);
                         }
                     } else {
-                        if (classObj[key].deps) {
-                            unloadClassArray = unloadClassArray.concat(this.loadDeps(classObj[key], recording));
+                        if (classObj[key].__deps) {
+                            unloadClass = unloadClass.concat(this.loadDeps(classObj[key], recording));
                         }
                     }
                 }
             }
-            return unloadClassArray;
+            return unloadClass;
         },
         fastClone: function(source) {
-            var temp = function() {};
-            temp.prototype = source;
-            var result = new temp();
+            var Temp = function() {};
+            Temp.prototype = source;
+            var result = new Temp();
             return result;
+        },
+        deepClone: function(source, depth) {
+            if (typeof depth !== "number") {
+                depth = 10;
+            }
+            var to;
+            var nextDepth = depth - 1;
+            if (depth > 0) {
+                if (source instanceof Date) {
+                    to = new Date();
+                    to.setTime(source.getTime());
+                } else if (source instanceof Array) {
+                    to = [];
+                    for (var i = 0, count = source.length; i < count; i++) {
+                        to[i] = this.deepClone(source[i], nextDepth);
+                    }
+                } else if (typeof source === "object") {
+                    to = {};
+                    for (var key in source) {
+                        if (source.hasOwnProperty(key)) {
+                            var item = source[key];
+                            to[key] = this.deepClone(item, nextDepth);
+                        }
+                    }
+                } else {
+                    to = source;
+                }
+            } else {
+                to = source;
+            }
+            return to;
         },
         proxy: function(context, method) {
             var thisArgs = Array.prototype.slice.apply(arguments);
@@ -150,7 +183,7 @@
         reload: function(name) {
             var result = this.find(name);
             if (result) {
-                result._registed = false;
+                result.__registed = false;
                 if (this.runtime === "node") {
                     var classPath = this.getClassPath(name);
                     delete require.cache[require.resolve(classPath)];
@@ -163,30 +196,11 @@
             }
             return result;
         },
-        create: function(classObj, params) {
-            var args = Array.prototype.slice.call(arguments, 0);
-            args.shift();
+        create: function(classObj, p1, p2, p3, p4, p5) {
             if (typeof classObj === "string") {
                 classObj = this.using(classObj);
             }
-            if (!classObj || !classObj.name) {
-                throw new Error("oojs.create need a class object with a name property");
-            }
-            var constructerName = "__" + classObj.name || "init";
-            var classFunction = function() {};
-            classFunction.prototype = classObj;
-            var result = new classFunction();
-            for (var key in classObj) {
-                if (key && classObj.hasOwnProperty(key)) {
-                    var item = classObj[key];
-                    if (typeof item === "object") {
-                        result[key] = this.fastClone(item);
-                    }
-                }
-            }
-            if (result[constructerName]) {
-                result[constructerName].apply(result, args);
-            }
+            var result = new classObj.__constructor(p1, p2, p3, p4, p5);
             return result;
         },
         using: function(name) {
@@ -200,58 +214,89 @@
             return result;
         },
         define: function(classObj) {
-            var name = classObj.name;
-            var staticConstructorName = "$" + name;
-            classObj.namespace = classObj.namespace || "";
-            classObj.dispose = classObj.dispose || function() {};
-            classObj["__" + name] = classObj[name] || function() {};
-            classObj.__static_constructor = classObj[staticConstructorName] || function() {};
+            var name = classObj.name || "__tempName";
+            var namespace = classObj.namespace || "";
+            classObj.__name = name;
+            classObj.__namespace = namespace;
+            classObj.__full = namespace.length > 1 ? namespace + "." + name : name;
+            classObj.__deps = classObj.deps;
+            classObj.__oojs = this;
+            classObj.__constructor = function(p1, p2, p3, p4, p5) {
+                if (this.__clones && this.__clones.length > 0) {
+                    for (var i = 0, count = this.__clones.length; i < count; i++) {
+                        var key = this.__clones[i];
+                        this[key] = this.__oojs.deepClone(this[key]);
+                    }
+                }
+                this.__constructorSource(p1, p2, p3, p4, p5);
+            };
+            classObj.__constructorSource = classObj[name] || this.noop;
+            classObj.__staticSource = classObj["$" + name] || this.noop;
+            classObj.__staticUpdate = function() {
+                var needCloneKeyArray = [];
+                for (var key in this) {
+                    if (this.hasOwnProperty(key)) {
+                        var item = this[key];
+                        if (typeof item === "object" && item !== null && key !== "deps" && key.indexOf("__") !== 0 && (!classObj.__deps || !classObj.__deps[key])) {
+                            needCloneKeyArray.push(key);
+                        }
+                    }
+                }
+                this.__clones = needCloneKeyArray;
+                this.__constructor.prototype = this;
+            };
+            classObj.__static = function() {
+                this.__staticSource();
+                this.__staticUpdate();
+            };
             var isRegisted = false;
             var isPartClass = false;
-            var preNamespaces = classObj.namespace.split(".");
+            var preNamespaces = namespace.split(".");
             var count = preNamespaces.length;
-            var currClassObj = this.classes;
+            var currentClassObj = this.classes;
             var tempName;
             for (var i = 0; i < count; i++) {
                 tempName = preNamespaces[i];
                 if (tempName) {
-                    currClassObj[tempName] = currClassObj[tempName] || {};
-                    currClassObj = currClassObj[tempName];
+                    currentClassObj[tempName] = currentClassObj[tempName] || {};
+                    currentClassObj = currentClassObj[tempName];
                 }
             }
-            currClassObj[name] = currClassObj[name] || {};
-            if (!currClassObj[name].name || !currClassObj[name]._registed) {
-                classObj._registed = true;
-                currClassObj[name] = classObj;
+            currentClassObj[name] = currentClassObj[name] || {};
+            var currentNamespace = currentClassObj;
+            currentClassObj = currentClassObj[name];
+            if (!currentClassObj.__name || !currentClassObj.__registed) {
+                classObj.__registed = true;
+                currentNamespace[name] = classObj;
             } else {
-                if (currClassObj[name]._registed) {
+                if (currentClassObj.__registed) {
                     isRegisted = true;
                     for (var key in classObj) {
-                        if (key && classObj.hasOwnProperty(key) && typeof currClassObj[name][key] === "undefined") {
+                        if (key && classObj.hasOwnProperty(key) && (typeof currentClassObj[key] === "undefined" || currentClassObj[key] === this.noop)) {
                             isPartClass = true;
-                            currClassObj[name][key] = classObj[key];
+                            currentClassObj[key] = classObj[key];
                         }
                     }
                 }
             }
-            classObj = currClassObj[name];
+            classObj = currentNamespace[name];
             if (!isRegisted || isPartClass) {
-                var unloadClassArray = this.loadDeps(classObj);
-                if (unloadClassArray.length > 0) {
+                var unloadClass = this.loadDeps(classObj);
+                if (unloadClass.length > 0) {
                     this.loader = this.loader || this.using("oojs.loader");
                     if (this.runtime === "browser" && this.loader) {
-                        this.loader.loadDepsBrowser(classObj, unloadClassArray);
+                        this.loader.loadDepsBrowser(classObj, unloadClass);
                     } else {
-                        throw new Error('class "' + classObj.name + '"' + " loadDeps error:" + unloadClassArray.join(","));
+                        throw new Error('class "' + classObj.name + '"' + " loadDeps error:" + unloadClass.join(","));
                     }
                 } else {
-                    classObj[staticConstructorName] && classObj[staticConstructorName]();
+                    classObj.__static();
                 }
             }
             if (this.runtime === "node" && arguments.callee.caller.arguments[2]) {
                 arguments.callee.caller.arguments[2].exports = classObj;
             }
-            return this;
+            return classObj;
         }
     };
     oojs.define(oojs);
@@ -303,17 +348,10 @@ oojs.define({
         };
         return result;
     },
-    bind: function(eventName, times, callback) {
-        if (arguments.length === 2) {
-            callback = times;
-            times = 1;
-        }
+    bind: function(eventName, callback, times) {
         times = typeof times !== "number" ? 1 : times;
         var ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
-        callback = callback instanceof Array ? callback : [ callback ];
-        for (var i = 0, count = callback.length; i < count; i++) {
-            ev.callbacks.push(this.createCallback(callback[i], times));
-        }
+        ev.callbacks.push(this.createCallback(callback, times));
         if (ev.status && ev.emitData.length) {
             for (var i = 0, count = ev.emitData.length; i < count; i++) {
                 this.emit(ev.name, ev.emitData[i]);
@@ -329,11 +367,11 @@ oojs.define({
                 for (var i = 0, count = ev.callbacks.length; i < count; i++) {
                     if (callback) {
                         if (callback === ev.callbacks[i].callback) {
-                            ev.callbacks[i] = null;
+                            ev.callbacks[i] = [];
                             break;
                         }
                     } else {
-                        ev.callbacks[i] = null;
+                        ev.callbacks[i] = [];
                         continue;
                     }
                 }
@@ -512,6 +550,179 @@ oojs.define({
 });
 
 oojs.define({
+    name: "promise",
+    namespace: "oojs",
+    deps: {
+        event: "oojs.event"
+    },
+    promise: function(func) {
+        this.ev = oojs.create(this.event);
+        if (func) {
+            try {
+                func(oojs.proxy(this, this._resolve), oojs.proxy(this, this._reject));
+            } catch (ex) {
+                this._reject(ex);
+            }
+        }
+    },
+    status: "pending",
+    data: null,
+    ev: null,
+    defaultFunc: function(data) {
+        return data;
+    },
+    _resolve: function(data) {
+        if (data && typeof data.then === "function") {
+            var insidePromise = data;
+            var onFullfulled = oojs.proxy(this, function(data) {
+                this._resolve(data);
+            });
+            var onRejected = oojs.proxy(this, function(data) {
+                this._reject(data);
+            });
+            insidePromise.then(onFullfulled, onRejected);
+        } else {
+            this.status = "fulfilled";
+            this.data = data;
+            if (this.ev.eventList && this.ev.eventList["onRejected"]) {
+                try {
+                    this.ev.emit("onFulfilled", data);
+                } catch (ex) {
+                    this._reject(ex);
+                }
+            }
+        }
+    },
+    resolve: function(data) {
+        var promise = oojs.create(this);
+        promise._resolve(data);
+        return promise;
+    },
+    _reject: function(data) {
+        this.status = "rejected";
+        this.data = data;
+        if (this.ev.eventList && this.ev.eventList["onRejected"]) {
+            this.ev.emit("onRejected", data);
+        }
+        return data;
+    },
+    reject: function(data) {
+        var promise = oojs.create(this);
+        promise._reject(data);
+        return promise;
+    },
+    promisify: function(func, thisObj) {
+        var result = function() {
+            var promise = oojs.create("oojs.promise");
+            var args = Array.prototype.slice.apply(arguments);
+            var callback = function(err) {
+                if (err) {
+                    this._reject(err);
+                } else {
+                    var returnDataArray = Array.prototype.slice.call(arguments, 1);
+                    if (returnDataArray.length <= 1) {
+                        returnDataArray = returnDataArray[0];
+                    }
+                    this._resolve(returnDataArray);
+                }
+            };
+            args.push(oojs.proxy(promise, callback));
+            func.apply(thisObj, args);
+            return promise;
+        };
+        return result;
+    },
+    then: function(onFulfilled, onRejected) {
+        onFulfilled = onFulfilled || this.defaultFunc;
+        onRejected = onRejected || this.defaultFunc;
+        var promise = oojs.create("oojs.promise");
+        var promiseResolveCallback = oojs.proxy(promise, function(data) {
+            this._resolve(data["onFulfilled"]);
+        });
+        var promiseRejectCallback = oojs.proxy(promise, function(data) {
+            this._reject(data["onRejected"]);
+        });
+        this.ev.bind("onFulfilled", onFulfilled);
+        this.ev.group("onFulfilledGroup", "onFulfilled", promiseResolveCallback);
+        this.ev.bind("onRejected", onRejected);
+        this.ev.group("onRejectedGroup", "onRejected", promiseRejectCallback);
+        if (this.status === "fulfilled") {
+            setTimeout(oojs.proxy(this, function() {
+                this._resolve(this.data);
+            }), 0);
+        } else if (this.status === "rejected") {
+            setTimeout(oojs.proxy(this, function() {
+                this._reject(this.data);
+            }), 0);
+        }
+        return promise;
+    },
+    "catch": function(onRejected) {
+        this.then(null, onRejected);
+    },
+    all: function(promiseArray) {
+        var promise = oojs.create(this);
+        var ev = oojs.create("oojs.event");
+        ev.bind("error", oojs.proxy(promise, function(error) {
+            this._reject(error);
+        }));
+        var eventGroup = [];
+        for (var i = 0, count = promiseArray.length; i < count; i++) {
+            var tempEventName = "event-" + (i + 1);
+            eventGroup.push(tempEventName);
+            var tempPromise = promiseArray[i];
+            tempPromise.__eventName = tempEventName;
+            tempPromise.allEvent = ev;
+            ev.bind(tempEventName, function(data) {
+                return data;
+            });
+            var tempPromiseOnFullfilled = function(data) {
+                this.allEvent.emit(this.__eventName, data);
+            }.proxy(tempPromise);
+            var tempPromiseOnRejected = function(error) {
+                this.allEvent.emit("error", error);
+                this.allEvent.unbind();
+            }.proxy(tempPromise);
+            tempPromise.then(tempPromiseOnFullfilled, tempPromiseOnRejected);
+        }
+        ev.group("all", eventGroup, function(data) {
+            var promiseData = [];
+            for (var key in data) {
+                promiseData.push(data[key]);
+            }
+            this._resolve(promiseData);
+        }.proxy(promise));
+        return promise;
+    },
+    race: function(promiseArray) {
+        var promise = oojs.create(this);
+        var ev = oojs.create("oojs.event");
+        ev.bind("success", oojs.proxy(promise, function(data) {
+            this._resolve(data);
+        }));
+        ev.bind("error", oojs.proxy(promise, function(error) {
+            this._reject(error);
+        }));
+        var eventGroup = [];
+        for (var i = 0, count = promiseArray.length; i < count; i++) {
+            var tempEventName = "event-" + (i + 1);
+            eventGroup.push(tempEventName);
+            var tempPromise = promiseArray[i];
+            var tempPromiseOnFullfilled = function(data) {
+                this.emit("success", data);
+                this.unbind();
+            }.proxy(ev);
+            var tempPromiseOnRejected = function(error) {
+                this.emit("error", error);
+                this.unbind();
+            }.proxy(ev);
+            tempPromise.then(tempPromiseOnFullfilled, tempPromiseOnRejected);
+        }
+        return promise;
+    }
+});
+
+oojs.define({
     name: "loader",
     namespace: "oojs",
     deps: {
@@ -551,7 +762,7 @@ oojs.define({
         return this;
     },
     loadDepsBrowser: function(classObj, unloadClassArray) {
-        var parentFullClassName = classObj.namespace ? classObj.namespace + "." + classObj.name : classObj.name;
+        var parentFullClassName = classObj.__full;
         if (!this.ev.groupList[parentFullClassName]) {
             this.ev.group(parentFullClassName, [], function() {
                 oojs.reload(parentFullClassName);
@@ -574,7 +785,6 @@ oojs.define({
             this.ev.queue(parentFullClassName, classFullName);
             var url = oojs.getClassPath(classFullName);
             var jsCallBack = oojs.proxy(this, function(classFullName) {
-                console.log("event:" + classFullName);
                 this.ev.emit(classFullName, classFullName);
             }, classFullName);
             this.loadScript(url, jsCallBack);
