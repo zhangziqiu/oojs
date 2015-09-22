@@ -1,5 +1,8 @@
-OOJS - make codes easy!
+OOJS - Object Oriented Javascript
 ===================================  
+[![Build Status](https://img.shields.io/travis/zhangziqiu/oojs.svg?style=flat)](http://travis-ci.org/zhangziqiu/oojs)
+
+
 oojs 是一种编程框架, 一种面向对象的js编程模式.
 使用oojs可以让js代码变得简单优美. 成倍的提升代码可读性和维护性.
 
