@@ -9,7 +9,7 @@ describe('oojs.promise', function () {
     describe('basic', function () {
         it('#create - resolve()', function (done) {
             promise.resolve('test').then(function (data) {
-                assert.equal(data, 'test2');
+                assert.equal(data, 'test');
                 done();
             });
         });
