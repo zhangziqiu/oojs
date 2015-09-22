@@ -21,7 +21,7 @@ var make = {
     },
     compress: {
         result: '',
-        path: './bin/oojs.js',
+        path: './bin/compress/oojs.js',
         stream: null
 
     },
@@ -45,7 +45,7 @@ var make = {
     },
     compressCore: {
         result: '',
-        path: './bin/oojs.core.js',
+        path: './bin/compress/oojs.core.js',
         stream: null
 
     },

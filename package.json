@@ -19,7 +19,7 @@
         "type": "git",
         "url": "https://github.com/zhangziqiu/oojs.git"
     },
-	"main": "./bin/oojs.js",
+	"main": "./bin/format/oojs.js",
     "dependencies": {},
     "devDependencies": {
         "mocha": "^2.0.0",
