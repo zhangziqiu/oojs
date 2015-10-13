@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src\oojs\loader.js</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="../../prettify.css">
+    <link rel="stylesheet" href="../../base.css">
+    <style type='text/css'>
+        div.coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class="header low">
+    <h1>Code coverage report for <span class="entity">src\oojs\loader.js</span></h1>
+    <h2>
+        Statements: <span class="metric">4.44% <small>(2 / 45)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Branches: <span class="metric">0% <small>(0 / 20)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Functions: <span class="metric">11.11% <small>(1 / 9)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Lines: <span class="metric">4.44% <small>(2 / 45)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Ignored: <span class="metric"><span class="ignore-none">none</span></span> &nbsp;&nbsp;&nbsp;&nbsp;
+    </h2>
+    <div class="path"><a href="../../index.html">All files</a> &#187; <a href="index.html">src/oojs/</a> &#187; loader.js</div>
+</div>
+<div class="body">
+<pre><table class="coverage">
+<tr><td class="line-count">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116</td><td class="line-coverage"><span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">oojs.define({
+&nbsp;
+    /**
+     * 类加载器. 使用oojs.event实现.
+     * 当类A以类B, 类B依赖类C时, 会递归加载所有的依赖类, 当所有的依赖类都加载完毕后, 执行类A的静态构造函数.
+     */
+    name: 'loader',
+    namespace: 'oojs',
+    deps: {
+        event: 'oojs.event'
+&nbsp;
+    },
+    $loader: function () {
+        this.ev = oojs.create(this.event);
+    },
+&nbsp;
+    /**
+     * 异步加载js文件
+     * @public
+     * @param {string} url js文件的url路径
+     * @param {string} version 文件的版本号.不传递则默认为1.0.0
+     * @param {Function} callback js加载完毕后的回调函数
+     * @return {object} oojs对象引用
+     */
+    loadScript: <span class="fstat-no" title="function not covered" >function (url, version, callback) {</span>
+<span class="cstat-no" title="statement not covered" >        if (typeof version === 'function') {</span>
+<span class="cstat-no" title="statement not covered" >            callback = version;</span>
+<span class="cstat-no" title="statement not covered" >            version = '1.0.0';</span>
+        }
+<span class="cstat-no" title="statement not covered" >        version = version || '1.0.0';</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if (version) {</span>
+<span class="cstat-no" title="statement not covered" >            url += '?v=' + version;</span>
+        }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        callback = callback || <span class="fstat-no" title="function not covered" >function () {</span></span>
+            };
+&nbsp;
+        // loading对象记录已经加载过的日志, 保证一个地址不会被加载多次
+<span class="cstat-no" title="statement not covered" >        this.loading = this.loading || {};</span>
+<span class="cstat-no" title="statement not covered" >        if (this.loading[url]) {</span>
+<span class="cstat-no" title="statement not covered" >            return;</span>
+        }
+<span class="cstat-no" title="statement not covered" >        this.loading[url] = 1;</span>
+&nbsp;
+        // 加载脚本
+<span class="cstat-no" title="statement not covered" >        var loader = document.createElement('script');</span>
+<span class="cstat-no" title="statement not covered" >        loader.type = 'text/javascript';</span>
+<span class="cstat-no" title="statement not covered" >        loader.async = true;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        loader.src = url;</span>
+<span class="cstat-no" title="statement not covered" >        loader.onload = loader.onerror = loader.onreadystatechange = <span class="fstat-no" title="function not covered" >function (e) {</span></span>
+<span class="cstat-no" title="statement not covered" >            if (/loaded|complete|undefined/.test(loader.readyState)) {</span>
+<span class="cstat-no" title="statement not covered" >                loader.onload = loader.onerror = loader.onreadystatechange = null;</span>
+<span class="cstat-no" title="statement not covered" >                loader = undefined;</span>
+<span class="cstat-no" title="statement not covered" >                callback();</span>
+            }
+        };
+<span class="cstat-no" title="statement not covered" >        var s = document.getElementsByTagName('script')[0];</span>
+<span class="cstat-no" title="statement not covered" >        s.parentNode.insertBefore(loader, s);</span>
+<span class="cstat-no" title="statement not covered" >        return this;</span>
+    },
+&nbsp;
+    /**
+     * 浏览器加载类依赖
+     * @public
+     * @param {object} classObj 类对象
+     * @return {object} oojs对象引用
+     */
+    loadDepsBrowser: <span class="fstat-no" title="function not covered" >function (classObj, unloadClassArray) {</span>
+        // 创建入口类事件组
+<span class="cstat-no" title="statement not covered" >        var parentFullClassName = classObj.__full;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if (!this.ev.groupList[parentFullClassName]) {</span>
+<span class="cstat-no" title="statement not covered" >            this.ev.group(parentFullClassName, [], <span class="fstat-no" title="function not covered" >function () {</span></span>
+<span class="cstat-no" title="statement not covered" >                oojs.reload(parentFullClassName);</span>
+            });
+        }
+&nbsp;
+        // 处理依赖
+<span class="cstat-no" title="statement not covered" >        for (var i = 0, count = unloadClassArray.length; i &lt; count; i++) {</span>
+<span class="cstat-no" title="statement not covered" >            var classFullName = unloadClassArray[i];</span>
+            // 绑定事件
+<span class="cstat-no" title="statement not covered" >            if (!this.ev.eventList[classFullName]) {</span>
+<span class="cstat-no" title="statement not covered" >                this.ev.bind(classFullName, <span class="fstat-no" title="function not covered" >function () {</span></span>
+<span class="cstat-no" title="statement not covered" >                    return true;</span>
+                });
+            }
+&nbsp;
+            // 添加到父类分组中
+<span class="cstat-no" title="statement not covered" >            this.ev.group(parentFullClassName, classFullName);</span>
+&nbsp;
+            // 为每一个依赖类创建一个group
+<span class="cstat-no" title="statement not covered" >            if (!this.ev.groupList[classFullName]) {</span>
+<span class="cstat-no" title="statement not covered" >                this.ev.group(classFullName, [], <span class="fstat-no" title="function not covered" >function (data, className) {</span></span>
+<span class="cstat-no" title="statement not covered" >                    oojs.reload(className);</span>
+                }.proxy(this, classFullName));
+<span class="cstat-no" title="statement not covered" >                this.ev.groupList[classFullName].status = true;</span>
+            }
+&nbsp;
+            // 创建队列
+<span class="cstat-no" title="statement not covered" >            this.ev.queue(parentFullClassName, classFullName);</span>
+&nbsp;
+            // 加载脚本
+<span class="cstat-no" title="statement not covered" >            var url = oojs.getClassPath(classFullName);</span>
+<span class="cstat-no" title="statement not covered" >            var jsCallBack = oojs.proxy(this, <span class="fstat-no" title="function not covered" >function (classFullName) {</span></span>
+<span class="cstat-no" title="statement not covered" >                this.ev.emit(classFullName, classFullName);</span>
+            }, classFullName);
+<span class="cstat-no" title="statement not covered" >            this.loadScript(url, jsCallBack);</span>
+&nbsp;
+        }
+<span class="cstat-no" title="statement not covered" >        return this;</span>
+    }
+&nbsp;
+});
+&nbsp;</pre></td></tr>
+</table></pre>
+
+</div>
+<div class="footer">
+    <div class="meta">Generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Oct 13 2015 16:46:59 GMT+0800 (中国标准时间)</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>

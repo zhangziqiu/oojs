@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for src\oojs\promise.js</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="../../prettify.css">
+    <link rel="stylesheet" href="../../base.css">
+    <style type='text/css'>
+        div.coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class="header high">
+    <h1>Code coverage report for <span class="entity">src\oojs\promise.js</span></h1>
+    <h2>
+        Statements: <span class="metric">100% <small>(108 / 108)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Branches: <span class="metric">96.15% <small>(25 / 26)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Functions: <span class="metric">100% <small>(28 / 28)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Lines: <span class="metric">100% <small>(108 / 108)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Ignored: <span class="metric"><span class="ignore-none">none</span></span> &nbsp;&nbsp;&nbsp;&nbsp;
+    </h2>
+    <div class="path"><a href="../../index.html">All files</a> &#187; <a href="index.html">src/oojs/</a> &#187; promise.js</div>
+</div>
+<div class="body">
+<pre><table class="coverage">
+<tr><td class="line-count">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287</td><td class="line-coverage"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">81</span>
+<span class="cline-any cline-yes">81</span>
+<span class="cline-any cline-yes">20</span>
+<span class="cline-any cline-yes">20</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">58</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">56</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">56</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">56</span>
+<span class="cline-any cline-yes">28</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">28</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6</span>
+<span class="cline-any cline-yes">6</span>
+<span class="cline-any cline-yes">6</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">39</span>
+<span class="cline-any cline-yes">39</span>
+<span class="cline-any cline-yes">39</span>
+<span class="cline-any cline-yes">20</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">39</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">46</span>
+<span class="cline-any cline-yes">46</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">46</span>
+<span class="cline-any cline-yes">46</span>
+<span class="cline-any cline-yes">26</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">46</span>
+<span class="cline-any cline-yes">20</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">46</span>
+<span class="cline-any cline-yes">46</span>
+<span class="cline-any cline-yes">46</span>
+<span class="cline-any cline-yes">46</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">46</span>
+<span class="cline-any cline-yes">7</span>
+<span class="cline-any cline-yes">7</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">39</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">46</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">6</span>
+<span class="cline-any cline-yes">6</span>
+<span class="cline-any cline-yes">6</span>
+<span class="cline-any cline-yes">6</span>
+<span class="cline-any cline-yes">6</span>
+<span class="cline-any cline-yes">6</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-yes">9</span>
+<span class="cline-any cline-yes">9</span>
+<span class="cline-any cline-yes">9</span>
+<span class="cline-any cline-yes">9</span>
+<span class="cline-any cline-yes">7</span>
+<span class="cline-any cline-yes">7</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
+ * @file promise类, 支持标准的promise模式
+ * @author zhangziqiu@qq.com
+ */
+&nbsp;
+oojs.define({
+    name: 'promise',
+    namespace: 'oojs',
+    deps: {
+        event: 'oojs.event'
+    },
+&nbsp;
+    /**
+     * 构造函数
+     * @param {Function} func 函数签名为 func(resolve, reject)
+     */
+    promise: function (func) {
+        this.ev = oojs.create(this.event);
+        if (func) {
+            try {
+                func(oojs.proxy(this, this._resolve), oojs.proxy(this, this._reject));
+            }
+            catch (ex) {
+                this._reject(ex);
+            }
+        }
+    },
+&nbsp;
+    // promise状态, 取值包括: fulfilled，rejected，pending
+    status: 'pending',
+&nbsp;
+    // onFulfilled 或者 onRejected 函数返回的数据.
+    data: null,
+&nbsp;
+    // oojs.event实例. 使用then函数时, 会为event对象注册OnFullfilled和OnRejected事件.
+    ev: null,
+&nbsp;
+    /**
+     * OnFullfilled和OnRejected的默认值,直接返回传入的参数
+     * @param {*} data 传递的参数
+     * @return {*} 直接返回传入的data参数
+     */
+    defaultFunc: function (data) {
+        return data;
+    },
+&nbsp;
+    /**
+     * 变更状态为 fullfilled
+     * @public
+     * @param {*} data 传递的参数
+     */
+    _resolve: function (data) {
+        // 返回的是一个thenable对象
+        if (data &amp;&amp; typeof data.then === 'function') {
+            var insidePromise = data;
+            var onFullfulled = oojs.proxy(this, function (data) {
+                this._resolve(data);
+            });
+            var onRejected = oojs.proxy(this, function (data) {
+                this._reject(data);
+            });
+            insidePromise.then(onFullfulled, onRejected);
+        }
+        // 返回的是非promise对象
+        else {
+            // 修改状态
+            this.status = 'fulfilled';
+            // 设置数据
+            this.data = data;
+            // 触发下一个then方法绑定的函数
+            if (this.ev.eventList &amp;&amp; this.ev.eventList['onRejected']) {
+                try {
+                    //如果then中绑定的onFulfilled函数出现异常, 则进行reject操作
+                    this.ev.emit('onFulfilled', data);
+                }
+                catch (ex) {
+                    this._reject(ex);
+                }
+            }
+        }
+    },
+&nbsp;
+    /**
+     * 返回一个状态为 fulfilled 的 promise对象。
+     * @public
+     * @param {*} data 传递的参数
+     * @return {Object} promise对象
+     */
+    resolve: function (data) {
+        var promise = oojs.create(this);
+        promise._resolve(data);
+        return promise;
+    },
+&nbsp;
+    /**
+     * 变更状态为 rejected
+     * @public
+     * @param {*} data 传递的参数
+     */
+    _reject: function (data) {
+        this.status = 'rejected';
+        this.data = data;
+        if (this.ev.eventList &amp;&amp; this.ev.eventList['onRejected']) {
+            this.ev.emit('onRejected', data);
+        }
+        return data;
+    },
+&nbsp;
+    /**
+     * 返回一个状态为 rejected 的 promise对象。
+     * @public
+     * @param {*} data 传递的参数
+     * @return {Object} promise对象
+     */
+    reject: function (data) {
+        var promise = oojs.create(this);
+        promise._reject(data);
+        return promise;
+    },
+&nbsp;
+    /**
+     * 将node中的回调函数形式,即callback为最后一个形式参数的函数, 变成promise形式的函数.
+     * 比如将node自带模块fs的readFile函数, 变成promise形式的函数:
+     *      var readFilePromise = promise.promisify(fs.readFile);
+     *      readFilePromise('test.txt').then(function(data){...});
+     * @public
+     * @param {Function} func node回调形式的函数
+     * @param {Object} thisObj 函数调用时的this对象,可以不传递.
+     * @return {Function}
+     */
+    promisify: function (func, thisObj) {
+        var result = function () {
+            var promise = oojs.create('oojs.promise');
+            var args = Array.prototype.slice.apply(arguments);
+            var callback = function (err) {
+                if (err) {
+                    this._reject(err);
+                }
+                else {
+                    var returnDataArray = Array.prototype.slice.call(arguments, 1);
+                    <span class="missing-if-branch" title="else path not taken" >E</span>if (returnDataArray.length &lt;= 1) {
+                        returnDataArray = returnDataArray[0];
+                    }
+                    this._resolve(returnDataArray);
+                }
+            };
+            args.push(oojs.proxy(promise, callback));
+            func.apply(thisObj, args);
+            return promise;
+        }
+        return result;
+    },
+&nbsp;
+    /**
+     * 设置下一步成功（onFulfilled）或失败（onRejected）时的处理函数。返回新的promise对象用于链式调用。
+     * @public
+     * @param {Function} onFulfilled 成功时调用的函数
+     * @param {Function} onRejected 失败时调用的函数
+     * @return {Object} promise对象
+     */
+    then: function (onFulfilled, onRejected) {
+        onFulfilled = onFulfilled || this.defaultFunc;
+        onRejected = onRejected || this.defaultFunc;
+&nbsp;
+        // 创建一个新的promise并返回
+        var promise = oojs.create('oojs.promise');
+        var promiseResolveCallback = oojs.proxy(promise, function (data) {
+            this._resolve(data['onFulfilled']);
+        });
+        var promiseRejectCallback = oojs.proxy(promise, function (data) {
+            this._reject(data['onRejected']);
+        });
+&nbsp;
+        this.ev.bind('onFulfilled', onFulfilled);
+        this.ev.group('onFulfilledGroup', 'onFulfilled', promiseResolveCallback);
+        this.ev.bind('onRejected', onRejected);
+        this.ev.group('onRejectedGroup', 'onRejected', promiseRejectCallback);
+&nbsp;
+        // 检测当前的promise是否已经执行完毕
+        if (this.status === 'fulfilled') {
+            setTimeout(oojs.proxy(this, function () {
+                this._resolve(this.data);
+            }), 0);
+&nbsp;
+        }
+        else if (this.status === 'rejected') {
+            setTimeout(oojs.proxy(this, function () {
+                this._reject(this.data);
+            }), 0);
+        }
+&nbsp;
+        //返回新创建的promise
+        return promise;
+    },
+&nbsp;
+    /**
+     * 设置失败时的处理函数 onRejected, 返回新的promise对象用于链式调用。
+     * 等同于: then(null, onRejected)
+     * @public
+     * @param {Function} onRejected 失败时调用的函数
+     * @return {oojs.promise} promise对象
+     */
+    catch: function (onRejected) {
+        this.then(null, onRejected);
+    },
+&nbsp;
+    /**
+     * 传入promise对象数组，数组中的所有promise对象都完成时，就设置返回的promise为onFullFilled
+     * @public
+     * @param {Array} promiseArray promise对象数组
+     * @return {oojs.promise} promise对象
+     */
+    all: function (promiseArray) {
+        var promise = oojs.create(this);
+        var ev = oojs.create('oojs.event');
+        ev.bind('error', oojs.proxy(promise, function (error) {
+            this._reject(error);
+        }));
+&nbsp;
+        var eventGroup = [];
+        for (var i = 0, count = promiseArray.length; i &lt; count; i++) {
+            var tempEventName = 'event-' + (i + 1);
+            eventGroup.push(tempEventName);
+            var tempPromise = promiseArray[i];
+            tempPromise.__eventName = tempEventName;
+            tempPromise.allEvent = ev;
+            ev.bind(tempEventName, function (data) {
+                return data;
+            });
+&nbsp;
+            var tempPromiseOnFullfilled = function (data) {
+                this.allEvent.emit(this.__eventName, data);
+            }.proxy(tempPromise);
+            var tempPromiseOnRejected = function (error) {
+                this.allEvent.emit('error', error);
+                this.allEvent.unbind();
+            }.proxy(tempPromise);
+&nbsp;
+            tempPromise.then(tempPromiseOnFullfilled, tempPromiseOnRejected);
+        }
+&nbsp;
+        ev.group('all', eventGroup, function (data) {
+            var promiseData = [];
+            for (var key in data) {
+                promiseData.push(data[key]);
+            }
+            this._resolve(promiseData);
+        }.proxy(promise));
+&nbsp;
+        return promise;
+    },
+&nbsp;
+    /**
+     * 传入promise对象数组，数组中的所有promise对象只要有一个完成时，就设置返回的promise为onFullFilled
+     * @public
+     * @param {Array} promiseArray promise对象数组
+     * @return {oojs.promise} promise对象
+     */
+    race: function (promiseArray) {
+        var promise = oojs.create(this);
+        var ev = oojs.create('oojs.event');
+        ev.bind('success', oojs.proxy(promise, function (data) {
+            this._resolve(data);
+        }));
+        ev.bind('error', oojs.proxy(promise, function (error) {
+            this._reject(error);
+        }));
+&nbsp;
+        var eventGroup = [];
+        for (var i = 0, count = promiseArray.length; i &lt; count; i++) {
+            var tempEventName = 'event-' + (i + 1);
+            eventGroup.push(tempEventName);
+            var tempPromise = promiseArray[i];
+            var tempPromiseOnFullfilled = function (data) {
+                this.emit('success', data);
+                this.unbind();
+            }.proxy(ev);
+            var tempPromiseOnRejected = function (error) {
+                this.emit('error', error);
+                this.unbind();
+            }.proxy(ev);
+            tempPromise.then(tempPromiseOnFullfilled, tempPromiseOnRejected);
+        }
+        return promise;
+    }
+&nbsp;
+});</pre></td></tr>
+</table></pre>
+
+</div>
+<div class="footer">
+    <div class="meta">Generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Oct 13 2015 16:46:59 GMT+0800 (中国标准时间)</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>

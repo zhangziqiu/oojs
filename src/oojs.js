@@ -25,7 +25,7 @@
             var config = {};
             // 判断是window还是node环境
             // 设置全局作用域, 默认浏览器模式为window, node模式为系统global变量. 会在全局作用域中添加oojs变量.
-            if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+            if (typeof window !== 'undefined' && window && typeof document !== 'undefined' && document) {
                 this.runtime = 'browser';
                 config.global = window;
             }
@@ -48,7 +48,7 @@
             }
 
             // 根据config配置项进行初始化
-            this.global = config.global || {};
+            this.global = config.global;
             if (config.proxyName) {
                 Function.prototype[config.proxyName] = this.proxy;
             }
@@ -119,11 +119,7 @@
                     node = node[currentName];
                 }
             }
-
-            // 为路径添加末尾的斜杠
-            if (path && path.lastIndexOf('\\') !== path.length - 1 && path.lastIndexOf('/') !== path.length - 1) {
-                path = path + '/';
-            }
+            
             node.pathValue = path;
             this.pathCache = {};
         },
@@ -137,6 +133,14 @@
         getClassPath: function (name) {
             if (!this.pathCache[name]) {
                 this.pathCache[name] = this.getPath(name) + name.replace(/\./gi, '/') + '.js';
+				
+				var basePath = this.getPath(name);
+				// 为路径添加末尾的斜杠
+				var basePathIndex = basePath.length-1;
+				if(basePath.lastIndexOf('\\')!==basePathIndex && basePath.lastIndexOf('/')!==basePathIndex){
+					basePath = basePath + '/';
+				}
+				this.pathCache[name] = basePath + name.replace(/\./gi, '/') + '.js';
             }
             return this.pathCache[name];
         },
@@ -181,10 +185,12 @@
                     if (!classObj[key]) {
                         // node模式下, 发现未加载的依赖类, 尝试使用require加载
                         if (this.runtime === 'node') {
-                            classObj[key] = require(this.getClassPath(classFullName));
-                            if (!classObj[key]) {
-                                // node模式下, 如果依赖类无法加载则报错
-                                throw new Error(classObj.name + ' loadDeps failed: ' + classFullName);
+                            // node模式下, 如果依赖类无法加载则require会抛出异常
+                            try{
+                                classObj[key] = require(this.getClassPath(classFullName));
+                            }
+                            catch(ex){
+                                unloadClass.push(classFullName);
                             }
                         }
 
@@ -194,6 +200,7 @@
                     }
                     else {
                         if (classObj[key].__deps) {
+                            // 递归加载依赖类
                             unloadClass = unloadClass.concat(this.loadDeps(classObj[key], recording));
                         }
                     }
@@ -271,13 +278,43 @@
          * @param {Function} method 需要替换this指针的函数.如果是通过函数原型的方式调用的, 则不需要此参数.
          * @return {Function} this指针被修改的函数
          */
-        proxy: function (context, method) {
-            var thisArgs = Array.prototype.slice.apply(arguments);
-            var thisObj = thisArgs.shift();
+        proxy: function (context, method, p1, p2, p3, p4, p5) {
+			var thisArgs = [method];
+            if(typeof p1 !== 'undefined'){
+                thisArgs.push(p1);
+            }
+            if(typeof p2 !== 'undefined'){
+                thisArgs.push(p2);
+            }
+            if(typeof p3 !== 'undefined'){
+                thisArgs.push(p3);
+            }
+            if(typeof p4 !== 'undefined'){
+                thisArgs.push(p4);
+            }
+            if(typeof p5 !== 'undefined'){
+                thisArgs.push(p5);
+            }
+            var thisObj = context;
             var thisMethod = typeof this === 'function' ? this : thisArgs.shift();
 
-            return function () {
-                var tempArgs = Array.prototype.slice.apply(arguments);
+            return function (p1, p2, p3, p4, p5) {
+                var tempArgs = [];
+                if(typeof p1 !== 'undefined'){
+                    tempArgs.push(p1);
+                }
+                if(typeof p2 !== 'undefined'){
+                    tempArgs.push(p2);
+                }
+                if(typeof p3 !== 'undefined'){
+                    tempArgs.push(p3);
+                }
+                if(typeof p4 !== 'undefined'){
+                    tempArgs.push(p4);
+                }
+                if(typeof p5 !== 'undefined'){
+                    tempArgs.push(p5);
+                }
                 return thisMethod.apply(thisObj, tempArgs.concat(thisArgs));
             };
         },
@@ -320,7 +357,7 @@
                     result = require(classPath);
                 }
                 else {
-                    this.define(result);
+                    result = this.define(result);
                 }
             }
             else {
@@ -456,16 +493,14 @@
                 currentNamespace[name] = classObj;
             }
             // 分布类的实现, 对于已注册的类, 再次define时, 只会添加原类中没有的属性和方法
-            else {
-                if (currentClassObj.__registed) {
-                    isRegisted = true;
-                    for (var key in classObj) {
-                        if (key
-                            && classObj.hasOwnProperty(key)
-                            && (typeof currentClassObj[key] === 'undefined' || currentClassObj[key] === this.noop)) {
-                            isPartClass = true;
-                            currentClassObj[key] = classObj[key];
-                        }
+            else if(currentClassObj.__registed) {
+                isRegisted = true;
+                for (var key in classObj) {
+                    if (key
+                        && classObj.hasOwnProperty(key)
+                        && (typeof currentClassObj[key] === 'undefined' || currentClassObj[key] === this.noop)) {
+                        isPartClass = true;
+                        currentClassObj[key] = classObj[key];
                     }
                 }
             }

@@ -11,7 +11,8 @@ var mocha = new Mocha();
 // Here is an example:
 fs.readdirSync('test/unit').filter(function(file){
     // Only keep the .js files
-    return file.substr(-3) === '.js';
+    return file.substr(-8) === '.unit.js';
+    // return file === 'oojs.core.js';
 
 }).forEach(function(file){
     // Use the method "addFile" to add the file to mocha

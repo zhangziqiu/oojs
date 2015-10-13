@@ -6,7 +6,7 @@
         noop: function() {},
         $oojs: function() {
             var config = {};
-            if (typeof window !== "undefined" && typeof document !== "undefined") {
+            if (typeof window !== "undefined" && window && typeof document !== "undefined" && document) {
                 this.runtime = "browser";
                 config.global = window;
             } else {
@@ -22,7 +22,7 @@
                     }
                 }
             }
-            this.global = config.global || {};
+            this.global = config.global;
             if (config.proxyName) {
                 Function.prototype[config.proxyName] = this.proxy;
             }
@@ -68,15 +68,18 @@
                     node = node[currentName];
                 }
             }
-            if (path && path.lastIndexOf("\\") !== path.length - 1 && path.lastIndexOf("/") !== path.length - 1) {
-                path = path + "/";
-            }
             node.pathValue = path;
             this.pathCache = {};
         },
         getClassPath: function(name) {
             if (!this.pathCache[name]) {
                 this.pathCache[name] = this.getPath(name) + name.replace(/\./gi, "/") + ".js";
+                var basePath = this.getPath(name);
+                var basePathIndex = basePath.length - 1;
+                if (basePath.lastIndexOf("\\") !== basePathIndex && basePath.lastIndexOf("/") !== basePathIndex) {
+                    basePath = basePath + "/";
+                }
+                this.pathCache[name] = basePath + name.replace(/\./gi, "/") + ".js";
             }
             return this.pathCache[name];
         },
@@ -103,9 +106,10 @@
                     recording[classFullName] = true;
                     if (!classObj[key]) {
                         if (this.runtime === "node") {
-                            classObj[key] = require(this.getClassPath(classFullName));
-                            if (!classObj[key]) {
-                                throw new Error(classObj.name + " loadDeps failed: " + classFullName);
+                            try {
+                                classObj[key] = require(this.getClassPath(classFullName));
+                            } catch (ex) {
+                                unloadClass.push(classFullName);
                             }
                         }
                         if (!classObj[key]) {
@@ -157,12 +161,42 @@
             }
             return to;
         },
-        proxy: function(context, method) {
-            var thisArgs = Array.prototype.slice.apply(arguments);
-            var thisObj = thisArgs.shift();
+        proxy: function(context, method, p1, p2, p3, p4, p5) {
+            var thisArgs = [ method ];
+            if (typeof p1 !== "undefined") {
+                thisArgs.push(p1);
+            }
+            if (typeof p2 !== "undefined") {
+                thisArgs.push(p2);
+            }
+            if (typeof p3 !== "undefined") {
+                thisArgs.push(p3);
+            }
+            if (typeof p4 !== "undefined") {
+                thisArgs.push(p4);
+            }
+            if (typeof p5 !== "undefined") {
+                thisArgs.push(p5);
+            }
+            var thisObj = context;
             var thisMethod = typeof this === "function" ? this : thisArgs.shift();
-            return function() {
-                var tempArgs = Array.prototype.slice.apply(arguments);
+            return function(p1, p2, p3, p4, p5) {
+                var tempArgs = [];
+                if (typeof p1 !== "undefined") {
+                    tempArgs.push(p1);
+                }
+                if (typeof p2 !== "undefined") {
+                    tempArgs.push(p2);
+                }
+                if (typeof p3 !== "undefined") {
+                    tempArgs.push(p3);
+                }
+                if (typeof p4 !== "undefined") {
+                    tempArgs.push(p4);
+                }
+                if (typeof p5 !== "undefined") {
+                    tempArgs.push(p5);
+                }
                 return thisMethod.apply(thisObj, tempArgs.concat(thisArgs));
             };
         },
@@ -189,7 +223,7 @@
                     delete require.cache[require.resolve(classPath)];
                     result = require(classPath);
                 } else {
-                    this.define(result);
+                    result = this.define(result);
                 }
             } else {
                 result = this.using(name);

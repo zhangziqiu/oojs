@@ -43,7 +43,7 @@ oojs.define({
                      callback:function(){},	//回调函数
                      data:null,  	        //回调函数返回的数据
                      needTimes:1,			//希望执行的次数, 默认为 1
-                     emitTimes:0				//已经执行了的次数, 默认为 0
+                     emitTimes:0			//已经执行了的次数, 默认为 0
                  }],
              emitData:[],		//执行emit时传递的数据
              status:false,		//true表示已经触发过 emit
@@ -174,33 +174,6 @@ oojs.define({
     },
 
     /**
-     * 为事件取消绑定事件处理函数
-     * @param {string} eventName 事件名. 如果只传递事件名则表示删除此事件的所有callback
-     * @param {Function} callback 事件处理函数. 可以不传递.
-     */
-    removeListener: function (eventName, callback) {
-        if (this.eventList[eventName]) {
-            var ev = this.eventList[eventName];
-            if (ev.callbacks && ev.callbacks.length) {
-                for (var i = 0, count = ev.callbacks.length; i < count; i++) {
-                    if (callback) {
-                        if (callback === ev.callbacks[i].callback) {
-                            ev.callbacks[i] = [];
-                            break;
-                        }
-
-                    }
-                    else {
-                        ev.callbacks[i] = [];
-                        continue;
-                    }
-
-                }
-            }
-        }
-    },
-
-    /**
      * 为事件取消绑定事件处理函数.
      * 一个参数: 只传递一个参数 eventName 则删除此eventName的所有callback
      * 两个参数: 同时传递eventName和callback 则删除此eventName的指定callback
@@ -209,17 +182,34 @@ oojs.define({
      * @param {Function} callback 事件处理函数
      */
     unbind: function (eventName, callback) {
-        if (!eventName && !callback) { // 移除所有的事件处理函数
-            var key;
-            for (key in this.eventList) {
+        if (!eventName && !callback){
+            // 移除所有事件处理函数
+            for (var key in this.eventList) {
                 if (key && this.eventList[key] && this.eventList.hasOwnProperty(key)) {
-                    this.removeListener(key);
+                    this.unbind(key);
                 }
             }
         }
-        else {
-            this.removeListener(eventName, callback);
+        else{
+            var eventItem = this.eventList[eventName];
+            if (eventItem && eventItem.callbacks && eventItem.callbacks.length) {
+                for (var i = 0, count = eventItem.callbacks.length; i < count; i++) {
+                    if (callback) {
+                        // 移除某一个事件的某一个事件处理函数
+                        if (eventItem.callbacks[i].callback === callback) {
+                            eventItem.callbacks[i].callback = null;
+                            eventItem.callbacks[i].needTimes = 0;
+                        }
+                    }
+                    else{
+                        // 移除某一个事件的所有事件处理函数
+                        eventItem.callbacks[i].callback = null;
+                        eventItem.callbacks[i].needTimes = 0;
+                    }
+                }
+            }
         }
+
     },
 
     /**
@@ -276,9 +266,11 @@ oojs.define({
      * @param {string} groupName 事件组名,需要在当前event对象中唯一
      * @param {string|Array} eventNames 需要绑定的事件名或事件名集合
      * @param {Function} callback 事件组中的事件全部完成时, 执行的事件处理函数
+     * @param {number} times 可以不传递, 事件处理函数执行几次, 默认为1次, 循环执行传递-1
      */
-    group: function (groupName, eventNames, callback) {
+    group: function (groupName, eventNames, callback, times) {
         var group = this.groupList[groupName] = this.groupList[groupName] || this.createGroup(groupName);
+        times = typeof times === 'undefined' ? 1 : times;
 
         // 添加group的callback
         if (callback) {
@@ -286,7 +278,7 @@ oojs.define({
                 callback
             ];
             for (var i = 0, count = callback.length; i < count; i++) {
-                group.callbacks.push(this.createCallback(callback[i], 1));
+                group.callbacks.push(this.createCallback(callback[i], times));
             }
         }
 
@@ -331,11 +323,6 @@ oojs.define({
                     if (!this.groupList[afterGroupName].status) {
                         afterGroupFinished = false;
                     }
-                }
-                else {
-                    // group未创建
-                    this.groupList[afterGroupName] = this.createGroup(afterGroupName);
-                    afterGroupFinished = false;
                 }
             }
         }
@@ -452,17 +439,5 @@ oojs.define({
                 }
             }
         }
-    },
-
-    /**
-     * 添加事件组执行完毕后的回调函数.
-     * @param {string} groupName 事件组名
-     * @param {Function} callback 回调函数.此回调函数会在事件组绑定的所有事件都执行完毕后执行.
-     */
-    afterGroup: function (groupName, callback) {
-        var group = this.groupList[groupName] = this.groupList[groupName] || {};
-        var afters = group.afters = group.afters || [];
-        afters.push(callback);
     }
-
 });

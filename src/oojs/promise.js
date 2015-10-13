@@ -1,5 +1,5 @@
 /**
- * @file promiseÀà, Ö§³Ö±ê×¼µÄpromiseÄ£Ê½
+ * @file promiseç±», æ”¯æŒæ ‡å‡†çš„promiseæ¨¡å¼
  * @author zhangziqiu@qq.com
  */
 
@@ -11,8 +11,8 @@ oojs.define({
     },
 
     /**
-     * ¹¹Ôìº¯Êı
-     * @param {Function} func º¯ÊıÇ©ÃûÎª func(resolve, reject)
+     * æ„é€ å‡½æ•°
+     * @param {Function} func å‡½æ•°ç­¾åä¸º func(resolve, reject)
      */
     promise: function (func) {
         this.ev = oojs.create(this.event);
@@ -26,31 +26,31 @@ oojs.define({
         }
     },
 
-    // promise×´Ì¬, È¡Öµ°üÀ¨: fulfilled£¬rejected£¬pending
+    // promiseçŠ¶æ€, å–å€¼åŒ…æ‹¬: fulfilledï¼Œrejectedï¼Œpending
     status: 'pending',
 
-    // onFulfilled »òÕß onRejected º¯Êı·µ»ØµÄÊı¾İ.
+    // onFulfilled æˆ–è€… onRejected å‡½æ•°è¿”å›çš„æ•°æ®.
     data: null,
 
-    // oojs.eventÊµÀı. Ê¹ÓÃthenº¯ÊıÊ±, »áÎªevent¶ÔÏó×¢²áOnFullfilledºÍOnRejectedÊÂ¼ş.
+    // oojs.eventå®ä¾‹. ä½¿ç”¨thenå‡½æ•°æ—¶, ä¼šä¸ºeventå¯¹è±¡æ³¨å†ŒOnFullfilledå’ŒOnRejectedäº‹ä»¶.
     ev: null,
 
     /**
-     * OnFullfilledºÍOnRejectedµÄÄ¬ÈÏÖµ,Ö±½Ó·µ»Ø´«ÈëµÄ²ÎÊı
-     * @param {*} data ´«µİµÄ²ÎÊı
-     * @return {*} Ö±½Ó·µ»Ø´«ÈëµÄdata²ÎÊı
+     * OnFullfilledå’ŒOnRejectedçš„é»˜è®¤å€¼,ç›´æ¥è¿”å›ä¼ å…¥çš„å‚æ•°
+     * @param {*} data ä¼ é€’çš„å‚æ•°
+     * @return {*} ç›´æ¥è¿”å›ä¼ å…¥çš„dataå‚æ•°
      */
     defaultFunc: function (data) {
         return data;
     },
 
     /**
-     * ±ä¸ü×´Ì¬Îª fullfilled
+     * å˜æ›´çŠ¶æ€ä¸º fullfilled
      * @public
-     * @param {*} data ´«µİµÄ²ÎÊı
+     * @param {*} data ä¼ é€’çš„å‚æ•°
      */
     _resolve: function (data) {
-        // ·µ»ØµÄÊÇÒ»¸öthenable¶ÔÏó
+        // è¿”å›çš„æ˜¯ä¸€ä¸ªthenableå¯¹è±¡
         if (data && typeof data.then === 'function') {
             var insidePromise = data;
             var onFullfulled = oojs.proxy(this, function (data) {
@@ -61,16 +61,16 @@ oojs.define({
             });
             insidePromise.then(onFullfulled, onRejected);
         }
-        // ·µ»ØµÄÊÇ·Çpromise¶ÔÏó
+        // è¿”å›çš„æ˜¯épromiseå¯¹è±¡
         else {
-            // ĞŞ¸Ä×´Ì¬
+            // ä¿®æ”¹çŠ¶æ€
             this.status = 'fulfilled';
-            // ÉèÖÃÊı¾İ
+            // è®¾ç½®æ•°æ®
             this.data = data;
-            // ´¥·¢ÏÂÒ»¸öthen·½·¨°ó¶¨µÄº¯Êı
+            // è§¦å‘ä¸‹ä¸€ä¸ªthenæ–¹æ³•ç»‘å®šçš„å‡½æ•°
             if (this.ev.eventList && this.ev.eventList['onRejected']) {
                 try {
-                    //Èç¹ûthenÖĞ°ó¶¨µÄonFulfilledº¯Êı³öÏÖÒì³£, Ôò½øĞĞreject²Ù×÷
+                    //å¦‚æœthenä¸­ç»‘å®šçš„onFulfilledå‡½æ•°å‡ºç°å¼‚å¸¸, åˆ™è¿›è¡Œrejectæ“ä½œ
                     this.ev.emit('onFulfilled', data);
                 }
                 catch (ex) {
@@ -81,10 +81,10 @@ oojs.define({
     },
 
     /**
-     * ·µ»ØÒ»¸ö×´Ì¬Îª fulfilled µÄ promise¶ÔÏó¡£
+     * è¿”å›ä¸€ä¸ªçŠ¶æ€ä¸º fulfilled çš„ promiseå¯¹è±¡ã€‚
      * @public
-     * @param {*} data ´«µİµÄ²ÎÊı
-     * @return {Object} promise¶ÔÏó
+     * @param {*} data ä¼ é€’çš„å‚æ•°
+     * @return {Object} promiseå¯¹è±¡
      */
     resolve: function (data) {
         var promise = oojs.create(this);
@@ -93,9 +93,9 @@ oojs.define({
     },
 
     /**
-     * ±ä¸ü×´Ì¬Îª rejected
+     * å˜æ›´çŠ¶æ€ä¸º rejected
      * @public
-     * @param {*} data ´«µİµÄ²ÎÊı
+     * @param {*} data ä¼ é€’çš„å‚æ•°
      */
     _reject: function (data) {
         this.status = 'rejected';
@@ -107,10 +107,10 @@ oojs.define({
     },
 
     /**
-     * ·µ»ØÒ»¸ö×´Ì¬Îª rejected µÄ promise¶ÔÏó¡£
+     * è¿”å›ä¸€ä¸ªçŠ¶æ€ä¸º rejected çš„ promiseå¯¹è±¡ã€‚
      * @public
-     * @param {*} data ´«µİµÄ²ÎÊı
-     * @return {Object} promise¶ÔÏó
+     * @param {*} data ä¼ é€’çš„å‚æ•°
+     * @return {Object} promiseå¯¹è±¡
      */
     reject: function (data) {
         var promise = oojs.create(this);
@@ -119,13 +119,13 @@ oojs.define({
     },
 
     /**
-     * ½«nodeÖĞµÄ»Øµ÷º¯ÊıĞÎÊ½,¼´callbackÎª×îºóÒ»¸öĞÎÊ½²ÎÊıµÄº¯Êı, ±ä³ÉpromiseĞÎÊ½µÄº¯Êı.
-     * ±ÈÈç½«node×Ô´øÄ£¿éfsµÄreadFileº¯Êı, ±ä³ÉpromiseĞÎÊ½µÄº¯Êı:
+     * å°†nodeä¸­çš„å›è°ƒå‡½æ•°å½¢å¼,å³callbackä¸ºæœ€åä¸€ä¸ªå½¢å¼å‚æ•°çš„å‡½æ•°, å˜æˆpromiseå½¢å¼çš„å‡½æ•°.
+     * æ¯”å¦‚å°†nodeè‡ªå¸¦æ¨¡å—fsçš„readFileå‡½æ•°, å˜æˆpromiseå½¢å¼çš„å‡½æ•°:
      *      var readFilePromise = promise.promisify(fs.readFile);
      *      readFilePromise('test.txt').then(function(data){...});
      * @public
-     * @param {Function} func node»Øµ÷ĞÎÊ½µÄº¯Êı
-     * @param {Object} thisObj º¯Êıµ÷ÓÃÊ±µÄthis¶ÔÏó,¿ÉÒÔ²»´«µİ.
+     * @param {Function} func nodeå›è°ƒå½¢å¼çš„å‡½æ•°
+     * @param {Object} thisObj å‡½æ•°è°ƒç”¨æ—¶çš„thiså¯¹è±¡,å¯ä»¥ä¸ä¼ é€’.
      * @return {Function}
      */
     promisify: function (func, thisObj) {
@@ -152,17 +152,17 @@ oojs.define({
     },
 
     /**
-     * ÉèÖÃÏÂÒ»²½³É¹¦£¨onFulfilled£©»òÊ§°Ü£¨onRejected£©Ê±µÄ´¦Àíº¯Êı¡£·µ»ØĞÂµÄpromise¶ÔÏóÓÃÓÚÁ´Ê½µ÷ÓÃ¡£
+     * è®¾ç½®ä¸‹ä¸€æ­¥æˆåŠŸï¼ˆonFulfilledï¼‰æˆ–å¤±è´¥ï¼ˆonRejectedï¼‰æ—¶çš„å¤„ç†å‡½æ•°ã€‚è¿”å›æ–°çš„promiseå¯¹è±¡ç”¨äºé“¾å¼è°ƒç”¨ã€‚
      * @public
-     * @param {Function} onFulfilled ³É¹¦Ê±µ÷ÓÃµÄº¯Êı
-     * @param {Function} onRejected Ê§°ÜÊ±µ÷ÓÃµÄº¯Êı
-     * @return {Object} promise¶ÔÏó
+     * @param {Function} onFulfilled æˆåŠŸæ—¶è°ƒç”¨çš„å‡½æ•°
+     * @param {Function} onRejected å¤±è´¥æ—¶è°ƒç”¨çš„å‡½æ•°
+     * @return {Object} promiseå¯¹è±¡
      */
     then: function (onFulfilled, onRejected) {
         onFulfilled = onFulfilled || this.defaultFunc;
         onRejected = onRejected || this.defaultFunc;
 
-        // ´´½¨Ò»¸öĞÂµÄpromise²¢·µ»Ø
+        // åˆ›å»ºä¸€ä¸ªæ–°çš„promiseå¹¶è¿”å›
         var promise = oojs.create('oojs.promise');
         var promiseResolveCallback = oojs.proxy(promise, function (data) {
             this._resolve(data['onFulfilled']);
@@ -176,7 +176,7 @@ oojs.define({
         this.ev.bind('onRejected', onRejected);
         this.ev.group('onRejectedGroup', 'onRejected', promiseRejectCallback);
 
-        // ¼ì²âµ±Ç°µÄpromiseÊÇ·ñÒÑ¾­Ö´ĞĞÍê±Ï
+        // æ£€æµ‹å½“å‰çš„promiseæ˜¯å¦å·²ç»æ‰§è¡Œå®Œæ¯•
         if (this.status === 'fulfilled') {
             setTimeout(oojs.proxy(this, function () {
                 this._resolve(this.data);
@@ -189,26 +189,26 @@ oojs.define({
             }), 0);
         }
 
-        //·µ»ØĞÂ´´½¨µÄpromise
+        //è¿”å›æ–°åˆ›å»ºçš„promise
         return promise;
     },
 
     /**
-     * ÉèÖÃÊ§°ÜÊ±µÄ´¦Àíº¯Êı onRejected, ·µ»ØĞÂµÄpromise¶ÔÏóÓÃÓÚÁ´Ê½µ÷ÓÃ¡£
-     * µÈÍ¬ÓÚ: then(null, onRejected)
+     * è®¾ç½®å¤±è´¥æ—¶çš„å¤„ç†å‡½æ•° onRejected, è¿”å›æ–°çš„promiseå¯¹è±¡ç”¨äºé“¾å¼è°ƒç”¨ã€‚
+     * ç­‰åŒäº: then(null, onRejected)
      * @public
-     * @param {Function} onRejected Ê§°ÜÊ±µ÷ÓÃµÄº¯Êı
-     * @return {oojs.promise} promise¶ÔÏó
+     * @param {Function} onRejected å¤±è´¥æ—¶è°ƒç”¨çš„å‡½æ•°
+     * @return {oojs.promise} promiseå¯¹è±¡
      */
     catch: function (onRejected) {
         this.then(null, onRejected);
     },
 
     /**
-     * ´«Èëpromise¶ÔÏóÊı×é£¬Êı×éÖĞµÄËùÓĞpromise¶ÔÏó¶¼Íê³ÉÊ±£¬¾ÍÉèÖÃ·µ»ØµÄpromiseÎªonFullFilled
+     * ä¼ å…¥promiseå¯¹è±¡æ•°ç»„ï¼Œæ•°ç»„ä¸­çš„æ‰€æœ‰promiseå¯¹è±¡éƒ½å®Œæˆæ—¶ï¼Œå°±è®¾ç½®è¿”å›çš„promiseä¸ºonFullFilled
      * @public
-     * @param {Array} promiseArray promise¶ÔÏóÊı×é
-     * @return {oojs.promise} promise¶ÔÏó
+     * @param {Array} promiseArray promiseå¯¹è±¡æ•°ç»„
+     * @return {oojs.promise} promiseå¯¹è±¡
      */
     all: function (promiseArray) {
         var promise = oojs.create(this);
@@ -251,10 +251,10 @@ oojs.define({
     },
 
     /**
-     * ´«Èëpromise¶ÔÏóÊı×é£¬Êı×éÖĞµÄËùÓĞpromise¶ÔÏóÖ»ÒªÓĞÒ»¸öÍê³ÉÊ±£¬¾ÍÉèÖÃ·µ»ØµÄpromiseÎªonFullFilled
+     * ä¼ å…¥promiseå¯¹è±¡æ•°ç»„ï¼Œæ•°ç»„ä¸­çš„æ‰€æœ‰promiseå¯¹è±¡åªè¦æœ‰ä¸€ä¸ªå®Œæˆæ—¶ï¼Œå°±è®¾ç½®è¿”å›çš„promiseä¸ºonFullFilled
      * @public
-     * @param {Array} promiseArray promise¶ÔÏóÊı×é
-     * @return {oojs.promise} promise¶ÔÏó
+     * @param {Array} promiseArray promiseå¯¹è±¡æ•°ç»„
+     * @return {oojs.promise} promiseå¯¹è±¡
      */
     race: function (promiseArray) {
         var promise = oojs.create(this);

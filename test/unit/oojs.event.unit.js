@@ -110,6 +110,92 @@ describe('oojs.event', function () {
             assert.equal(times, 4);
         });
 
+        it('.unbind(eventName, callback)', function () {
+            var ev1 = oojs.create(oojs.event);
+            var callbackData = {};
+            var callback1 = function(data){
+                var result = data + '-callback1';
+                callbackData.callback1 = result;
+                return result;
+            };
+            var callback2 = function(data){
+                var result = data + '-callback2';
+                callbackData.callback2 = result;
+                return result;
+            };
+            var callback3 = function(data){
+                var result = data + '-callback3';
+                callbackData.callback3 = result;
+                return result;
+            };
+
+            ev1.bind('ev1', callback1);
+            ev1.bind('ev1', callback2);
+            ev1.bind('ev1', callback3);
+            ev1.unbind('ev1', callback2);
+            ev1.emit('ev1', 'ev1-data');
+            assert.equal(callbackData.callback1, 'ev1-data-callback1');
+            assert.equal(callbackData.callback2, undefined);
+            assert.equal(callbackData.callback3, 'ev1-data-callback3');
+        });
+
+        it('.unbind(eventName)', function () {
+            var ev1 = oojs.create(oojs.event);
+            var callbackData = {};
+            var callback1 = function(data){
+                var result = data + '-callback1';
+                callbackData.callback1 = result;
+                return result;
+            };
+            var callback2 = function(data){
+                var result = data + '-callback2';
+                callbackData.callback2 = result;
+                return result;
+            };
+            var callback3 = function(data){
+                var result = data + '-callback3';
+                callbackData.callback3 = result;
+                return result;
+            };
+
+            ev1.bind('ev1', callback1);
+            ev1.bind('ev1', callback2);
+            ev1.bind('ev1', callback3);
+            ev1.unbind('ev1');
+            ev1.emit('ev1', 'ev1-data');
+            assert.equal(callbackData.callback1, undefined);
+            assert.equal(callbackData.callback2, undefined);
+            assert.equal(callbackData.callback3, undefined);
+        });
+
+        it('.unbind()', function () {
+            var ev1 = oojs.create(oojs.event);
+            var callbackData = {};
+            var callback1 = function(data){
+                var result = data + '-callback1';
+                callbackData.callback1 = result;
+                return result;
+            };
+            var callback2 = function(data){
+                var result = data + '-callback2';
+                callbackData.callback2 = result;
+                return result;
+            };
+            var callback3 = function(data){
+                var result = data + '-callback3';
+                callbackData.callback3 = result;
+                return result;
+            };
+
+            ev1.bind('ev1', callback1);
+            ev1.bind('ev1', callback2);
+            ev1.bind('ev1', callback3);
+            ev1.unbind();
+            ev1.emit('ev1', 'ev1-data');
+            assert.equal(callbackData.callback1, undefined);
+            assert.equal(callbackData.callback2, undefined);
+            assert.equal(callbackData.callback3, undefined);
+        });
     });
 
     describe('group', function () {
@@ -157,7 +243,7 @@ describe('oojs.event', function () {
                 groupEmitArray.push('groupB');
                 assert.equal(data.ev2, 'ev2-data');
                 assert.equal(data.ev3, 'ev3-data');
-            });
+            }, -1);
 
             ev.queue('groupA', 'groupB', 'groupC');
             ev.emit('ev4', 'ev4-data');

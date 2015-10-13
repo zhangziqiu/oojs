@@ -247,7 +247,7 @@ describe('oojs.promise', function () {
         it('#promisify test', function (done) {
             var fs = require("fs");
             var readFilePromise = promise.promisify(fs.readFile);
-            readFilePromise("test/unit/oojs.promise.promisify-test.txt", "utf8").then(function(data){
+            readFilePromise("test/unit/data/oojs.promise.promisify-test.txt", "utf8").then(function(data){
                 assert.equal(data,'promisify-test-data');
                 done();
             }).catch(function(error){
@@ -262,6 +262,19 @@ describe('oojs.promise', function () {
                 done(new Error('should not run'));
             }).catch(function(error){
                 assert.ok(error instanceof Error);
+                done();
+            });
+        });
+    });
+
+    describe('thenable', function () {
+        it('#thenable', function (done) {
+            var insidePromise = oojs.create(promise, function (resolve, reject) {
+                reject(new Error('reject test'));
+            });
+
+            promise.resolve(insidePromise).catch(function (error) {
+                assert.equal(error.message, 'reject test');
                 done();
             });
         });
