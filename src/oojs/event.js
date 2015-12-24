@@ -95,14 +95,14 @@ oojs.define({
      * {
             callback:function(){},	//回调函数
             data:null,  	        //回调函数返回的数据
-            needTimes:1,			//希望执行的次数, 默认为 1
+            needTimes:1,			//希望执行的次数, 默认为-1表示循环执行
             emitTimes:0				//已经执行了的次数, 默认为 0
         }
      */
     createCallback: function (callback, needTimes, emitTimes) {
         callback = typeof callback !== 'undefined' ? callback : function () {
         };
-        needTimes = typeof needTimes !== 'undefined' ? needTimes : 1;
+        needTimes = typeof needTimes !== 'undefined' ? needTimes : -1;
         emitTimes = typeof emitTimes !== 'undefined' ? emitTimes : 0;
 
         return {
@@ -155,9 +155,6 @@ oojs.define({
      * @param {number} times 可以不传递, 事件处理函数执行几次, 默认为1次, 循环执行传递-1
      */
     bind: function (eventName, callback, times) {
-        // 设置times默认值. 如果传递的times不正确, 则设置为默认值1
-        times = typeof times !== 'number' ? 1 : times;
-
         // 如果event对象不存在,则创建新的event对象
         var ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
         ev.callbacks.push(this.createCallback(callback, times));
@@ -270,7 +267,6 @@ oojs.define({
      */
     group: function (groupName, eventNames, callback, times) {
         var group = this.groupList[groupName] = this.groupList[groupName] || this.createGroup(groupName);
-        times = typeof times === 'undefined' ? 1 : times;
 
         // 添加group的callback
         if (callback) {

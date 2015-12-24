@@ -161,42 +161,12 @@
             }
             return to;
         },
-        proxy: function(context, method, p1, p2, p3, p4, p5) {
-            var thisArgs = [ method ];
-            if (typeof p1 !== "undefined") {
-                thisArgs.push(p1);
-            }
-            if (typeof p2 !== "undefined") {
-                thisArgs.push(p2);
-            }
-            if (typeof p3 !== "undefined") {
-                thisArgs.push(p3);
-            }
-            if (typeof p4 !== "undefined") {
-                thisArgs.push(p4);
-            }
-            if (typeof p5 !== "undefined") {
-                thisArgs.push(p5);
-            }
-            var thisObj = context;
+        proxy: function(context, method) {
+            var thisArgs = Array.prototype.slice.apply(arguments);
+            var thisObj = thisArgs.shift();
             var thisMethod = typeof this === "function" ? this : thisArgs.shift();
-            return function(p1, p2, p3, p4, p5) {
-                var tempArgs = [];
-                if (typeof p1 !== "undefined") {
-                    tempArgs.push(p1);
-                }
-                if (typeof p2 !== "undefined") {
-                    tempArgs.push(p2);
-                }
-                if (typeof p3 !== "undefined") {
-                    tempArgs.push(p3);
-                }
-                if (typeof p4 !== "undefined") {
-                    tempArgs.push(p4);
-                }
-                if (typeof p5 !== "undefined") {
-                    tempArgs.push(p5);
-                }
+            return function() {
+                var tempArgs = Array.prototype.slice.apply(arguments);
                 return thisMethod.apply(thisObj, tempArgs.concat(thisArgs));
             };
         },
@@ -302,14 +272,12 @@
             if (!currentClassObj.__name || !currentClassObj.__registed) {
                 classObj.__registed = true;
                 currentNamespace[name] = classObj;
-            } else {
-                if (currentClassObj.__registed) {
-                    isRegisted = true;
-                    for (var key in classObj) {
-                        if (key && classObj.hasOwnProperty(key) && (typeof currentClassObj[key] === "undefined" || currentClassObj[key] === this.noop)) {
-                            isPartClass = true;
-                            currentClassObj[key] = classObj[key];
-                        }
+            } else if (currentClassObj.__registed) {
+                isRegisted = true;
+                for (var key in classObj) {
+                    if (key && classObj.hasOwnProperty(key) && (typeof currentClassObj[key] === "undefined" || currentClassObj[key] === this.noop)) {
+                        isPartClass = true;
+                        currentClassObj[key] = classObj[key];
                     }
                 }
             }

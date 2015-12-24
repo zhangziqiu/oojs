@@ -248,42 +248,12 @@
          * @param {Function} method 需要替换this指针的函数.如果是通过函数原型的方式调用的, 则不需要此参数.
          * @return {Function} this指针被修改的函数
          */
-        proxy: function(context, method, p1, p2, p3, p4, p5) {
-            var thisArgs = [ method ];
-            if (typeof p1 !== "undefined") {
-                thisArgs.push(p1);
-            }
-            if (typeof p2 !== "undefined") {
-                thisArgs.push(p2);
-            }
-            if (typeof p3 !== "undefined") {
-                thisArgs.push(p3);
-            }
-            if (typeof p4 !== "undefined") {
-                thisArgs.push(p4);
-            }
-            if (typeof p5 !== "undefined") {
-                thisArgs.push(p5);
-            }
-            var thisObj = context;
+        proxy: function(context, method) {
+            var thisArgs = Array.prototype.slice.apply(arguments);
+            var thisObj = thisArgs.shift();
             var thisMethod = typeof this === "function" ? this : thisArgs.shift();
-            return function(p1, p2, p3, p4, p5) {
-                var tempArgs = [];
-                if (typeof p1 !== "undefined") {
-                    tempArgs.push(p1);
-                }
-                if (typeof p2 !== "undefined") {
-                    tempArgs.push(p2);
-                }
-                if (typeof p3 !== "undefined") {
-                    tempArgs.push(p3);
-                }
-                if (typeof p4 !== "undefined") {
-                    tempArgs.push(p4);
-                }
-                if (typeof p5 !== "undefined") {
-                    tempArgs.push(p5);
-                }
+            return function() {
+                var tempArgs = Array.prototype.slice.apply(arguments);
                 return thisMethod.apply(thisObj, tempArgs.concat(thisArgs));
             };
         },
@@ -446,14 +416,12 @@
             if (!currentClassObj.__name || !currentClassObj.__registed) {
                 classObj.__registed = true;
                 currentNamespace[name] = classObj;
-            } else {
-                if (currentClassObj.__registed) {
-                    isRegisted = true;
-                    for (var key in classObj) {
-                        if (key && classObj.hasOwnProperty(key) && (typeof currentClassObj[key] === "undefined" || currentClassObj[key] === this.noop)) {
-                            isPartClass = true;
-                            currentClassObj[key] = classObj[key];
-                        }
+            } else if (currentClassObj.__registed) {
+                isRegisted = true;
+                for (var key in classObj) {
+                    if (key && classObj.hasOwnProperty(key) && (typeof currentClassObj[key] === "undefined" || currentClassObj[key] === this.noop)) {
+                        isPartClass = true;
+                        currentClassObj[key] = classObj[key];
                     }
                 }
             }
@@ -533,7 +501,7 @@ oojs.define({
                      callback:function(){},	//回调函数
                      data:null,  	        //回调函数返回的数据
                      needTimes:1,			//希望执行的次数, 默认为 1
-                     emitTimes:0				//已经执行了的次数, 默认为 0
+                     emitTimes:0			//已经执行了的次数, 默认为 0
                  }],
              emitData:[],		//执行emit时传递的数据
              status:false,		//true表示已经触发过 emit
@@ -580,13 +548,13 @@ oojs.define({
      * {
             callback:function(){},	//回调函数
             data:null,  	        //回调函数返回的数据
-            needTimes:1,			//希望执行的次数, 默认为 1
+            needTimes:1,			//希望执行的次数, 默认为-1表示循环执行
             emitTimes:0				//已经执行了的次数, 默认为 0
         }
      */
     createCallback: function(callback, needTimes, emitTimes) {
         callback = typeof callback !== "undefined" ? callback : function() {};
-        needTimes = typeof needTimes !== "undefined" ? needTimes : 1;
+        needTimes = typeof needTimes !== "undefined" ? needTimes : -1;
         emitTimes = typeof emitTimes !== "undefined" ? emitTimes : 0;
         return {
             callback: callback,
@@ -632,8 +600,6 @@ oojs.define({
      * @param {number} times 可以不传递, 事件处理函数执行几次, 默认为1次, 循环执行传递-1
      */
     bind: function(eventName, callback, times) {
-        // 设置times默认值. 如果传递的times不正确, 则设置为默认值1
-        times = typeof times !== "number" ? 1 : times;
         // 如果event对象不存在,则创建新的event对象
         var ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
         ev.callbacks.push(this.createCallback(callback, times));
@@ -648,29 +614,6 @@ oojs.define({
         return this;
     },
     /**
-     * 为事件取消绑定事件处理函数
-     * @param {string} eventName 事件名. 如果只传递事件名则表示删除此事件的所有callback
-     * @param {Function} callback 事件处理函数. 可以不传递.
-     */
-    removeListener: function(eventName, callback) {
-        if (this.eventList[eventName]) {
-            var ev = this.eventList[eventName];
-            if (ev.callbacks && ev.callbacks.length) {
-                for (var i = 0, count = ev.callbacks.length; i < count; i++) {
-                    if (callback) {
-                        if (callback === ev.callbacks[i].callback) {
-                            ev.callbacks[i] = [];
-                            break;
-                        }
-                    } else {
-                        ev.callbacks[i] = [];
-                        continue;
-                    }
-                }
-            }
-        }
-    },
-    /**
      * 为事件取消绑定事件处理函数.
      * 一个参数: 只传递一个参数 eventName 则删除此eventName的所有callback
      * 两个参数: 同时传递eventName和callback 则删除此eventName的指定callback
@@ -680,15 +623,29 @@ oojs.define({
      */
     unbind: function(eventName, callback) {
         if (!eventName && !callback) {
-            // 移除所有的事件处理函数
-            var key;
-            for (key in this.eventList) {
+            // 移除所有事件处理函数
+            for (var key in this.eventList) {
                 if (key && this.eventList[key] && this.eventList.hasOwnProperty(key)) {
-                    this.removeListener(key);
+                    this.unbind(key);
                 }
             }
         } else {
-            this.removeListener(eventName, callback);
+            var eventItem = this.eventList[eventName];
+            if (eventItem && eventItem.callbacks && eventItem.callbacks.length) {
+                for (var i = 0, count = eventItem.callbacks.length; i < count; i++) {
+                    if (callback) {
+                        // 移除某一个事件的某一个事件处理函数
+                        if (eventItem.callbacks[i].callback === callback) {
+                            eventItem.callbacks[i].callback = null;
+                            eventItem.callbacks[i].needTimes = 0;
+                        }
+                    } else {
+                        // 移除某一个事件的所有事件处理函数
+                        eventItem.callbacks[i].callback = null;
+                        eventItem.callbacks[i].needTimes = 0;
+                    }
+                }
+            }
         }
     },
     /**
@@ -738,14 +695,15 @@ oojs.define({
      * @param {string} groupName 事件组名,需要在当前event对象中唯一
      * @param {string|Array} eventNames 需要绑定的事件名或事件名集合
      * @param {Function} callback 事件组中的事件全部完成时, 执行的事件处理函数
+     * @param {number} times 可以不传递, 事件处理函数执行几次, 默认为1次, 循环执行传递-1
      */
-    group: function(groupName, eventNames, callback) {
+    group: function(groupName, eventNames, callback, times) {
         var group = this.groupList[groupName] = this.groupList[groupName] || this.createGroup(groupName);
         // 添加group的callback
         if (callback) {
             callback = callback instanceof Array ? callback : [ callback ];
             for (var i = 0, count = callback.length; i < count; i++) {
-                group.callbacks.push(this.createCallback(callback[i], 1));
+                group.callbacks.push(this.createCallback(callback[i], times));
             }
         }
         // eventNames可以是string或Array
@@ -785,10 +743,6 @@ oojs.define({
                     if (!this.groupList[afterGroupName].status) {
                         afterGroupFinished = false;
                     }
-                } else {
-                    // group未创建
-                    this.groupList[afterGroupName] = this.createGroup(afterGroupName);
-                    afterGroupFinished = false;
                 }
             }
         }
@@ -890,21 +844,11 @@ oojs.define({
                 }
             }
         }
-    },
-    /**
-     * 添加事件组执行完毕后的回调函数.
-     * @param {string} groupName 事件组名
-     * @param {Function} callback 回调函数.此回调函数会在事件组绑定的所有事件都执行完毕后执行.
-     */
-    afterGroup: function(groupName, callback) {
-        var group = this.groupList[groupName] = this.groupList[groupName] || {};
-        var afters = group.afters = group.afters || [];
-        afters.push(callback);
     }
 });
 
 /**
- * @file promise��, ֧�ֱ�׼��promiseģʽ
+ * @file promise类, 支持标准的promise模式
  * @author zhangziqiu@qq.com
  */
 oojs.define({
@@ -914,8 +858,8 @@ oojs.define({
         event: "oojs.event"
     },
     /**
-     * ���캯��
-     * @param {Function} func ����ǩ��Ϊ func(resolve, reject)
+     * 构造函数
+     * @param {Function} func 函数签名为 func(resolve, reject)
      */
     promise: function(func) {
         this.ev = oojs.create(this.event);
@@ -927,27 +871,27 @@ oojs.define({
             }
         }
     },
-    // promise״̬, ȡֵ����: fulfilled��rejected��pending
+    // promise状态, 取值包括: fulfilled，rejected，pending
     status: "pending",
-    // onFulfilled ���� onRejected �������ص�����.
+    // onFulfilled 或者 onRejected 函数返回的数据.
     data: null,
-    // oojs.eventʵ��. ʹ��then����ʱ, ��Ϊevent����ע��OnFullfilled��OnRejected�¼�.
+    // oojs.event实例. 使用then函数时, 会为event对象注册OnFullfilled和OnRejected事件.
     ev: null,
     /**
-     * OnFullfilled��OnRejected��Ĭ��ֵ,ֱ�ӷ��ش����Ĳ���
-     * @param {*} data ���ݵĲ���
-     * @return {*} ֱ�ӷ��ش�����data����
+     * OnFullfilled和OnRejected的默认值,直接返回传入的参数
+     * @param {*} data 传递的参数
+     * @return {*} 直接返回传入的data参数
      */
     defaultFunc: function(data) {
         return data;
     },
     /**
-     * ����״̬Ϊ fullfilled
+     * 变更状态为 fullfilled
      * @public
-     * @param {*} data ���ݵĲ���
+     * @param {*} data 传递的参数
      */
     _resolve: function(data) {
-        // ���ص���һ��thenable����
+        // 返回的是一个thenable对象
         if (data && typeof data.then === "function") {
             var insidePromise = data;
             var onFullfulled = oojs.proxy(this, function(data) {
@@ -958,14 +902,14 @@ oojs.define({
             });
             insidePromise.then(onFullfulled, onRejected);
         } else {
-            // �޸�״̬
+            // 修改状态
             this.status = "fulfilled";
-            // ��������
+            // 设置数据
             this.data = data;
-            // ������һ��then�����󶨵ĺ���
+            // 触发下一个then方法绑定的函数
             if (this.ev.eventList && this.ev.eventList["onRejected"]) {
                 try {
-                    //����then�а󶨵�onFulfilled���������쳣, ������reject����
+                    //如果then中绑定的onFulfilled函数出现异常, 则进行reject操作
                     this.ev.emit("onFulfilled", data);
                 } catch (ex) {
                     this._reject(ex);
@@ -974,10 +918,10 @@ oojs.define({
         }
     },
     /**
-     * ����һ��״̬Ϊ fulfilled �� promise������
+     * 返回一个状态为 fulfilled 的 promise对象。
      * @public
-     * @param {*} data ���ݵĲ���
-     * @return {Object} promise����
+     * @param {*} data 传递的参数
+     * @return {Object} promise对象
      */
     resolve: function(data) {
         var promise = oojs.create(this);
@@ -985,9 +929,9 @@ oojs.define({
         return promise;
     },
     /**
-     * ����״̬Ϊ rejected
+     * 变更状态为 rejected
      * @public
-     * @param {*} data ���ݵĲ���
+     * @param {*} data 传递的参数
      */
     _reject: function(data) {
         this.status = "rejected";
@@ -998,10 +942,10 @@ oojs.define({
         return data;
     },
     /**
-     * ����һ��״̬Ϊ rejected �� promise������
+     * 返回一个状态为 rejected 的 promise对象。
      * @public
-     * @param {*} data ���ݵĲ���
-     * @return {Object} promise����
+     * @param {*} data 传递的参数
+     * @return {Object} promise对象
      */
     reject: function(data) {
         var promise = oojs.create(this);
@@ -1009,13 +953,13 @@ oojs.define({
         return promise;
     },
     /**
-     * ��node�еĻص�������ʽ,��callbackΪ����һ����ʽ�����ĺ���, ����promise��ʽ�ĺ���.
-     * ���罫node�Դ�ģ��fs��readFile����, ����promise��ʽ�ĺ���:
+     * 将node中的回调函数形式,即callback为最后一个形式参数的函数, 变成promise形式的函数.
+     * 比如将node自带模块fs的readFile函数, 变成promise形式的函数:
      *      var readFilePromise = promise.promisify(fs.readFile);
      *      readFilePromise('test.txt').then(function(data){...});
      * @public
-     * @param {Function} func node�ص���ʽ�ĺ���
-     * @param {Object} thisObj ��������ʱ��this����,���Բ�����.
+     * @param {Function} func node回调形式的函数
+     * @param {Object} thisObj 函数调用时的this对象,可以不传递.
      * @return {Function}
      */
     promisify: function(func, thisObj) {
@@ -1040,16 +984,16 @@ oojs.define({
         return result;
     },
     /**
-     * ������һ���ɹ���onFulfilled����ʧ�ܣ�onRejected��ʱ�Ĵ������������µ�promise����������ʽ���á�
+     * 设置下一步成功（onFulfilled）或失败（onRejected）时的处理函数。返回新的promise对象用于链式调用。
      * @public
-     * @param {Function} onFulfilled �ɹ�ʱ���õĺ���
-     * @param {Function} onRejected ʧ��ʱ���õĺ���
-     * @return {Object} promise����
+     * @param {Function} onFulfilled 成功时调用的函数
+     * @param {Function} onRejected 失败时调用的函数
+     * @return {Object} promise对象
      */
     then: function(onFulfilled, onRejected) {
         onFulfilled = onFulfilled || this.defaultFunc;
         onRejected = onRejected || this.defaultFunc;
-        // ����һ���µ�promise������
+        // 创建一个新的promise并返回
         var promise = oojs.create("oojs.promise");
         var promiseResolveCallback = oojs.proxy(promise, function(data) {
             this._resolve(data["onFulfilled"]);
@@ -1061,7 +1005,7 @@ oojs.define({
         this.ev.group("onFulfilledGroup", "onFulfilled", promiseResolveCallback);
         this.ev.bind("onRejected", onRejected);
         this.ev.group("onRejectedGroup", "onRejected", promiseRejectCallback);
-        // ���⵱ǰ��promise�Ƿ��Ѿ�ִ������
+        // 检测当前的promise是否已经执行完毕
         if (this.status === "fulfilled") {
             setTimeout(oojs.proxy(this, function() {
                 this._resolve(this.data);
@@ -1071,24 +1015,24 @@ oojs.define({
                 this._reject(this.data);
             }), 0);
         }
-        //�����´�����promise
+        //返回新创建的promise
         return promise;
     },
     /**
-     * ����ʧ��ʱ�Ĵ����� onRejected, �����µ�promise����������ʽ���á�
-     * ��ͬ��: then(null, onRejected)
+     * 设置失败时的处理函数 onRejected, 返回新的promise对象用于链式调用。
+     * 等同于: then(null, onRejected)
      * @public
-     * @param {Function} onRejected ʧ��ʱ���õĺ���
-     * @return {oojs.promise} promise����
+     * @param {Function} onRejected 失败时调用的函数
+     * @return {oojs.promise} promise对象
      */
     "catch": function(onRejected) {
         this.then(null, onRejected);
     },
     /**
-     * ����promise�������飬�����е�����promise����������ʱ�������÷��ص�promiseΪonFullFilled
+     * 传入promise对象数组，数组中的所有promise对象都完成时，就设置返回的promise为onFullFilled
      * @public
-     * @param {Array} promiseArray promise��������
-     * @return {oojs.promise} promise����
+     * @param {Array} promiseArray promise对象数组
+     * @return {oojs.promise} promise对象
      */
     all: function(promiseArray) {
         var promise = oojs.create(this);
@@ -1125,10 +1069,10 @@ oojs.define({
         return promise;
     },
     /**
-     * ����promise�������飬�����е�����promise����ֻҪ��һ������ʱ�������÷��ص�promiseΪonFullFilled
+     * 传入promise对象数组，数组中的所有promise对象只要有一个完成时，就设置返回的promise为onFullFilled
      * @public
-     * @param {Array} promiseArray promise��������
-     * @return {oojs.promise} promise����
+     * @param {Array} promiseArray promise对象数组
+     * @return {oojs.promise} promise对象
      */
     race: function(promiseArray) {
         var promise = oojs.create(this);

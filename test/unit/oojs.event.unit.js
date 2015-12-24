@@ -60,6 +60,19 @@ describe('oojs.event', function () {
             assert.equal(times, 4);
         });
 
+        it('time=undefined', function () {
+            var ev = oojs.create(oojs.event);
+            var times = 0;
+            ev.bind('ev1', function (data) {
+                times++;
+                assert.equal(data, 'ev1-data');
+            });
+            ev.emit('ev1', 'ev1-data');
+            ev.emit('ev1', 'ev1-data');
+            ev.emit('ev1', 'ev1-data');
+            assert.equal(times, 3);
+        });
+
         it('time=-1', function () {
             var ev = oojs.create(oojs.event);
             var times = 0;
@@ -253,7 +266,31 @@ describe('oojs.event', function () {
             ev.emit('ev2', 'ev2-data');
             assert.deepEqual(groupEmitArray.sort(), ['groupA', 'groupB', 'groupC'].sort());
         });
+        
+        
+        it('times=undefined', function () {
+            var ev = oojs.create(oojs.event);
+            var groupEmitArray = [];
+            ev.bind('ev1', function (data) {
+                return data;
+            });
 
+            ev.bind('ev2', function (data) {
+                return data;
+            });
 
+            var times = 0;
+            ev.group('groupA', ['ev1','ev2'], function (data) {
+                times++;
+                assert.equal(data.ev1, 'ev1-data');
+                assert.equal(data.ev2, 'ev2-data');
+            });
+            
+            ev.emit('ev1', 'ev1-data');
+            ev.emit('ev2', 'ev2-data');           
+            assert.equal(times, 1);
+            ev.emit('ev1', 'ev1-data');
+            assert.equal(times, 2);
+        });
     });
 });

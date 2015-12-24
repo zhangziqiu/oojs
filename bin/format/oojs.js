@@ -161,42 +161,12 @@
             }
             return to;
         },
-        proxy: function(context, method, p1, p2, p3, p4, p5) {
-            var thisArgs = [ method ];
-            if (typeof p1 !== "undefined") {
-                thisArgs.push(p1);
-            }
-            if (typeof p2 !== "undefined") {
-                thisArgs.push(p2);
-            }
-            if (typeof p3 !== "undefined") {
-                thisArgs.push(p3);
-            }
-            if (typeof p4 !== "undefined") {
-                thisArgs.push(p4);
-            }
-            if (typeof p5 !== "undefined") {
-                thisArgs.push(p5);
-            }
-            var thisObj = context;
+        proxy: function(context, method) {
+            var thisArgs = Array.prototype.slice.apply(arguments);
+            var thisObj = thisArgs.shift();
             var thisMethod = typeof this === "function" ? this : thisArgs.shift();
-            return function(p1, p2, p3, p4, p5) {
-                var tempArgs = [];
-                if (typeof p1 !== "undefined") {
-                    tempArgs.push(p1);
-                }
-                if (typeof p2 !== "undefined") {
-                    tempArgs.push(p2);
-                }
-                if (typeof p3 !== "undefined") {
-                    tempArgs.push(p3);
-                }
-                if (typeof p4 !== "undefined") {
-                    tempArgs.push(p4);
-                }
-                if (typeof p5 !== "undefined") {
-                    tempArgs.push(p5);
-                }
+            return function() {
+                var tempArgs = Array.prototype.slice.apply(arguments);
                 return thisMethod.apply(thisObj, tempArgs.concat(thisArgs));
             };
         },
@@ -302,14 +272,12 @@
             if (!currentClassObj.__name || !currentClassObj.__registed) {
                 classObj.__registed = true;
                 currentNamespace[name] = classObj;
-            } else {
-                if (currentClassObj.__registed) {
-                    isRegisted = true;
-                    for (var key in classObj) {
-                        if (key && classObj.hasOwnProperty(key) && (typeof currentClassObj[key] === "undefined" || currentClassObj[key] === this.noop)) {
-                            isPartClass = true;
-                            currentClassObj[key] = classObj[key];
-                        }
+            } else if (currentClassObj.__registed) {
+                isRegisted = true;
+                for (var key in classObj) {
+                    if (key && classObj.hasOwnProperty(key) && (typeof currentClassObj[key] === "undefined" || currentClassObj[key] === this.noop)) {
+                        isPartClass = true;
+                        currentClassObj[key] = classObj[key];
                     }
                 }
             }
@@ -349,7 +317,7 @@ oojs.define({
     },
     createCallback: function(callback, needTimes, emitTimes) {
         callback = typeof callback !== "undefined" ? callback : function() {};
-        needTimes = typeof needTimes !== "undefined" ? needTimes : 1;
+        needTimes = typeof needTimes !== "undefined" ? needTimes : -1;
         emitTimes = typeof emitTimes !== "undefined" ? emitTimes : 0;
         return {
             callback: callback,
@@ -383,7 +351,6 @@ oojs.define({
         return result;
     },
     bind: function(eventName, callback, times) {
-        times = typeof times !== "number" ? 1 : times;
         var ev = this.eventList[eventName] = this.eventList[eventName] || this.createEvent(eventName);
         ev.callbacks.push(this.createCallback(callback, times));
         if (ev.status && ev.emitData.length) {
@@ -394,34 +361,28 @@ oojs.define({
         }
         return this;
     },
-    removeListener: function(eventName, callback) {
-        if (this.eventList[eventName]) {
-            var ev = this.eventList[eventName];
-            if (ev.callbacks && ev.callbacks.length) {
-                for (var i = 0, count = ev.callbacks.length; i < count; i++) {
-                    if (callback) {
-                        if (callback === ev.callbacks[i].callback) {
-                            ev.callbacks[i] = [];
-                            break;
-                        }
-                    } else {
-                        ev.callbacks[i] = [];
-                        continue;
-                    }
-                }
-            }
-        }
-    },
     unbind: function(eventName, callback) {
         if (!eventName && !callback) {
-            var key;
-            for (key in this.eventList) {
+            for (var key in this.eventList) {
                 if (key && this.eventList[key] && this.eventList.hasOwnProperty(key)) {
-                    this.removeListener(key);
+                    this.unbind(key);
                 }
             }
         } else {
-            this.removeListener(eventName, callback);
+            var eventItem = this.eventList[eventName];
+            if (eventItem && eventItem.callbacks && eventItem.callbacks.length) {
+                for (var i = 0, count = eventItem.callbacks.length; i < count; i++) {
+                    if (callback) {
+                        if (eventItem.callbacks[i].callback === callback) {
+                            eventItem.callbacks[i].callback = null;
+                            eventItem.callbacks[i].needTimes = 0;
+                        }
+                    } else {
+                        eventItem.callbacks[i].callback = null;
+                        eventItem.callbacks[i].needTimes = 0;
+                    }
+                }
+            }
         }
     },
     emit: function(eventName, data) {
@@ -456,12 +417,12 @@ oojs.define({
         }
         return this;
     },
-    group: function(groupName, eventNames, callback) {
+    group: function(groupName, eventNames, callback, times) {
         var group = this.groupList[groupName] = this.groupList[groupName] || this.createGroup(groupName);
         if (callback) {
             callback = callback instanceof Array ? callback : [ callback ];
             for (var i = 0, count = callback.length; i < count; i++) {
-                group.callbacks.push(this.createCallback(callback[i], 1));
+                group.callbacks.push(this.createCallback(callback[i], times));
             }
         }
         var eventName;
@@ -490,9 +451,6 @@ oojs.define({
                     if (!this.groupList[afterGroupName].status) {
                         afterGroupFinished = false;
                     }
-                } else {
-                    this.groupList[afterGroupName] = this.createGroup(afterGroupName);
-                    afterGroupFinished = false;
                 }
             }
         }
@@ -575,11 +533,6 @@ oojs.define({
                 }
             }
         }
-    },
-    afterGroup: function(groupName, callback) {
-        var group = this.groupList[groupName] = this.groupList[groupName] || {};
-        var afters = group.afters = group.afters || [];
-        afters.push(callback);
     }
 });
 
