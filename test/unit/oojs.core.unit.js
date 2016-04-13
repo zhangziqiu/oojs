@@ -1,5 +1,5 @@
 var assert = require("assert");
-//oojs³õÊ¼»¯Ê±µÄÅäÖÃ±äÁ¿¡£±ØĞëÔÚoojs¼ÓÔØÇ°ÔØÈë
+//oojsåˆå§‹åŒ–æ—¶çš„é…ç½®å˜é‡ã€‚å¿…é¡»åœ¨oojsåŠ è½½å‰è½½å…¥
 global.$oojs_config = { proxyName : 'proxy' };
 require('../../src/oojs.js');
 
@@ -104,10 +104,10 @@ describe('oojs.core', function () {
             });
 
             var testClass = oojs.using('testMultiDefineClass');
-            // ¾²Ì¬¹¹Ôìº¯Êı²»ÄÜ±»ĞŞ¸Ä
+            // é™æ€æ„é€ å‡½æ•°ä¸èƒ½è¢«ä¿®æ”¹
             assert.equal(testClass.staticProperty, 'static-property-value');
-            // ¶¯Ì¬¹¹Ôìº¯ÊıÖ®Ç°Ã»¶¨ÒåÊ¹ÓÃµÄÊÇ¿Õ°×º¯ÊıµÄÄ¬ÈÏÖµ£¬±¾´Î¶¨ÒåÓ¦¸Ã±»ĞŞ¸Ä
-            assert.ok(testClass.__constructorSource.toString().indexOf('instance-property-value') > 0);
+            // é‡å¤å®šä¹‰ä¸€ä¸ªç±», ç¬¬äºŒæ¬¡ä¸ä¼šæ‰§è¡Œ
+            assert.ok(testClass.__constructorSource.toString().indexOf('instance-property-value') <= 0);
 
         });		
 		
@@ -143,7 +143,7 @@ describe('oojs.core', function () {
 
     describe('#deepClone()', function () {
         it('deepClone', function () {
-            //deepClone ×î¶à¿ËÂ¡Éî¶ÈÎª10²ã.³¬¹ı10²ãµÄ¶ÔÏóÖ±½Ó·µ»Ø²»½øĞĞ¿ËÂ¡
+            //deepClone æœ€å¤šå…‹éš†æ·±åº¦ä¸º10å±‚.è¶…è¿‡10å±‚çš„å¯¹è±¡ç›´æ¥è¿”å›ä¸è¿›è¡Œå…‹éš†
             var max = {
                 a1:{
                     a2:{
@@ -176,11 +176,11 @@ describe('oojs.core', function () {
             assert.equal(cloned1.a1.a2.a3.a4.a5.a6.a7.a8.a9.a10.a11.myValue, 11);
             assert.equal(cloned2.a1.a2.a3.a4.a5.a6.a7.a8.a9.a10.a11.myValue, 11);
             assert.equal(cloned3.a1.a2.a3.a4.a5.a6.a7.a8.a9.a10.a11.myValue, 11);
-            // µÚ10²ã¶ÔÏóÓ¦¸Ã¿ËÂ¡,clone1µÄĞŞ¸Ä²»Ó°Ïìclone2
+            // ç¬¬10å±‚å¯¹è±¡åº”è¯¥å…‹éš†,clone1çš„ä¿®æ”¹ä¸å½±å“clone2
             cloned1.a1.a2.a3.a4.a5.a6.a7.a8.a9.a10 = 'a10-changed';
             assert.equal(cloned1.a1.a2.a3.a4.a5.a6.a7.a8.a9.a10, 'a10-changed');
             assert.equal(cloned2.a1.a2.a3.a4.a5.a6.a7.a8.a9.a10.a11.myValue, 11);
-            // µÚ11²ã¶ÔÏó²»¿ËÂ¡,clone12µÄĞŞ¸Ä»áÓ°Ïìclone3
+            // ç¬¬11å±‚å¯¹è±¡ä¸å…‹éš†,clone12çš„ä¿®æ”¹ä¼šå½±å“clone3
             cloned2.a1.a2.a3.a4.a5.a6.a7.a8.a9.a10.a11 = 'a11-changed';
             assert.equal(cloned2.a1.a2.a3.a4.a5.a6.a7.a8.a9.a10.a11, 'a11-changed');
             assert.equal(cloned3.a1.a2.a3.a4.a5.a6.a7.a8.a9.a10.a11, 'a11-changed');
@@ -222,11 +222,11 @@ describe('oojs.core', function () {
             var clonePropertyTestClass = oojs.using('clonePropertyTest');
             var classImp = oojs.create(clonePropertyTestClass);
 
-            // p1Ó¦¸ÃÊÇĞèÒª¿ËÂ¡µÄÊôĞÔ
+            // p1åº”è¯¥æ˜¯éœ€è¦å…‹éš†çš„å±æ€§
             assert.ok(classImp.hasOwnProperty('p1') === true);
-            // p1.p1nameÊôĞÔÖµÓ¦¸Ã±»ÕıÈ·µÄ¿ËÂ¡
+            // p1.p1nameå±æ€§å€¼åº”è¯¥è¢«æ­£ç¡®çš„å…‹éš†
             assert.equal(classImp.p1.p1name, 'p1.p1name-value');
-            // ĞŞ¸Ä p1.p1name, Ó¦¸ÃÖ»»áĞŞ¸ÄÊµÀıµÄÊôĞÔ£¬Àà¶¨ÒåÓ¦¸Ã²»±ä¡£
+            // ä¿®æ”¹ p1.p1name, åº”è¯¥åªä¼šä¿®æ”¹å®ä¾‹çš„å±æ€§ï¼Œç±»å®šä¹‰åº”è¯¥ä¸å˜ã€‚
             classImp.p1.p1name = 'p1.p1name-value-changed';
             assert.equal(clonePropertyTestClass.p1.p1name, 'p1.p1name-value');
             assert.ok(classImp.hasOwnProperty('p3') === true);
@@ -354,17 +354,17 @@ describe('oojs.core', function () {
 
     describe('#loadDeps()', function () {
         it('loadDeps', function () {
-            // ²âÊÔÈıÖÖÇé¿ö:
-            // nodeFs: nodeÄ£¿é, Ê¹ÓÃrequire¼ÓÔØ
-            // classB: Ô¤ÏÈdefineÍê±Ï, Ê¹ÓÃoojsµÄÈ«ÏŞ¶¨ĞÔÃû¼ÓÔØ. classBÒÀÀµClassE
-            // classC: Î´define, ´Ó´ÅÅÌÉÏ¼ÓÔØ.
-            // classD: Ô¤ÏÈdefineÍê±Ï, Ö±½Ó´«µİÀàÒıÓÃ
+            // æµ‹è¯•ä¸‰ç§æƒ…å†µ:
+            // nodeFs: nodeæ¨¡å—, ä½¿ç”¨requireåŠ è½½
+            // classB: é¢„å…ˆdefineå®Œæ¯•, ä½¿ç”¨oojsçš„å…¨é™å®šæ€§ååŠ è½½. classBä¾èµ–ClassE
+            // classC: æœªdefine, ä»ç£ç›˜ä¸ŠåŠ è½½.
+            // classD: é¢„å…ˆdefineå®Œæ¯•, ç›´æ¥ä¼ é€’ç±»å¼•ç”¨
 
             oojs.setPath({
                 'test':process.cwd()
             });
 
-            // Ô¤ÏÈ¶¨ÒåºÃClassB ºÍ ClassD
+            // é¢„å…ˆå®šä¹‰å¥½ClassB å’Œ ClassD
             oojs.define({
                 name: 'loadDepsClassB',
                 namespace: 'test.unit.data',
@@ -378,7 +378,7 @@ describe('oojs.core', function () {
                 namespace: 'test.unit.data'
             });
 
-            // ¶¨ÒåClassA, ¼ÓÔØÒÀÀµ
+            // å®šä¹‰ClassA, åŠ è½½ä¾èµ–
             var multiDefineClass = oojs.define({
                 name: 'loadDepsClassA',
                 namespace: 'test.unit.data',
@@ -390,7 +390,7 @@ describe('oojs.core', function () {
                 }
             });
 
-            // ¼ì²éÒÀÀµÏîÊÇ·ñ¶¼¼ÓÔØÍê³É
+            // æ£€æŸ¥ä¾èµ–é¡¹æ˜¯å¦éƒ½åŠ è½½å®Œæˆ
             assert.ok(!!multiDefineClass.nodeFs);
             assert.ok(!!multiDefineClass.classB);
             assert.ok(multiDefineClass.classB.name === 'loadDepsClassB');
@@ -404,7 +404,7 @@ describe('oojs.core', function () {
         });
 
         it('nodejs: can not find file', function (done) {
-            // ²âÊÔnodeÄ£Ê½ÏÂ, ÀàÎÄ¼şÎŞ·¨ÕÒµ½µÄÇé¿ö.
+            // æµ‹è¯•nodeæ¨¡å¼ä¸‹, ç±»æ–‡ä»¶æ— æ³•æ‰¾åˆ°çš„æƒ…å†µ.
             try {
                 oojs.define({
                     name: 'noFindClass',

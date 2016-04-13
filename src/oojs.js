@@ -119,7 +119,7 @@
                     node = node[currentName];
                 }
             }
-            
+
             node.pathValue = path;
             this.pathCache = {};
         },
@@ -133,14 +133,14 @@
         getClassPath: function (name) {
             if (!this.pathCache[name]) {
                 this.pathCache[name] = this.getPath(name) + name.replace(/\./gi, '/') + '.js';
-				
-				var basePath = this.getPath(name);
-				// 为路径添加末尾的斜杠
-				var basePathIndex = basePath.length-1;
-				if(basePath.lastIndexOf('\\')!==basePathIndex && basePath.lastIndexOf('/')!==basePathIndex){
-					basePath = basePath + '/';
-				}
-				this.pathCache[name] = basePath + name.replace(/\./gi, '/') + '.js';
+
+                var basePath = this.getPath(name);
+                // 为路径添加末尾的斜杠
+                var basePathIndex = basePath.length - 1;
+                if (basePath.lastIndexOf('\\') !== basePathIndex && basePath.lastIndexOf('/') !== basePathIndex) {
+                    basePath = basePath + '/';
+                }
+                this.pathCache[name] = basePath + name.replace(/\./gi, '/') + '.js';
             }
             return this.pathCache[name];
         },
@@ -186,10 +186,10 @@
                         // node模式下, 发现未加载的依赖类, 尝试使用require加载
                         if (this.runtime === 'node') {
                             // node模式下, 如果依赖类无法加载则require会抛出异常
-                            try{
+                            try {
                                 classObj[key] = require(this.getClassPath(classFullName));
                             }
-                            catch(ex){
+                            catch (ex) {
                                 unloadClass.push(classFullName);
                             }
                         }
@@ -278,11 +278,11 @@
          * @param {Function} method 需要替换this指针的函数.如果是通过函数原型的方式调用的, 则不需要此参数.
          * @return {Function} this指针被修改的函数
          */
-        proxy: function(context, method) {
+        proxy: function (context, method) {
             var thisArgs = Array.prototype.slice.apply(arguments);
             var thisObj = thisArgs.shift();
             var thisMethod = typeof this === "function" ? this : thisArgs.shift();
-            return function() {
+            return function () {
                 var tempArgs = Array.prototype.slice.apply(arguments);
                 return thisMethod.apply(thisObj, tempArgs.concat(thisArgs));
             };
@@ -433,8 +433,6 @@
                 this.__staticSource();
                 this.__staticUpdate();
             };
-            var isRegisted = false; // 是否已经被注册过
-            var isPartClass = false; // 是否是分部类
 
             // 初始化前置命名空间
             var preNamespaces = namespace.split('.');
@@ -456,27 +454,13 @@
             var currentNamespace = currentClassObj;
             currentClassObj = currentClassObj[name];
 
+
             // 新注册类
             if (!currentClassObj.__name || !currentClassObj.__registed) {
                 classObj.__registed = true;
                 currentNamespace[name] = classObj;
-            }
-            // 分布类的实现, 对于已注册的类, 再次define时, 只会添加原类中没有的属性和方法
-            else if(currentClassObj.__registed) {
-                isRegisted = true;
-                for (var key in classObj) {
-                    if (key
-                        && classObj.hasOwnProperty(key)
-                        && (typeof currentClassObj[key] === 'undefined' || currentClassObj[key] === this.noop)) {
-                        isPartClass = true;
-                        currentClassObj[key] = classObj[key];
-                    }
-                }
-            }
-            classObj = currentNamespace[name];
+                classObj = currentNamespace[name];
 
-            // 如果是第一次注册类或者是分部类, 则需要加载依赖项
-            if (!isRegisted || isPartClass) {
                 // 加载依赖
                 var unloadClass = this.loadDeps(classObj);
 
